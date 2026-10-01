@@ -1,0 +1,30 @@
+# Heroes: engineers on the team, plus you.
+# targets: ordered list of monster ids; first = main fight, rest = ghosts.
+# pos is stored only while a hero is idle (targets empty).
+
+- id: ana
+  name: Ana
+  class: archer
+  targets: [search-rewrite, flaky-ci]
+
+- id: bartek
+  name: Bartek
+  class: warrior
+  targets: [search-rewrite]
+
+- id: celine
+  name: Celine
+  class: mage
+  targets: [payments-incident]
+
+# Between assignments.
+- id: dmitri
+  name: Dmitri
+  class: rogue
+  targets: []
+  pos: { x: -600, y: 40 }
+
+- id: me
+  name: Me
+  class: commander
+  targets: [hire-backend-engineer, quarterly-roadmap]

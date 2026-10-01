@@ -1,0 +1,44 @@
+# Monsters: anything to deal with. x < 0 is the team battlefield, x >= 0 is your keep.
+# size: S | M | L | XL  ->  goblin | orc | troll | dragon
+
+- id: search-rewrite
+  name: Search Rewrite
+  size: XL
+  pos: { x: -420, y: 180 }
+  notes: |
+    Next step: spike on Meilisearch.
+    Owner of the decision: product.
+  externalKey: SRCH-12
+
+- id: flaky-ci # fails about once a day
+  name: Flaky CI
+  size: M
+  pos: { x: -180, y: -120 }
+
+- id: payments-incident
+  name: Payments Incident
+  size: L
+  pos: { x: -620, y: -260 }
+
+# Nobody is on this one yet, so it should pulse red.
+- id: legacy-api-sunset
+  name: Legacy API Sunset
+  size: L
+  pos: { x: -300, y: 420 }
+
+- id: hire-backend-engineer
+  name: Hire Backend Engineer
+  size: M
+  pos: { x: 260, y: -80 }
+  notes: Two onsites scheduled this week.
+
+- id: quarterly-roadmap
+  name: Quarterly Roadmap Ask
+  size: S
+  pos: { x: 420, y: 200 }
+
+- id: onboarding-docs
+  name: Onboarding Docs
+  size: S
+  pos: { x: -80, y: 300 }
+  slain: 2026-09-28
