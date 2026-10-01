@@ -32,10 +32,10 @@ const isErrno = (e: unknown, code: string) =>
 async function writeAtomic(file: string, content: string): Promise<void> {
   const tmp = tmpPath(file);
   try {
-    await writeFile(tmp, content, "utf8");
-    await rename(tmp, file);
+    await writeFile(/* turbopackIgnore: true */ tmp, content, "utf8");
+    await rename(/* turbopackIgnore: true */ tmp, file);
   } catch (e) {
-    await unlink(tmp).catch(() => {});
+    await unlink(/* turbopackIgnore: true */ tmp).catch(() => {});
     throw e;
   }
 }
@@ -45,24 +45,24 @@ async function writeAtomic(file: string, content: string): Promise<void> {
  * written to a temp path and hard-linked into place, which fails if it exists.
  */
 export async function seed(dir = defaultDataDir(), exampleDir = defaultExampleDir()): Promise<void> {
-  await mkdir(dir, { recursive: true });
+  await mkdir(/* turbopackIgnore: true */ dir, { recursive: true });
   for (const name of [FILES.heroes, FILES.monsters]) {
-    const file = path.join(dir, name);
+    const file = path.join(/* turbopackIgnore: true */ dir, name);
     try {
-      await readFile(file);
+      await readFile(/* turbopackIgnore: true */ file);
       continue;
     } catch (e) {
       if (!isErrno(e, "ENOENT")) throw e;
     }
-    const content = await readFile(path.join(exampleDir, name), "utf8");
+    const content = await readFile(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ exampleDir, name), "utf8");
     const tmp = tmpPath(file);
-    await writeFile(tmp, content, "utf8");
+    await writeFile(/* turbopackIgnore: true */ tmp, content, "utf8");
     try {
-      await link(tmp, file);
+      await link(/* turbopackIgnore: true */ tmp, file);
     } catch (e) {
       if (!isErrno(e, "EEXIST")) throw e;
     } finally {
-      await unlink(tmp).catch(() => {});
+      await unlink(/* turbopackIgnore: true */ tmp).catch(() => {});
     }
   }
 }
@@ -74,7 +74,7 @@ type Loaded = {
 };
 
 async function parseFile(file: string): Promise<{ doc: Document; text: string }> {
-  const text = await readFile(file, "utf8");
+  const text = await readFile(/* turbopackIgnore: true */ file, "utf8");
   // Default YAML 1.2 core schema: `2026-09-28` stays a string (no timestamp tag).
   const doc = parseDocument(text);
   if (doc.errors.length > 0) {
@@ -86,8 +86,8 @@ async function parseFile(file: string): Promise<{ doc: Document; text: string }>
 async function load(dir: string, exampleDir: string): Promise<Loaded> {
   await seed(dir, exampleDir);
   const [heroes, monsters] = await Promise.all([
-    parseFile(path.join(dir, FILES.heroes)),
-    parseFile(path.join(dir, FILES.monsters)),
+    parseFile(path.join(/* turbopackIgnore: true */ dir, FILES.heroes)),
+    parseFile(path.join(/* turbopackIgnore: true */ dir, FILES.monsters)),
   ]);
   const problems: string[] = [];
   const world: World = {
@@ -146,7 +146,7 @@ export function updateWorld(
     for (const { name, doc, text, items, fields } of plan) {
       if (!syncDoc(doc, items, fields)) continue;
       const out = stringifyDoc(doc);
-      if (out !== text) await writeAtomic(path.join(dir, name), out);
+      if (out !== text) await writeAtomic(path.join(/* turbopackIgnore: true */ dir, name), out);
     }
     return next;
   });
