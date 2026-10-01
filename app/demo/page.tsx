@@ -1,10 +1,14 @@
-import { DemoMap } from "./DemoMap";
+import { readWorld } from "@/lib/store";
+import { Board } from "@/components/Board";
 
-// Temporary page for checking the canvas by hand (T3). Remove in T9.
-export default function DemoPage() {
+export const dynamic = "force-dynamic";
+
+// Temporary page for checking the Board by hand (T3/T5). Remove in T9.
+export default async function DemoPage() {
+  const world = await readWorld();
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <DemoMap />
+      <Board world={world} />
     </main>
   );
 }
