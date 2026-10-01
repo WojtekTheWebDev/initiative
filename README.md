@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Initiative
 
-## Getting Started
+*A planning playing game.*
 
-First, run the development server:
+A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** (bigger scope means a bigger creature) and the people dealing with them are **heroes**. You plan by dragging heroes onto monsters on an infinite map. Monsters nobody is fighting pulse red, so gaps are easy to spot.
+
+The map has two territories: the **team battlefield** (engineers against initiatives, incidents and tech debt) and **your keep** (your own work: hiring, people issues, stakeholder asks).
+
+It runs only on your machine, for one user. The data is plain YAML that you or an agent can edit by hand.
+
+> Status: design agreed, implementation not started. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full spec.
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Data
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Your data lives in `data/heroes.yaml` and `data/monsters.yaml`.
+- `data/` is **gitignored**. It holds real names and people topics, and it has no history or backup.
+- On first run, `data/` is seeded from the committed `data.example/`.
+- You can edit the YAML by hand at any time. Reload the page to see your changes. The app keeps your comments when it writes the files.
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router, Server Actions), React 19, Tailwind 4, the `yaml` package, and Vitest.
