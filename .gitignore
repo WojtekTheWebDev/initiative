@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Initiative personal data
 /data/
+
+# Agent worktrees
+/.claude/worktrees/
