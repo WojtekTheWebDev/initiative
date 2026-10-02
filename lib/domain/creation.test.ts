@@ -111,6 +111,26 @@ describe("updateMonster", () => {
   });
 });
 
+describe("hero minis", () => {
+  it("stores a picked mini on create, and none for a blank pick", () => {
+    const picked = createHero(makeWorld(), { name: "Dana", class: "cleric", mini: " knight ", pos: { x: 0, y: 0 } });
+    expect(picked.world.heroes.at(-1)?.mini).toBe("knight");
+    const blank = createHero(makeWorld(), { name: "Dana", class: "cleric", mini: "", pos: { x: 0, y: 0 } });
+    expect("mini" in blank.world.heroes.at(-1)!).toBe(false);
+    expectValid(picked.world);
+  });
+
+  it("sets, keeps and removes the mini on update", () => {
+    let w = updateHero(makeWorld(), "ana", { mini: "ranger-of-the-north" });
+    expect(w.heroes[0].mini).toBe("ranger-of-the-north"); // unknown ids are kept; they only change the drawing
+    w = updateHero(w, "ana", { name: "Anna" });
+    expect(w.heroes[0].mini).toBe("ranger-of-the-north");
+    w = updateHero(w, "ana", { mini: "" });
+    expect("mini" in w.heroes[0]).toBe(false);
+    expectValid(w);
+  });
+});
+
 describe("updateHero", () => {
   it("renames and reclasses without changing the id", () => {
     const w = updateHero(makeWorld(), "ana", { name: "Anna", class: "mage" });

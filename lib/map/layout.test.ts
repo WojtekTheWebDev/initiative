@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Hero, Monster, Pos, Size, World } from "@/lib/types";
-import { labelBox, layoutWorld, openingPoints, type WorldLayout } from "./layout";
-import { HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
+import { LABEL_GAP, labelBox, layoutWorld, openingPoints, type WorldLayout } from "./layout";
+import { BASE_SQUASH, HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
 
 const dist = (a: Pos, b: Pos) => Math.hypot(a.x - b.x, a.y - b.y);
 const monsterAt = (l: WorldLayout, id: string) => l.monsters.find((m) => m.monster.id === id)!.pos;
@@ -88,7 +88,7 @@ function expectNoOverlaps(l: WorldLayout) {
     }
   }
   for (const m of l.monsters) {
-    const box = labelBox(m.monster.name);
+    const box = labelBox(m.monster.name, m.radius);
     const top = m.pos.y + m.radius + box.gap;
     for (const h of l.heroes) {
       const inside =
@@ -270,8 +270,13 @@ describe("layoutWorld", () => {
 
 describe("labelBox", () => {
   it("grows with the name and is capped", () => {
-    expect(labelBox("Orc").width).toBeLessThan(labelBox("Search Rewrite").width);
-    expect(labelBox("x".repeat(200)).width).toBe(labelBox("y".repeat(300)).width);
+    expect(labelBox("Orc", 34).width).toBeLessThan(labelBox("Search Rewrite", 34).width);
+    expect(labelBox("x".repeat(200), 34).width).toBe(labelBox("y".repeat(300), 34).width);
+  });
+
+  it("starts just below the front of the base ellipse", () => {
+    const r = 58;
+    expect(r + labelBox("Dragon", r).gap).toBeCloseTo(r * BASE_SQUASH + LABEL_GAP);
   });
 });
 

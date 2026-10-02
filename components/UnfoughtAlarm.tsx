@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import type { Monster } from "@/lib/types";
-import { monsterGlyph } from "@/lib/map/glyphs";
+import { monsterMini } from "@/lib/map/minis";
+import { MiniPortrait } from "@/components/MiniPortrait";
 
 type Props = {
   /** Living monsters no hero is fighting. */
@@ -110,9 +111,7 @@ export function UnfoughtAlarm({ monsters, onPick }: Props) {
                 className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-foreground/10 focus-visible:bg-foreground/10 focus-visible:outline-none"
                 onClick={() => pick(m)}
               >
-                <span aria-hidden="true" className="text-base">
-                  {monsterGlyph(m.size)}
-                </span>
+                <MiniPortrait mini={monsterMini(m.size)} size={24} />
                 <span className="min-w-0 flex-1 truncate">{m.name}</span>
               </button>
             </li>

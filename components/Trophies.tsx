@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import type { Monster } from "@/lib/types";
-import { monsterGlyph } from "@/lib/map/glyphs";
+import { monsterMini } from "@/lib/map/minis";
+import { MiniPortrait } from "@/components/MiniPortrait";
 import { trophiesOf } from "@/components/panel/helpers";
 
 /** Above this many trophies the strip collapses to one scrollable line. */
@@ -47,7 +48,7 @@ export function Trophies({
                 }`}
                 onClick={() => onOpen(m.id)}
               >
-                <span aria-hidden="true">{monsterGlyph(m.size)}</span>
+                <MiniPortrait mini={monsterMini(m.size)} size={20} />
                 <span className="max-w-48 truncate">{m.name}</span>
                 <span className="text-xs opacity-60">{m.slain}</span>
               </button>

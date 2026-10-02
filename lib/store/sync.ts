@@ -19,7 +19,7 @@ type Entity = { id: string } & Record<string, unknown>;
 
 /** Field order used when a new item is appended, matching `data.example/`. */
 export const MONSTER_FIELDS = ["id", "name", "size", "pos", "notes", "slain", "externalKey"] as const;
-export const HERO_FIELDS = ["id", "name", "class", "targets", "pos"] as const;
+export const HERO_FIELDS = ["id", "name", "class", "mini", "targets", "pos"] as const;
 
 /** Stringify options shared by every write. `lineWidth: 0` stops long lines being folded. */
 export const STRINGIFY_OPTIONS = { lineWidth: 0 } as const;
@@ -75,6 +75,8 @@ export function heroesFromDoc(doc: Document, problems: string[] = []): Hero[] {
       class: str(h.class) ?? "",
       targets: Array.isArray(h.targets) ? h.targets.map(String) : [],
     };
+    const mini = str(h.mini);
+    if (mini !== undefined) hero.mini = mini;
     const pos = toPos(h.pos);
     if (pos) hero.pos = pos;
     return hero;
@@ -107,6 +109,25 @@ function fieldNode(doc: Document, key: string, value: unknown, flow = true) {
   return doc.createNode(value);
 }
 
+/**
+ * Sets `key` on a map node. A key the node doesn't have yet goes in its place
+ * in `fields` order (e.g. a new `mini` lands after `class`), not at the end.
+ */
+function setField(doc: Document, node: YAMLMap, key: string, value: unknown, fields: readonly string[]) {
+  if (node.has(key)) {
+    node.set(key, value);
+    return;
+  }
+  const rank = fields.indexOf(key);
+  const at = node.items.findIndex((pair) => {
+    const k = isScalar(pair.key) ? pair.key.value : pair.key;
+    return fields.indexOf(String(k)) > rank;
+  });
+  const pair = doc.createPair(key, value);
+  if (at === -1) node.items.push(pair);
+  else node.items.splice(at, 0, pair);
+}
+
 /** Applies `entity` onto an existing map node. Returns true if anything changed. */
 function syncItem(doc: Document, node: YAMLMap, entity: Entity, fields: readonly string[]): boolean {
   let changed = false;
@@ -133,7 +154,7 @@ function syncItem(doc: Document, node: YAMLMap, entity: Entity, fields: readonly
           }
         }
       } else {
-        node.set(key, fieldNode(doc, key, pos));
+        setField(doc, node, key, fieldNode(doc, key, pos), fields);
         changed = true;
       }
       continue;
@@ -163,7 +184,7 @@ function syncItem(doc: Document, node: YAMLMap, entity: Entity, fields: readonly
       continue;
     }
 
-    node.set(key, fieldNode(doc, key, value));
+    setField(doc, node, key, fieldNode(doc, key, value), fields);
     changed = true;
   }
   return changed;

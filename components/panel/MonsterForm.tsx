@@ -3,7 +3,8 @@
 import { useState, type FormEvent } from "react";
 import type { Monster, Pos, Size } from "@/lib/types";
 import { creatureOf } from "@/lib/domain";
-import { monsterGlyph } from "@/lib/map/glyphs";
+import { monsterMini } from "@/lib/map/minis";
+import { MiniPortrait } from "@/components/MiniPortrait";
 import { createMonster, updateMonster } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
 import { Button, ErrorNote, Field, inputClass, useAction } from "./ui";
@@ -90,9 +91,7 @@ export function MonsterForm(props: Props) {
                 onChange={() => setSize(s)}
                 className="sr-only"
               />
-              <span className="text-2xl leading-tight" aria-hidden="true">
-                {monsterGlyph(s)}
-              </span>
+              <MiniPortrait mini={monsterMini(s)} size={40} />
               <span className="font-semibold">{s}</span>
               <span className="opacity-70">{creatureOf(s)}</span>
             </label>

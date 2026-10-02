@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { Pos, World } from "@/lib/types";
 import { layoutWorld } from "@/lib/map/layout";
 import { LINK_GAP, linksOf } from "@/lib/map/links";
-import { HERO_BASE_RADIUS } from "@/lib/map/rings";
+import { HERO_BASE_RADIUS, baseRim } from "@/lib/map/rings";
+import { miniBodyRect, monsterMini } from "@/lib/map/minis";
 import { makeWorld } from "@/lib/domain/test-fixtures";
 import {
   applyOp,
@@ -30,7 +31,7 @@ describe("hitTestMonster", () => {
   /** m1 S r=26 at (-100, 10), m2 M r=34 at (-200, 20), m3 L r=44 at (300, 30). */
   const monsters = layoutWorld(makeWorld()).monsters.map((m) => ({ ...m, pos: m.monster.pos }));
 
-  it("hits inside the base radius, including the edge", () => {
+  it("hits inside the base ellipse, including its rim", () => {
     expect(hitTestMonster(monsters, { x: -100, y: 10 })?.monster.id).toBe("m1");
     expect(hitTestMonster(monsters, { x: -74, y: 10 })?.monster.id).toBe("m1");
   });
@@ -44,7 +45,35 @@ describe("hitTestMonster", () => {
     expect(hitTestMonster(monsters, { x: 0, y: 40 })).toBeNull();
   });
 
-  it("picks the nearest center when bases overlap", () => {
+  it("hits the body of a tall mini, up to the top of its head and out to its wings", () => {
+    const m3 = monsters.find((m) => m.monster.id === "m3")!;
+    const troll = miniBodyRect(monsterMini("L"), m3.pos, m3.radius);
+    expect(hitTestMonster(monsters, { x: m3.pos.x, y: troll.y + 1 })?.monster.id).toBe("m3");
+    expect(hitTestMonster(monsters, { x: m3.pos.x, y: troll.y - 1 })).toBeNull();
+
+    const dragon = layoutWorld({
+      monsters: [{ id: "d", name: "D", size: "XL", pos: { x: 0, y: 0 } }],
+      heroes: [],
+    }).monsters;
+    const wings = miniBodyRect(monsterMini("XL"), dragon[0].pos, dragon[0].radius);
+    expect(hitTestMonster(dragon, { x: wings.x + 2, y: wings.y + wings.height * 0.4 })?.monster.id).toBe("d");
+    expect(hitTestMonster(dragon, { x: wings.x - 2, y: wings.y + wings.height * 0.4 })).toBeNull();
+  });
+
+  it("picks the figure drawn in front where a near mini covers a far one", () => {
+    const pair = layoutWorld({
+      monsters: [
+        { id: "far", name: "Far", size: "XL", pos: { x: 0, y: 0 } },
+        { id: "near", name: "Near", size: "S", pos: { x: 0, y: 50 } },
+      ],
+      heroes: [],
+    }).monsters.map((m) => ({ ...m, pos: m.monster.pos }));
+    // On the far monster's base, and on the near goblin's body, which is drawn over it.
+    expect(hitTestMonster(pair, { x: 0, y: 30 })?.monster.id).toBe("near");
+    expect(hitTestMonster(pair, { x: 0, y: -10 })?.monster.id).toBe("far");
+  });
+
+  it("picks the nearest center when bases overlap at the same depth", () => {
     const close = layoutWorld({
       monsters: [
         { id: "a", name: "A", size: "XL", pos: { x: 0, y: 0 } },
@@ -172,7 +201,9 @@ describe("live drag", () => {
     const ana = linksOf(out).filter((l) => l.heroId === "ana");
     expect(ana.map((l) => l.monsterId)).toEqual(["m1", "m2"]);
     for (const l of ana) {
-      expect(Math.hypot(l.from.x + 150, l.from.y + 300)).toBeCloseTo(HERO_BASE_RADIUS + LINK_GAP);
+      const d = Math.hypot(l.from.x + 150, l.from.y + 300);
+      const [ux, uy] = [(l.from.x + 150) / d, (l.from.y + 300) / d];
+      expect(d).toBeCloseTo(baseRim(HERO_BASE_RADIUS, ux, uy) + LINK_GAP);
     }
   });
 

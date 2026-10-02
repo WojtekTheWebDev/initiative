@@ -121,7 +121,7 @@ describe("writing", () => {
     expect(text).toContain("# Heroes: engineers on the team, plus you.");
     expect(text).toBe(
       (await example("heroes.yaml")).replace(
-        "# Between assignments.\n- id: dmitri\n  name: Dmitri\n  class: rogue\n  targets: []\n  pos: { x: -600, y: 40 }\n\n",
+        "# Between assignments.\n- id: dmitri\n  name: Dmitri\n  class: rogue\n  mini: rogue\n  targets: []\n  pos: { x: -600, y: 40 }\n\n",
         "",
       ),
     );

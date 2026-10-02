@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Pos, World } from "@/lib/types";
 import { layoutWorld, type WorldLayout } from "./layout";
 import { LINK_GAP, linksOf } from "./links";
-import { HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
+import { BASE_SQUASH, HERO_BASE_RADIUS, baseRim, monsterBaseRadius } from "./rings";
 
 const dist = (a: Pos, b: Pos) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -46,13 +46,20 @@ describe("linksOf", () => {
     expect(linksOf(flipped)).toEqual(linksOf(layout));
   });
 
-  it("trims each end to the figure's rim, minus a small gap", () => {
+  it("trims each end to the figure's base ellipse, minus a small gap", () => {
     const layout = placeAt(layoutWorld(world()), { ana: { x: 0, y: -200 }, m1: { x: 0, y: 0 } });
     const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m1")!;
     expect(link.from.x).toBeCloseTo(0);
-    expect(link.from.y).toBeCloseTo(-200 + HERO_BASE_RADIUS + LINK_GAP);
+    expect(link.from.y).toBeCloseTo(-200 + HERO_BASE_RADIUS * BASE_SQUASH + LINK_GAP);
     expect(link.to.x).toBeCloseTo(0);
-    expect(link.to.y).toBeCloseTo(-(monsterBaseRadius("S") + LINK_GAP));
+    expect(link.to.y).toBeCloseTo(-(monsterBaseRadius("S") * BASE_SQUASH + LINK_GAP));
+  });
+
+  it("trims sideways arrows at the full base radius", () => {
+    const layout = placeAt(layoutWorld(world()), { ana: { x: -300, y: 0 }, m1: { x: 0, y: 0 } });
+    const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m1")!;
+    expect(link.from).toEqual({ x: expect.closeTo(-300 + HERO_BASE_RADIUS + LINK_GAP), y: expect.closeTo(0) });
+    expect(link.to).toEqual({ x: expect.closeTo(-(monsterBaseRadius("S") + LINK_GAP)), y: expect.closeTo(0) });
   });
 
   it("points along the line between the two centres", () => {
@@ -60,8 +67,9 @@ describe("linksOf", () => {
     const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m2")!;
     const hero = { x: 100, y: 100 };
     const monster = { x: 400, y: 500 };
-    expect(dist(link.from, hero)).toBeCloseTo(HERO_BASE_RADIUS + LINK_GAP);
-    expect(dist(link.to, monster)).toBeCloseTo(monsterBaseRadius("L") + LINK_GAP);
+    const [ux, uy] = [0.6, 0.8];
+    expect(dist(link.from, hero)).toBeCloseTo(baseRim(HERO_BASE_RADIUS, ux, uy) + LINK_GAP);
+    expect(dist(link.to, monster)).toBeCloseTo(baseRim(monsterBaseRadius("L"), ux, uy) + LINK_GAP);
     expect(dist(hero, link.from) + dist(link.from, link.to) + dist(link.to, monster)).toBeCloseTo(
       dist(hero, monster),
     );
@@ -72,11 +80,11 @@ describe("linksOf", () => {
       m1: { x: 0, y: 0 },
       m2: { x: 400, y: 0 },
       ana: { x: 10, y: 0 },
-      cid: { x: 400, y: -70 },
+      cid: { x: 400, y: -45 },
     });
     const links = linksOf(layout).map((l) => `${l.heroId}:${l.monsterId}`);
     expect(links).not.toContain("ana:m1");
-    expect(links).not.toContain("cid:m2"); // 70 apart: closer than both rims plus their gaps
+    expect(links).not.toContain("cid:m2"); // 45 apart up and down: closer than both bases plus their gaps
     expect(links).toContain("ana:m2");
   });
 

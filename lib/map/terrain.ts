@@ -824,7 +824,7 @@ export function figureBoxes(layout: WorldLayout): Box[] {
   const boxes: Box[] = [];
   for (const m of layout.monsters) {
     const r = m.radius;
-    const label = labelBox(m.monster.name);
+    const label = labelBox(m.monster.name, r);
     const half = Math.max(r * 1.2, label.width / 2 + 10);
     boxes.push({
       x0: m.pos.x - half,

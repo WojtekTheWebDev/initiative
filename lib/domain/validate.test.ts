@@ -34,6 +34,15 @@ describe("validateWorld", () => {
     ]);
   });
 
+  it("accepts any text as a mini, including ids that are not in the roster", () => {
+    const w = makeWorld();
+    w.heroes[0].mini = "knight";
+    w.heroes[1].mini = "not-a-real-mini";
+    expect(validateWorld(w)).toEqual([]);
+    w.heroes[2].mini = 7 as never;
+    expect(validateWorld(w)).toEqual(['Hero "cid" has a mini that is not text']);
+  });
+
   it("does not mutate the world", () => {
     const w: World = makeWorld();
     validateWorld(w);

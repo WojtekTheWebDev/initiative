@@ -1,7 +1,8 @@
 "use client";
 
 import type { Hero, Monster, World } from "@/lib/types";
-import { heroGlyph, monsterGlyph } from "@/lib/map/glyphs";
+import { heroMini, monsterMini } from "@/lib/map/minis";
+import { MiniPortrait } from "@/components/MiniPortrait";
 import { deleteHero } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
 import { Button, ConfirmButton, ErrorNote, SectionLabel, useAction } from "./ui";
@@ -27,12 +28,12 @@ export function HeroPanel({
   return (
     <div>
       <div className="flex items-center gap-3 pr-8">
-        <span className="text-4xl leading-none" aria-hidden="true">
-          {heroGlyph(hero.class)}
-        </span>
+        <MiniPortrait mini={heroMini(hero.mini)} size={56} />
         <div className="min-w-0">
           <h2 className="text-lg font-semibold break-words">{hero.name}</h2>
-          <p className="text-sm opacity-70">{hero.class}</p>
+          <p className="text-sm opacity-70">
+            {hero.class} · {heroMini(hero.mini).name}
+          </p>
         </div>
       </div>
 
@@ -49,7 +50,7 @@ export function HeroPanel({
                 className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-foreground/10 ${i > 0 ? "opacity-60" : ""}`}
                 onClick={() => onFlyTo(m)}
               >
-                <span aria-hidden="true">{monsterGlyph(m.size)}</span>
+                <MiniPortrait mini={monsterMini(m.size)} size={24} />
                 <span className="flex-1 truncate">{m.name}</span>
                 <span className="text-xs opacity-60">{i === 0 ? "main" : "secondary"}</span>
               </button>

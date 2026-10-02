@@ -79,6 +79,20 @@ describe("server actions (smoke)", () => {
     expect((await world()).heroes.find((x) => x.id === id)).toBeUndefined();
   });
 
+  it("writes only the mini when a hero picks one, keeping comments", async () => {
+    await world(); // seeds data/ from data.example/
+    const before = await readFile(path.join(dir, "data", "heroes.yaml"), "utf8");
+    await actions.updateHero("me", { mini: "knight" });
+    const after = await readFile(path.join(dir, "data", "heroes.yaml"), "utf8");
+    expect(after).toContain("# Between assignments.");
+    expect(after).toBe(before.replace("  class: commander\n", "  class: commander\n  mini: knight\n"));
+    expect((await world()).heroes.find((h) => h.id === "me")?.mini).toBe("knight");
+    await actions.updateHero("me", { mini: "" });
+    expect(await readFile(path.join(dir, "data", "heroes.yaml"), "utf8")).toBe(before);
+    const result = await actions.updateHero("dmitri", { mini: 3 as never });
+    expect(result.ok ? "" : result.error).toMatch(/Mini/);
+  });
+
   it("returns ok results", async () => {
     expect(await actions.moveMonster("flaky-ci", { x: 5, y: 5 })).toEqual({ ok: true, value: undefined });
     expect(await actions.createHero({ name: "Zed", class: "mage", pos: { x: 0, y: 0 } })).toEqual({

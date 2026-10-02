@@ -1,14 +1,17 @@
 import type { WorldLayout } from "@/lib/map/layout";
 import { linksOf, type PlacedLink } from "@/lib/map/links";
-import { SELECTED, type FigureHandlers } from "./MonsterFigure";
+import { SELECTED, type FigureHandlers } from "./MiniFigure";
 
 /** Screen-px sizes, kept the same at any zoom. */
-const MAIN = { width: 2, head: 10, headWidth: 8, opacity: 0.75 };
-const SECONDARY = { width: 1.5, head: 8, headWidth: 6.5, opacity: 0.45, dash: 5, gap: 4 };
+const MAIN = { width: 3, head: 12, headWidth: 12, opacity: 1 };
+const SECONDARY = { width: 2.2, head: 10, headWidth: 10, opacity: 0.85, dash: 6, gap: 6 };
+/** Gold cord, with a soft shadow on the felt offset down and to the right (away from the key light). */
+const CORD = "#f2d16b";
+const SHADOW = { dx: 1.5, dy: 2, opacity: 0.35, extra: 0.4 };
 /** Width of the invisible stroke that catches clicks along an arrow. */
 const HIT_WIDTH = 12;
 /** Opacity of arrows that don't belong to the selected figure. */
-const FADED = 0.15;
+const FADED = 0.22;
 
 type Props = {
   layout: WorldLayout;
@@ -20,8 +23,9 @@ type Props = {
 };
 
 /**
- * An arrow from every hero to each of its targets: solid for the main target,
- * dashed and fainter for secondary ones. Drawn in world space below the figures.
+ * An arrow from every hero to each of its targets, like a gold cord laid on the
+ * table: solid for the main target, dashed for secondary ones. Drawn in world
+ * space below the figures.
  */
 export function TargetArrows({ layout, scale, focus, bindLink }: Props) {
   const names = new Map<string, string>([
@@ -72,8 +76,9 @@ function Arrow({
     `${base.x - uy * half},${base.y + ux * half}`,
     `${base.x + uy * half},${base.y - ux * half}`,
   ].join(" ");
-  const color = state === "focused" ? SELECTED : "currentColor";
+  const color = state === "focused" ? SELECTED : CORD;
   const opacity = state === "faded" ? FADED : state === "focused" ? 1 : style.opacity;
+  const dash = main ? undefined : `${SECONDARY.dash * px} ${SECONDARY.gap * px}`;
   return (
     <g
       data-figure=""
@@ -83,7 +88,19 @@ function Arrow({
       onClick={onClick}
     >
       <title>{title}</title>
-      <g opacity={opacity} style={{ pointerEvents: "none" }}>
+      <g opacity={opacity} strokeLinecap="round" style={{ pointerEvents: "none" }}>
+        <g opacity={SHADOW.opacity} transform={`translate(${SHADOW.dx * px} ${SHADOW.dy * px})`}>
+          <line
+            x1={from.x}
+            y1={from.y}
+            x2={base.x}
+            y2={base.y}
+            stroke="#000"
+            strokeWidth={(style.width + SHADOW.extra) * px}
+            strokeDasharray={dash}
+          />
+          <polygon points={points} fill="#000" />
+        </g>
         <line
           x1={from.x}
           y1={from.y}
@@ -91,7 +108,7 @@ function Arrow({
           y2={base.y}
           stroke={color}
           strokeWidth={style.width * px}
-          strokeDasharray={main ? undefined : `${SECONDARY.dash * px} ${SECONDARY.gap * px}`}
+          strokeDasharray={dash}
         />
         <polygon points={points} fill={color} />
       </g>

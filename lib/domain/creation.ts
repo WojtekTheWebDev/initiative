@@ -35,6 +35,14 @@ function withNotes(monster: Monster, notes: string | undefined): Monster {
   return next;
 }
 
+/** Set or remove a hero's mini: "" / whitespace removes it, so the hero is drawn as the neutral adventurer. */
+function withMini(hero: Hero, mini: string | undefined): Hero {
+  const next = { ...hero };
+  if (mini === undefined || mini.trim() === "") delete next.mini;
+  else next.mini = mini.trim();
+  return next;
+}
+
 export type CreateMonsterInput = { name: string; size: Size; notes?: string; pos: Pos };
 
 export function createMonster(world: World, input: CreateMonsterInput): { world: World; id: string } {
@@ -46,17 +54,14 @@ export function createMonster(world: World, input: CreateMonsterInput): { world:
   return { world: { ...world, monsters: [...world.monsters, monster] }, id };
 }
 
-export type CreateHeroInput = { name: string; class: string; pos: Pos };
+export type CreateHeroInput = { name: string; class: string; mini?: string; pos: Pos };
 
 export function createHero(world: World, input: CreateHeroInput): { world: World; id: string } {
   const id = idFor(input.name, "hero", world.heroes);
-  const hero: Hero = {
-    id,
-    name: input.name,
-    class: input.class,
-    targets: [],
-    pos: { x: input.pos.x, y: input.pos.y },
-  };
+  const hero = withMini(
+    { id, name: input.name, class: input.class, targets: [], pos: { x: input.pos.x, y: input.pos.y } },
+    input.mini,
+  );
   return { world: { ...world, heroes: [...world.heroes, hero] }, id };
 }
 
@@ -71,13 +76,14 @@ export function updateMonster(world: World, monsterId: string, patch: MonsterPat
   return replaceMonster(world, monster);
 }
 
-export type HeroPatch = { name?: string; class?: string };
+export type HeroPatch = { name?: string; class?: string; mini?: string };
 
-/** Absent keys stay unchanged. The id never changes. */
+/** Absent keys stay unchanged; `mini: ""` removes the pick. The id never changes. */
 export function updateHero(world: World, heroId: string, patch: HeroPatch): World {
-  const hero = { ...getHero(world, heroId) };
+  let hero = { ...getHero(world, heroId) };
   if (patch.name !== undefined) hero.name = patch.name;
   if (patch.class !== undefined) hero.class = patch.class;
+  if ("mini" in patch) hero = withMini(hero, patch.mini);
   return replaceHero(world, hero);
 }
 

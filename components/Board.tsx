@@ -3,11 +3,14 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Monster, Pos, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
-import { openingPoints, type WorldLayout } from "@/lib/map/layout";
+import { openingPoints, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
+import { depthOrder } from "@/lib/map/minis";
+import { HERO_BASE_RADIUS } from "@/lib/map/rings";
 import { figureFootprints } from "@/lib/map/terrain";
 import { MapCanvas, type MapHandle } from "@/components/map/MapCanvas";
-import { FigureStyles, MonsterFigure } from "@/components/map/MonsterFigure";
-import { HeroFigure } from "@/components/map/HeroFigure";
+import { ContactShadow, FigureDefs, FigureStyles } from "@/components/map/MiniFigure";
+import { MonsterFigure, MonsterLabel } from "@/components/map/MonsterFigure";
+import { HeroFigure, HeroLabel } from "@/components/map/HeroFigure";
 import { TargetArrows } from "@/components/map/TargetArrows";
 import { unfought } from "@/lib/domain";
 import { UnfoughtAlarm } from "@/components/UnfoughtAlarm";
@@ -100,7 +103,16 @@ export function Board({ world }: { world: World }) {
   );
 }
 
-/** World-space figures. Draw order: target arrows, heroes, monsters (so monster labels sit on top). */
+/** One figure on the table, in the order it is drawn. */
+type Placed =
+  | { kind: "monster"; key: string; pos: Pos; radius: number; placed: PlacedMonster }
+  | { kind: "hero"; key: string; pos: Pos; radius: number; placed: PlacedHero };
+
+/**
+ * World-space figures. Draw order: target arrows, contact shadows, the minis
+ * in depth order (nearer minis overlap farther ones, the dragged figure on
+ * top), then the name tags, so no mini hides a name.
+ */
 function Figures(props: {
   drag: FigureDrag;
   scale: number;
@@ -108,40 +120,74 @@ function Figures(props: {
   onSelect: (s: Selection) => void;
 }) {
   const { drag, scale, selection, onSelect } = props;
-  const { liftedHeroId } = drag;
   // Figures glide to a new layout; during a drag they follow it directly.
   const layout = useGlide(drag.layout, drag.dragging);
   const isSelected = (kind: "monster" | "hero", id: string) =>
     selection?.kind === kind && selection.id === id;
-  const hero = (h: WorldLayout["heroes"][number]) => (
-    <HeroFigure
-      key={h.hero.id}
-      placed={h}
-      scale={scale}
-      selected={isSelected("hero", h.hero.id)}
-      {...drag.bindFigure("hero", h.hero.id, () => onSelect({ kind: "hero", id: h.hero.id }))}
-    />
+  const lifted = drag.lifted && `${drag.lifted.kind}:${drag.lifted.id}`;
+  const figures = depthOrder<Placed>(
+    [
+      ...layout.monsters.map((m) => ({
+        kind: "monster" as const,
+        key: `monster:${m.monster.id}`,
+        pos: m.pos,
+        radius: m.radius,
+        placed: m,
+      })),
+      ...layout.heroes.map((h) => ({
+        kind: "hero" as const,
+        key: `hero:${h.hero.id}`,
+        pos: h.pos,
+        radius: HERO_BASE_RADIUS,
+        placed: h,
+      })),
+    ],
+    (f) => f.pos,
+    (f) => f.key,
+    lifted,
   );
   return (
     <>
+      <FigureDefs />
       <TargetArrows layout={layout} scale={scale} focus={selection} bindLink={drag.bindLink} />
-      <g>
-        {layout.heroes.filter((h) => h.hero.id !== liftedHeroId).map(hero)}
-      </g>
-      <g>
-        {layout.monsters.map((m) => (
-          <MonsterFigure
-            key={m.monster.id}
-            placed={m}
-            scale={scale}
-            selected={isSelected("monster", m.monster.id)}
-            dropHint={drag.dropHint(m.monster.id)}
-            {...drag.bindFigure("monster", m.monster.id, () => onSelect({ kind: "monster", id: m.monster.id }))}
-          />
+      <g aria-hidden="true" style={{ pointerEvents: "none" }}>
+        {figures.map((f) => (
+          <ContactShadow key={f.key} pos={f.pos} radius={f.radius} />
         ))}
       </g>
-      {/* The hero being dragged goes on top of everything. */}
-      <g>{layout.heroes.filter((h) => h.hero.id === liftedHeroId).map(hero)}</g>
+      <g>
+        {figures.map((f) =>
+          f.kind === "monster" ? (
+            <MonsterFigure
+              key={f.key}
+              placed={f.placed}
+              scale={scale}
+              selected={isSelected("monster", f.placed.monster.id)}
+              dropHint={drag.dropHint(f.placed.monster.id)}
+              {...drag.bindFigure("monster", f.placed.monster.id, () =>
+                onSelect({ kind: "monster", id: f.placed.monster.id }),
+              )}
+            />
+          ) : (
+            <HeroFigure
+              key={f.key}
+              placed={f.placed}
+              scale={scale}
+              selected={isSelected("hero", f.placed.hero.id)}
+              {...drag.bindFigure("hero", f.placed.hero.id, () => onSelect({ kind: "hero", id: f.placed.hero.id }))}
+            />
+          ),
+        )}
+      </g>
+      <g>
+        {figures.map((f) =>
+          f.kind === "monster" ? (
+            <MonsterLabel key={f.key} placed={f.placed} scale={scale} />
+          ) : (
+            <HeroLabel key={f.key} placed={f.placed} scale={scale} />
+          ),
+        )}
+      </g>
     </>
   );
 }
