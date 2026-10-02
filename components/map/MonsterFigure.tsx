@@ -8,6 +8,9 @@ const RIM: Record<Territory, string> = { team: "#b4432c", keep: "#2f5fb3" };
 const FILL: Record<Territory, string> = { team: "#fde7e1", keep: "#e1e9fb" };
 const UNFOUGHT = "#dc2626";
 export const SELECTED = "#f59e0b";
+/** Drop highlights while a hero is dragged over a monster: plain drop vs Shift+drop. */
+const DROP_ASSIGN = "#16a34a";
+const DROP_GHOST = "#7c3aed";
 
 /** Labels never get smaller than this on screen, however far you zoom out. */
 const MIN_LABEL_PX = 11;
@@ -23,9 +26,11 @@ type Props = FigureHandlers & {
   /** Current camera scale (screen px per world unit), for constant-size strokes and labels. */
   scale: number;
   selected?: boolean;
+  /** A hero is being dragged over this monster: "assign" (plain drop) or "ghost" (Shift held). */
+  dropHint?: "assign" | "ghost" | null;
 };
 
-export function MonsterFigure({ placed, scale, selected, onPointerDown, onClick }: Props) {
+export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown, onClick }: Props) {
   const { monster, pos, radius, territory, unfought } = placed;
   const px = 1 / scale;
   return (
@@ -53,6 +58,16 @@ export function MonsterFigure({ placed, scale, selected, onPointerDown, onClick 
           fill="none"
           stroke={SELECTED}
           strokeWidth={Math.max(3, 2 * px)}
+        />
+      )}
+      {dropHint && (
+        <circle
+          r={radius + Math.max(6, 5 * px)}
+          fill={dropHint === "assign" ? DROP_ASSIGN : DROP_GHOST}
+          fillOpacity={0.15}
+          stroke={dropHint === "assign" ? DROP_ASSIGN : DROP_GHOST}
+          strokeWidth={Math.max(4, 3 * px)}
+          strokeDasharray={dropHint === "ghost" ? `${Math.max(8, 6 * px)} ${Math.max(5, 4 * px)}` : undefined}
         />
       )}
       <circle r={radius} fill={FILL[territory]} stroke={RIM[territory]} strokeWidth={Math.max(3, 1.5 * px)} />
