@@ -2,6 +2,7 @@ import type { MouseEvent, PointerEvent } from "react";
 import type { Pos } from "@/lib/types";
 import { miniBodyRect, miniImageRect, type Mini } from "@/lib/map/minis";
 import { BASE_SQUASH } from "@/lib/map/rings";
+import { tagFont, tagRect } from "@/lib/map/tags";
 
 /*
  * The pieces every figure on the table is drawn from: a contact shadow on the
@@ -16,10 +17,6 @@ const UNFOUGHT = "#ff3b2f";
 const DROP_ASSIGN = "#16a34a";
 const DROP_SECONDARY = "#7c3aed";
 
-/** Name tags never get smaller than this on screen, however far you zoom out. */
-const MIN_LABEL_PX = 11;
-/** Rough width of one Cinzel character, as a share of the font size, for sizing tags. */
-const CHAR_WIDTH = 0.68;
 const TAG = { fill: "#1d1a16", text: "#f1d98f", rim: "#c9a24a" };
 const ALARM_TAG = { fill: "#7a1515", text: "#ffe1d6", rim: "#ff8a7a" };
 const LABEL_FONT = "var(--font-cinzel), Georgia, serif";
@@ -131,8 +128,8 @@ function Ring({ kind, pos, radius, scale }: { kind: BaseRing; pos: Pos; radius: 
 
 /**
  * A slim dark name tag in gold small capitals, hung just below the front of a
- * base. It keeps at least MIN_LABEL_PX on screen. `alarm` turns it red (an
- * unfought monster).
+ * base, sized by `tagRect` (it keeps at least TAG_MIN_PX on screen). `alarm`
+ * turns it red (an unfought monster).
  */
 export function NameTag(props: {
   pos: Pos;
@@ -145,14 +142,12 @@ export function NameTag(props: {
 }) {
   const { pos, radius, size, scale, alarm = false, children } = props;
   const tone = alarm ? ALARM_TAG : TAG;
-  const fontSize = Math.max(size, MIN_LABEL_PX / scale);
-  const height = fontSize * 1.55;
-  const width = children.length * fontSize * CHAR_WIDTH + fontSize * 1.2;
-  const top = pos.y + radius * BASE_SQUASH + Math.max(4, 3 / scale);
+  const fontSize = tagFont(size, scale);
+  const { x, y: top, width, height } = tagRect(pos, radius, children, size, scale);
   return (
     <g style={{ pointerEvents: "none" }}>
       <rect
-        x={pos.x - width / 2}
+        x={x}
         y={top}
         width={width}
         height={height}

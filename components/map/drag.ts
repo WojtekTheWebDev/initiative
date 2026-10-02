@@ -95,6 +95,10 @@ export function resolveHeroDrop(
   return { monsterId, shift };
 }
 
+/** Solver steps for each frame of a monster drag, which starts from the frame before (see layoutWithDrag). */
+export const DRAG_ITERATIONS = 40;
+export const DRAG_SETTLE = 40;
+
 /** A figure being dragged right now. `pos` is where it is drawn, in world units. */
 export type LiveDrag = { kind: "monster" | "hero"; id: string; pos: Pos };
 
@@ -102,13 +106,28 @@ export type LiveDrag = { kind: "monster" | "hero"; id: string; pos: Pos };
  * The layout to draw during a drag. `layout` is `world` laid out without the drag.
  * - A dragged monster is pinned at `pos` and the map is laid out again around
  *   it, so its cluster comes along and anything in the way is nudged aside.
+ *   It starts from `previous` (the last frame of the drag, or `layout` on the
+ *   first), so DRAG_ITERATIONS and DRAG_SETTLE steps are enough on every
+ *   pointer move. The drop lays the map out in full again from the homes.
  * - A dragged hero only moves itself (its arrows follow). Nothing else moves
  *   until the drop, so monsters never slide out from under the cursor. Its
  *   targets, and so the monsters' unfought state, stay as they are too.
  */
-export function layoutWithDrag(world: World, layout: WorldLayout, drag: LiveDrag | null): WorldLayout {
+export function layoutWithDrag(
+  world: World,
+  layout: WorldLayout,
+  drag: LiveDrag | null,
+  previous: WorldLayout = layout,
+): WorldLayout {
   if (!drag) return layout;
-  if (drag.kind === "monster") return layoutWorld(world, { pin: { id: drag.id, pos: drag.pos } });
+  if (drag.kind === "monster") {
+    return layoutWorld(world, {
+      pin: { id: drag.id, pos: drag.pos },
+      from: previous,
+      iterations: DRAG_ITERATIONS,
+      settle: DRAG_SETTLE,
+    });
+  }
   return {
     ...layout,
     heroes: layout.heroes.map((h) => (h.hero.id === drag.id ? { ...h, pos: drag.pos } : h)),

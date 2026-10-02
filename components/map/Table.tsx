@@ -17,7 +17,7 @@ import {
   type RaisedPiece,
   type TerrainChunk,
 } from "@/lib/map/terrain";
-import { Art, BRIDGE_KEY, TableArtDefs, pieceKey, scatterKey } from "./TableArt";
+import { Art, TableArtDefs, bridgeArt, pieceKey, scatterKey } from "./TableArt";
 
 /*
  * The felt table under the figures: biome-tinted felt, hills, rivers, roads,
@@ -182,7 +182,7 @@ const ChunkLayer = memo(function ChunkLayer({ cx, cy, layer, detail }: { cx: num
       return c.bridges.length ? (
         <>
           {c.bridges.map((b, i) => (
-            <Art key={i} artKey={BRIDGE_KEY} x={b.x} y={b.y} rotate={(b.angle * 180) / Math.PI} />
+            <Art key={i} {...bridgeArt(b.angle)} x={b.x} y={b.y} />
           ))}
         </>
       ) : null;

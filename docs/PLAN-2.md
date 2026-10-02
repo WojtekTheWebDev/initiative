@@ -1,5 +1,7 @@
 # Initiative: Iteration 2 Plan (targets drive the map)
 
+> **Completed** (T10 to T16 merged on `main`, October 2026). Kept as a record; `docs/DESIGN.md` is the current spec.
+
 This plan turns the first round of user feedback into tasks that separate agents can pick up. The format matches `docs/PLAN.md`: each task lists what it depends on, which files it owns, the contract it must keep, and how to tell it is done.
 
 **Every agent must first read** `AGENTS.md`, `docs/DESIGN.md`, this file, and the Next.js guides in `node_modules/next/dist/docs/` for any Next API it uses.

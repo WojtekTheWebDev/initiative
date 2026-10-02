@@ -4,6 +4,7 @@ export * from "./edge";
 export * from "./minis";
 export * from "./layout";
 export * from "./links";
+export * from "./tags";
 export * from "./arrows";
 export * from "./force";
 export * from "./terrain";

@@ -2,6 +2,7 @@
   "name": "Stone bridge",
   "kind": "terrain",
   "radius": 45,
+  "along": 75,
   "parts": [
     {
       "model": "bridge_stoneRound",

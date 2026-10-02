@@ -53,22 +53,220 @@
       "height": 0.383
     }
   },
-  "bridge": {
+  "bridge-0": {
     "name": "Stone bridge",
     "kind": "terrain",
     "radius": 45,
-    "image": "/terrain/bridge.webp",
-    "width": 3.606,
-    "height": 1.528,
+    "image": "/terrain/bridge-0.webp",
+    "width": 3.439,
+    "height": 0.972,
     "anchor": {
-      "x": 1.647,
-      "y": 0.941
+      "x": 1.562,
+      "y": 0.664
     },
     "body": {
       "x": 0,
       "y": 0,
-      "width": 3.289,
-      "height": 1.528
+      "width": 3.122,
+      "height": 0.972
+    }
+  },
+  "bridge-1": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-1.webp",
+    "width": 3.589,
+    "height": 1.678,
+    "anchor": {
+      "x": 1.638,
+      "y": 1.019
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.278,
+      "height": 1.678
+    }
+  },
+  "bridge-10": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-10.webp",
+    "width": 3.3,
+    "height": 2.1,
+    "anchor": {
+      "x": 1.495,
+      "y": 1.228
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.989,
+      "height": 2.1
+    }
+  },
+  "bridge-11": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-11.webp",
+    "width": 3.589,
+    "height": 1.678,
+    "anchor": {
+      "x": 1.636,
+      "y": 1.017
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.272,
+      "height": 1.678
+    }
+  },
+  "bridge-2": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-2.webp",
+    "width": 3.3,
+    "height": 2.106,
+    "anchor": {
+      "x": 1.495,
+      "y": 1.231
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.989,
+      "height": 2.106
+    }
+  },
+  "bridge-3": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-3.webp",
+    "width": 2.828,
+    "height": 2.294,
+    "anchor": {
+      "x": 1.26,
+      "y": 1.326
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.522,
+      "height": 2.294
+    }
+  },
+  "bridge-4": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-4.webp",
+    "width": 2.339,
+    "height": 2.35,
+    "anchor": {
+      "x": 1.012,
+      "y": 1.354
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.022,
+      "height": 2.35
+    }
+  },
+  "bridge-5": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-5.webp",
+    "width": 1.85,
+    "height": 2.328,
+    "anchor": {
+      "x": 0.77,
+      "y": 1.343
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 1.539,
+      "height": 2.328
+    }
+  },
+  "bridge-6": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-6.webp",
+    "width": 1.361,
+    "height": 2.267,
+    "anchor": {
+      "x": 0.523,
+      "y": 1.305
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 1.044,
+      "height": 2.256
+    }
+  },
+  "bridge-7": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-7.webp",
+    "width": 1.85,
+    "height": 2.328,
+    "anchor": {
+      "x": 0.77,
+      "y": 1.342
+    },
+    "body": {
+      "x": 0.006,
+      "y": 0,
+      "width": 1.533,
+      "height": 2.328
+    }
+  },
+  "bridge-8": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-8.webp",
+    "width": 2.339,
+    "height": 2.35,
+    "anchor": {
+      "x": 1.012,
+      "y": 1.352
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.022,
+      "height": 2.35
+    }
+  },
+  "bridge-9": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge-9.webp",
+    "width": 2.833,
+    "height": 2.294,
+    "anchor": {
+      "x": 1.261,
+      "y": 1.327
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.522,
+      "height": 2.294
     }
   },
   "bush-0": {

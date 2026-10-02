@@ -1,5 +1,6 @@
 import type { PlacedMonster } from "@/lib/map/layout";
 import { monsterMini } from "@/lib/map/minis";
+import { MONSTER_TAG_FONT } from "@/lib/map/tags";
 import { MiniFigure, NameTag, type BaseRing, type FigureHandlers } from "./MiniFigure";
 
 type Props = FigureHandlers & {
@@ -36,7 +37,7 @@ export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown
 /** A monster's name tag, red while it is unfought. */
 export function MonsterLabel({ placed, scale }: { placed: PlacedMonster; scale: number }) {
   return (
-    <NameTag pos={placed.pos} radius={placed.radius} size={13} scale={scale} alarm={placed.unfought}>
+    <NameTag pos={placed.pos} radius={placed.radius} size={MONSTER_TAG_FONT} scale={scale} alarm={placed.unfought}>
       {placed.monster.name}
     </NameTag>
   );

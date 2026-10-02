@@ -3,10 +3,14 @@ import { linksOf, type PlacedLink } from "@/lib/map/links";
 import { SELECTED, type FigureHandlers } from "./MiniFigure";
 
 /** Screen-px sizes, kept the same at any zoom. */
-const MAIN = { width: 3, head: 12, headWidth: 12, opacity: 1 };
-const SECONDARY = { width: 2.2, head: 10, headWidth: 10, opacity: 0.85, dash: 6, gap: 6 };
-/** Gold cord, with a soft shadow on the felt offset down and to the right (away from the key light). */
-const CORD = "#f2d16b";
+const MAIN = { width: 3.4, head: 14, headWidth: 13, opacity: 1 };
+const SECONDARY = { width: 2.4, head: 11, headWidth: 11, opacity: 0.9, dash: 7, gap: 5 };
+/**
+ * Gold cord with a thin dark edge, so it reads on every shade of felt, and a
+ * soft shadow offset down and to the right (away from the key light).
+ */
+const CORD = "#ffd96a";
+const EDGE = { color: "#2b1d06", opacity: 0.7, width: 1.1 };
 const SHADOW = { dx: 1.5, dy: 2, opacity: 0.35, extra: 0.4 };
 /** Width of the invisible stroke that catches clicks along an arrow. */
 const HIT_WIDTH = 12;
@@ -35,7 +39,7 @@ export function TargetArrows({ layout, scale, focus, bindLink }: Props) {
   const isFocused = (l: PlacedLink) =>
     focus !== null && (focus.kind === "hero" ? l.heroId === focus.id : l.monsterId === focus.id);
   // Focused arrows go last, so they sit on top of the faded ones.
-  const links = linksOf(layout);
+  const links = linksOf(layout, scale);
   const ordered = focus ? [...links.filter((l) => !isFocused(l)), ...links.filter(isFocused)] : links;
   return (
     <g>
@@ -100,6 +104,17 @@ function Arrow({
             strokeDasharray={dash}
           />
           <polygon points={points} fill="#000" />
+        </g>
+        <g opacity={EDGE.opacity} stroke={EDGE.color} strokeWidth={2 * EDGE.width * px} strokeLinejoin="round">
+          <line
+            x1={from.x}
+            y1={from.y}
+            x2={base.x}
+            y2={base.y}
+            strokeWidth={(style.width + 2 * EDGE.width) * px}
+            strokeDasharray={dash}
+          />
+          <polygon points={points} fill={EDGE.color} />
         </g>
         <line
           x1={from.x}

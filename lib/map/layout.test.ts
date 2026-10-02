@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Hero, Monster, Pos, Size, World } from "@/lib/types";
-import { LABEL_GAP, labelBox, layoutWorld, openingPoints, type WorldLayout } from "./layout";
+import { MAIN_GAP, TAG_ROOM_SCALE, heroShape, layoutWorld, monsterShape, openingPoints, shownTags, type WorldLayout } from "./layout";
+import { miniBodyRect, monsterMini, type Rect } from "./minis";
+import { MONSTER_TAG_FONT, tagRect } from "./tags";
 import { BASE_SQUASH, HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
 
 const dist = (a: Pos, b: Pos) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -74,26 +76,24 @@ function crowd(monsters: number, heroes: number, seed = 1): World {
   return { monsters: ms, heroes: hs };
 }
 
-/** Every pair of figures is at least r1 + r2 apart, and no hero centre is inside a monster's label box. */
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+/** No figure's mini (with its base) or name tag covers another figure's mini or tag. */
 function expectNoOverlaps(l: WorldLayout) {
   const figures = [
-    ...l.monsters.map((m) => ({ id: m.monster.id, pos: m.pos, r: m.radius })),
-    ...l.heroes.map((h) => ({ id: h.hero.id, pos: h.pos, r: HERO_BASE_RADIUS })),
+    ...l.monsters.map((m) => ({ id: m.monster.id, shape: monsterShape(m) })),
+    ...l.heroes.map((h) => ({ id: h.hero.id, shape: heroShape(h) })),
   ];
   for (let i = 0; i < figures.length; i++) {
     for (let j = i + 1; j < figures.length; j++) {
       const a = figures[i];
       const b = figures[j];
-      expect(dist(a.pos, b.pos), `${a.id} and ${b.id}`).toBeGreaterThanOrEqual(a.r + b.r);
-    }
-  }
-  for (const m of l.monsters) {
-    const box = labelBox(m.monster.name, m.radius);
-    const top = m.pos.y + m.radius + box.gap;
-    for (const h of l.heroes) {
-      const inside =
-        Math.abs(h.pos.x - m.pos.x) < box.width / 2 && h.pos.y > top && h.pos.y < top + box.height;
-      expect(inside, `${h.hero.id} on the label of ${m.monster.id}`).toBe(false);
+      for (const [pa, p] of Object.entries(a.shape)) {
+        for (const [pb, q] of Object.entries(b.shape)) {
+          expect(overlaps(p, q), `${a.id} ${pa} and ${b.id} ${pb}`).toBe(false);
+        }
+      }
     }
   }
 }
@@ -150,7 +150,7 @@ describe("layoutWorld", () => {
     });
 
     it("puts H2 next to M2", () => {
-      expect(dist(h2, m2)).toBeLessThan(monsterBaseRadius("L") + HERO_BASE_RADIUS + 60);
+      expect(dist(h2, m2)).toBeLessThan(monsterBaseRadius("L") + HERO_BASE_RADIUS + MAIN_GAP + 20);
       expect(dist(h2, m2)).toBeLessThan(dist(h2, m1));
     });
 
@@ -227,7 +227,7 @@ describe("layoutWorld", () => {
     const w = world();
     const pinned = layoutWorld(w, { pin: { id: "m1", pos: { x: -1400, y: 600 } } });
     expect(monsterAt(pinned, "m1")).toEqual({ x: -1400, y: 600 });
-    const reach = monsterBaseRadius("XL") + HERO_BASE_RADIUS + 60;
+    const reach = monsterBaseRadius("XL") + HERO_BASE_RADIUS + MAIN_GAP + 20;
     expect(dist(heroAt(pinned, "cid"), { x: -1400, y: 600 })).toBeLessThan(reach);
   });
 
@@ -268,20 +268,74 @@ describe("layoutWorld", () => {
   });
 });
 
-describe("labelBox", () => {
-  it("grows with the name and is capped", () => {
-    expect(labelBox("Orc", 34).width).toBeLessThan(labelBox("Search Rewrite", 34).width);
-    expect(labelBox("x".repeat(200), 34).width).toBe(labelBox("y".repeat(300), 34).width);
+describe("figureShape", () => {
+  const placed = (name: string, size: Size = "XL") =>
+    layoutWorld({ monsters: [monster("m", size, 0, 0, { name })], heroes: [] }).monsters[0];
+
+  it("covers the mini and its whole base", () => {
+    const m = placed("Dragon");
+    const { body } = monsterShape(m);
+    const model = miniBodyRect(monsterMini("XL"), m.pos, m.radius);
+    expect(body.x).toBeLessThanOrEqual(Math.min(model.x, -m.radius));
+    expect(body.y).toBeLessThanOrEqual(model.y);
+    expect(body.x + body.width).toBeGreaterThanOrEqual(Math.max(model.x + model.width, m.radius));
+    expect(body.y + body.height).toBeGreaterThanOrEqual(m.radius * BASE_SQUASH - 1e-9);
   });
 
-  it("starts just below the front of the base ellipse", () => {
-    const r = 58;
-    expect(r + labelBox("Dragon", r).gap).toBeCloseTo(r * BASE_SQUASH + LABEL_GAP);
+  it("hangs the tag just below the front of the base, as wide as the name needs", () => {
+    const short = monsterShape(placed("Orc"));
+    const long = monsterShape(placed("Search Rewrite"));
+    expect(short.tag.width).toBeLessThan(long.tag.width);
+    expect(short.tag.y).toBeGreaterThan(monsterBaseRadius("XL") * BASE_SQUASH);
+    expect(short.tag.y).toBeLessThan(monsterBaseRadius("XL") * BASE_SQUASH + 10);
+  });
+
+  it("matches the tag the map draws at TAG_ROOM_SCALE", () => {
+    const m = placed("Flaky CI", "M");
+    expect(monsterShape(m).tag).toEqual(tagRect(m.pos, m.radius, "Flaky CI", MONSTER_TAG_FONT, TAG_ROOM_SCALE));
+  });
+});
+
+describe("shownTags", () => {
+  const crowded = layoutWorld(crowd(40, 25));
+
+  it("shows every tag at the zoom the layout keeps room for", () => {
+    const all = shownTags(crowded, TAG_ROOM_SCALE);
+    expect(all.size).toBe(crowded.monsters.length + crowded.heroes.length);
+  });
+
+  it("leaves out tags that would cover each other when zoomed out, keeping unfought monsters first", () => {
+    const far = shownTags(crowded, 0.3);
+    expect(far.size).toBeLessThan(crowded.monsters.length);
+    expect([...far].some((k) => k.startsWith("hero:"))).toBe(false);
+    const tags = crowded.monsters.filter((m) => far.has(`monster:${m.monster.id}`)).map((m) => monsterShape(m, 0.3).tag);
+    for (let i = 0; i < tags.length; i++) for (let j = i + 1; j < tags.length; j++) expect(overlaps(tags[i], tags[j])).toBe(false);
+    // An unfought monster's tag only ever gives way to another unfought one.
+    for (const m of crowded.monsters.filter((m) => m.unfought && !far.has(`monster:${m.monster.id}`))) {
+      const tag = monsterShape(m, 0.3).tag;
+      const over = crowded.monsters.filter((o) => far.has(`monster:${o.monster.id}`) && overlaps(tag, monsterShape(o, 0.3).tag));
+      expect(over.some((o) => o.unfought)).toBe(true);
+    }
+  });
+
+  it("always keeps the tag of the figure it is asked to put first", () => {
+    for (const m of crowded.monsters) {
+      expect(shownTags(crowded, 0.3, `monster:${m.monster.id}`).has(`monster:${m.monster.id}`)).toBe(true);
+    }
   });
 });
 
 describe("openingPoints", () => {
-  it("covers living monsters and every hero", () => {
-    expect(openingPoints(layoutWorld(world()))).toHaveLength(3 + 3);
+  it("covers the body and tag of every living monster and every hero", () => {
+    const l = layoutWorld(world());
+    const points = openingPoints(l);
+    expect(points).toHaveLength((3 + 3) * 4);
+    const xs = points.map((p) => p.x);
+    const ys = points.map((p) => p.y);
+    for (const shape of [...l.monsters.map((m) => monsterShape(m)), ...l.heroes.map((h) => heroShape(h))]) {
+      expect(Math.min(...xs)).toBeLessThanOrEqual(shape.tag.x);
+      expect(Math.max(...ys)).toBeGreaterThanOrEqual(shape.tag.y + shape.tag.height);
+      expect(Math.min(...ys)).toBeLessThanOrEqual(shape.body.y);
+    }
   });
 });

@@ -19,7 +19,7 @@ export type ArtSource =
 
 type Entry = { image: string; radius: number; width: number; height: number; anchor: { x: number; y: number } };
 
-/** Baked images by art key (e.g. "watchtower-0", "woods-meadow-2", "rock-1", "bridge"). */
+/** Baked images by art key (e.g. "watchtower-0", "woods-meadow-2", "rock-1", "bridge-3"). */
 const BAKED: Record<string, ArtSource> = Object.fromEntries(
   Object.entries(manifest as Record<string, Entry>).map(([key, e]) => [
     key,
@@ -43,7 +43,23 @@ export function artSource(key: string): ArtSource {
 export const scatterKey = (s: Scatter) => `${s.kind}-${s.variant}`;
 export const pieceKey = (p: RaisedPiece) =>
   p.kind === "woods" ? `woods-${p.biome}-${p.variant}` : `${p.kind}-${p.variant}`;
-export const BRIDGE_KEY = "bridge";
+/** Bridges are baked lying at every BRIDGE_STEP degrees on screen (`bridge-0` along x, `bridge-1` at 15 degrees, and so on). */
+const BRIDGE_STEP = 15;
+const BRIDGE_TURNS = 180 / BRIDGE_STEP;
+
+/**
+ * The bridge for a road running at `angle` (radians, clockwise from the
+ * right): the baked turn nearest to it, and the few degrees left to turn the
+ * image by so it lies exactly along the road. A bridge looks the same from
+ * either end of the road, so 180 degrees of turns cover every road.
+ */
+export function bridgeArt(angle: number): { artKey: string; rotate: number } {
+  const degrees = (((angle * 180) / Math.PI) % 180 + 180) % 180;
+  const turn = Math.round(degrees / BRIDGE_STEP) % BRIDGE_TURNS;
+  let rotate = degrees - turn * BRIDGE_STEP;
+  if (rotate > 90) rotate -= 180;
+  return { artKey: `bridge-${turn}`, rotate };
+}
 
 /** Draws one piece of art with its footprint centre at (x, y). */
 export function Art(props: { artKey: string; x: number; y: number; scale?: number; rotate?: number }) {

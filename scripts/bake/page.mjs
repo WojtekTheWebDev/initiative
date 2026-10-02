@@ -176,7 +176,7 @@ async function loadFigure(spec) {
     mixer.clipAction(clip).play();
     mixer.setTime(spec.pose?.time ?? 0);
   }
-  root.rotation.y = ((spec.rotate ?? 0) * Math.PI) / 180;
+  root.rotation.y = turn(spec);
   root.updateMatrixWorld(true);
   paint(root, spec);
 
@@ -195,13 +195,31 @@ async function loadFigure(spec) {
 }
 
 /**
+ * How far a model is turned around the vertical axis, in radians: `rotate`
+ * degrees, or, with `along`, so that its x axis runs at `along` degrees on the
+ * baked image (clockwise from the right, as on the map). The camera's
+ * elevation squashes and its azimuth turns every direction on the table, so
+ * the two angles differ except at 0 and 90 degrees from the camera's view.
+ */
+function turn(spec) {
+  if (spec.along === undefined) return ((spec.rotate ?? 0) * Math.PI) / 180;
+  const along = (spec.along * Math.PI) / 180;
+  const el = (ELEVATION * Math.PI) / 180;
+  const az = (AZIMUTH * Math.PI) / 180;
+  // A direction turned by t shows on screen at atan2(-sin(el) sin(t - az), cos(t - az)).
+  return Math.atan2(-Math.sin(along) / Math.sin(el), Math.cos(along)) + az;
+}
+
+/**
  * A piece put together from several models (`spec.parts`). Each part is
  * turned by `rotate` degrees, scaled by `scale`, centred on (`x`, `z`) and
  * stood with its lowest point at `y`, all in model units, with x to the right
- * and z toward the viewer. The piece's footprint centre is the origin.
+ * and z toward the viewer. The piece's footprint centre is the origin. The
+ * whole piece is then turned by `spec.rotate` or `spec.along` (see `turn`).
  */
 async function compose(spec) {
   const figure = new THREE.Group();
+  figure.rotation.y = turn(spec);
   for (const part of spec.parts) {
     const gltf = await loader.loadAsync(part.url);
     const root = gltf.scene;

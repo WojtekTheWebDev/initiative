@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Monster, Pos, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
-import { openingPoints, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
+import { openingPoints, shownTags, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
 import { depthOrder } from "@/lib/map/minis";
 import { HERO_BASE_RADIUS } from "@/lib/map/rings";
 import { figureFootprints } from "@/lib/map/terrain";
@@ -25,8 +25,8 @@ import { Trophies } from "@/components/Trophies";
 
 export type Selection = { kind: "monster" | "hero"; id: string } | null;
 
-/** Screen px kept around the opening view, so bases and labels at the edge stay visible. */
-const OPENING_PADDING = 110;
+/** Screen px kept around the opening view, outside the figures and their name tags. */
+const OPENING_PADDING = 48;
 
 export function Board({ world }: { world: World }) {
   // Shared UI state. T6-T8 hook into these.
@@ -111,7 +111,7 @@ type Placed =
 /**
  * World-space figures. Draw order: target arrows, contact shadows, the minis
  * in depth order (nearer minis overlap farther ones, the dragged figure on
- * top), then the name tags, so no mini hides a name.
+ * top), then the name tags that fit (see `shownTags`), so no mini hides a name.
  */
 function Figures(props: {
   drag: FigureDrag;
@@ -120,8 +120,8 @@ function Figures(props: {
   onSelect: (s: Selection) => void;
 }) {
   const { drag, scale, selection, onSelect } = props;
-  // Figures glide to a new layout; during a drag they follow it directly.
-  const layout = useGlide(drag.layout, drag.dragging);
+  // Figures glide to a new layout; during a drag the dragged one follows the cursor exactly and the rest ease after it.
+  const layout = useGlide(drag.layout, drag.lifted);
   const isSelected = (kind: "monster" | "hero", id: string) =>
     selection?.kind === kind && selection.id === id;
   const lifted = drag.lifted && `${drag.lifted.kind}:${drag.lifted.id}`;
@@ -146,6 +146,9 @@ function Figures(props: {
     (f) => f.key,
     lifted,
   );
+  // Tags that would cover each other when zoomed out are left out; the selected figure always keeps its own.
+  const focus = lifted || (selection && `${selection.kind}:${selection.id}`);
+  const tags = useMemo(() => shownTags(layout, scale, focus || null), [layout, scale, focus]);
   return (
     <>
       <FigureDefs />
@@ -180,7 +183,7 @@ function Figures(props: {
         )}
       </g>
       <g>
-        {figures.map((f) =>
+        {figures.filter((f) => tags.has(f.key)).map((f) =>
           f.kind === "monster" ? (
             <MonsterLabel key={f.key} placed={f.placed} scale={scale} />
           ) : (

@@ -25,6 +25,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint` | ESLint |
 | `npm run make:felt` | Regenerates the felt textures in `public/terrain/` (the output is committed) |
 | `npm run bake:minis` | Re-render the miniature images in `public/minis/` (see [Minis](#minis)) |
+| `npm run bake:terrain` | Re-render the terrain art in `public/terrain/` (see [Terrain](#terrain)) |
 
 ## How to use
 
@@ -77,7 +78,7 @@ The scatter, raised pieces and bridges on the table are baked the same way, from
 }
 ```
 
-`radius` is world units per model unit, `x` and `z` place a part (x to the right, z toward the viewer) around the piece's footprint centre, and a part can also take `y`, `rotate`, `scale` and `colors`. `assets/terrain/colors.json` holds the material colours shared by every piece. Run `npm run bake:terrain` (or `npm run bake:terrain -- camp-0` for some keys) and commit the changed files in `public/terrain/`. If a raised piece grows, raise its kind's `PIECE_SIZE` in `lib/map/terrain.ts`; `npm test` fails when a baked piece outgrows it.
+`radius` is world units per model unit, `x` and `z` place a part (x to the right, z toward the viewer) around the piece's footprint centre, and a part can also take `y`, `rotate`, `scale` and `colors`. The whole piece can be turned with `rotate` (degrees around the vertical axis) or `along` (the angle its x axis should show at on screen, clockwise from the right); the stone bridges `bridge-0` to `bridge-11` use `along` to lie at every 15 degrees. `assets/terrain/colors.json` holds the material colours shared by every piece. Run `npm run bake:terrain` (or `npm run bake:terrain -- camp-0` for some keys) and commit the changed files in `public/terrain/`. If a raised piece grows, raise its kind's `PIECE_SIZE` in `lib/map/terrain.ts`; `npm test` fails when a baked piece outgrows it.
 
 ## Stack
 

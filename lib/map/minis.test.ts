@@ -51,8 +51,9 @@ describe("the baked minis", () => {
       expect(m.anchor.y).toBeLessThan(m.height);
       expect(m.body.x).toBeGreaterThanOrEqual(0);
       expect(m.body.y).toBeGreaterThanOrEqual(0);
-      expect(m.body.x + m.body.width).toBeLessThanOrEqual(m.width + 1e-6);
-      expect(m.body.y + m.body.height).toBeLessThanOrEqual(m.height + 1e-6);
+      // The manifest rounds every length to 0.001, so the sums may be off by that much.
+      expect(m.body.x + m.body.width).toBeLessThanOrEqual(m.width + 0.0015);
+      expect(m.body.y + m.body.height).toBeLessThanOrEqual(m.height + 0.0015);
       // The figure stands up from its base.
       expect(m.body.y).toBeLessThan(m.anchor.y);
     }

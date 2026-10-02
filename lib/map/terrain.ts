@@ -1,7 +1,5 @@
 import type { Pos } from "@/lib/types";
-import { labelBox, type WorldLayout } from "./layout";
-import { heroMini, miniBodyRect, monsterMini } from "./minis";
-import { HERO_BASE_RADIUS } from "./rings";
+import { heroShape, monsterShape, type WorldLayout } from "./layout";
 
 /*
  * The terrain of the felt table, worked out from world coordinates alone.
@@ -815,33 +813,18 @@ export function pieceBox(p: RaisedPiece): Box {
   };
 }
 
-/** The area each figure and its name label cover, in world units: the mini standing on its base, and the label below or above it. */
+/** Space kept around a figure's shape when deciding whether a raised piece covers it, in world units. */
+const FIGURE_MARGIN = 6;
+
+/** The area each figure covers, in world units: the box around its mini and base and its name tag (see `figureShape`), plus a margin. */
 export function figureBoxes(layout: WorldLayout): Box[] {
-  const boxes: Box[] = [];
-  for (const m of layout.monsters) {
-    const r = m.radius;
-    const body = miniBodyRect(monsterMini(m.monster.size), m.pos, r);
-    const label = labelBox(m.monster.name, r);
-    const half = Math.max(r * 1.1, label.width / 2 + 10);
-    boxes.push({
-      x0: Math.min(m.pos.x - half, body.x - 6),
-      x1: Math.max(m.pos.x + half, body.x + body.width + 6),
-      y0: body.y - 6,
-      y1: m.pos.y + r + label.gap + label.height + 6,
-    });
-  }
-  for (const h of layout.heroes) {
-    const r = HERO_BASE_RADIUS;
-    const body = miniBodyRect(heroMini(h.hero.mini), h.pos, r);
-    const half = Math.max(r * 1.1, h.hero.name.length * 4 + 12);
-    boxes.push({
-      x0: Math.min(h.pos.x - half, body.x - 6),
-      x1: Math.max(h.pos.x + half, body.x + body.width + 6),
-      y0: body.y - 24,
-      y1: h.pos.y + r + 28,
-    });
-  }
-  return boxes;
+  const shapes = [...layout.monsters.map((m) => monsterShape(m)), ...layout.heroes.map((h) => heroShape(h))];
+  return shapes.map(({ body, tag }) => ({
+    x0: Math.min(body.x, tag.x) - FIGURE_MARGIN,
+    x1: Math.max(body.x + body.width, tag.x + tag.width) + FIGURE_MARGIN,
+    y0: Math.min(body.y, tag.y) - FIGURE_MARGIN,
+    y1: Math.max(body.y + body.height, tag.y + tag.height) + FIGURE_MARGIN,
+  }));
 }
 
 export function boxesOverlap(a: Box, b: Box): boolean {

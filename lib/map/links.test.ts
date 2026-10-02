@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Pos, World } from "@/lib/types";
-import { layoutWorld, type WorldLayout } from "./layout";
+import { heroShape, layoutWorld, monsterShape, type WorldLayout } from "./layout";
 import { LINK_GAP, linksOf } from "./links";
+import { miniBodyRect, monsterMini } from "./minis";
 import { BASE_SQUASH, HERO_BASE_RADIUS, baseRim, monsterBaseRadius } from "./rings";
 
 const dist = (a: Pos, b: Pos) => Math.hypot(a.x - b.x, a.y - b.y);
@@ -46,13 +47,31 @@ describe("linksOf", () => {
     expect(linksOf(flipped)).toEqual(linksOf(layout));
   });
 
-  it("trims each end to the figure's base ellipse, minus a small gap", () => {
+  it("from above, starts past the hero's own tag and stops on top of the monster's mini", () => {
     const layout = placeAt(layoutWorld(world()), { ana: { x: 0, y: -200 }, m1: { x: 0, y: 0 } });
     const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m1")!;
+    const tag = heroShape(layout.heroes.find((h) => h.hero.id === "ana")!).tag;
+    const model = miniBodyRect(monsterMini("S"), { x: 0, y: 0 }, monsterBaseRadius("S"));
     expect(link.from.x).toBeCloseTo(0);
-    expect(link.from.y).toBeCloseTo(-200 + HERO_BASE_RADIUS * BASE_SQUASH + LINK_GAP);
+    expect(link.from.y).toBeCloseTo(tag.y + tag.height + LINK_GAP);
     expect(link.to.x).toBeCloseTo(0);
-    expect(link.to.y).toBeCloseTo(-(monsterBaseRadius("S") * BASE_SQUASH + LINK_GAP));
+    expect(link.to.y).toBeCloseTo(model.y - LINK_GAP);
+  });
+
+  it("stops short of the monster's tag when it comes from below, so no arrowhead hides under it", () => {
+    const layout = placeAt(layoutWorld(world()), { ana: { x: 0, y: 200 }, m1: { x: 0, y: 0 } });
+    const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m1")!;
+    const tag = monsterShape(layout.monsters.find((m) => m.monster.id === "m1")!).tag;
+    expect(link.from.y).toBeCloseTo(200 - HERO_BASE_RADIUS * BASE_SQUASH - LINK_GAP);
+    expect(link.to.x).toBeCloseTo(0);
+    expect(link.to.y).toBeCloseTo(tag.y + tag.height + LINK_GAP);
+  });
+
+  it("sizes the tags it avoids for the zoom it is drawn at", () => {
+    const layout = placeAt(layoutWorld(world()), { ana: { x: 0, y: 200 }, m1: { x: 0, y: 0 } });
+    const near = linksOf(layout, 2).find((l) => l.monsterId === "m1")!;
+    const far = linksOf(layout, 0.4).find((l) => l.monsterId === "m1")!;
+    expect(far.to.y).toBeGreaterThan(near.to.y);
   });
 
   it("trims sideways arrows at the full base radius", () => {
@@ -63,11 +82,11 @@ describe("linksOf", () => {
   });
 
   it("points along the line between the two centres", () => {
-    const layout = placeAt(layoutWorld(world()), { ana: { x: 100, y: 100 }, m2: { x: 400, y: 500 } });
+    const layout = placeAt(layoutWorld(world()), { ana: { x: 100, y: 100 }, m2: { x: 580, y: 240 } });
     const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m2")!;
     const hero = { x: 100, y: 100 };
-    const monster = { x: 400, y: 500 };
-    const [ux, uy] = [0.6, 0.8];
+    const monster = { x: 580, y: 240 };
+    const [ux, uy] = [0.96, 0.28];
     expect(dist(link.from, hero)).toBeCloseTo(baseRim(HERO_BASE_RADIUS, ux, uy) + LINK_GAP);
     expect(dist(link.to, monster)).toBeCloseTo(baseRim(monsterBaseRadius("L"), ux, uy) + LINK_GAP);
     expect(dist(hero, link.from) + dist(link.from, link.to) + dist(link.to, monster)).toBeCloseTo(

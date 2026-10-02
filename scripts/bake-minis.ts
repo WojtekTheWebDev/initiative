@@ -67,6 +67,12 @@ type ModelSpec = {
   parts?: Part[];
   /** Turn around the vertical axis, in degrees, before baking. */
   rotate?: number;
+  /**
+   * Instead of `rotate`: turn it so its x axis runs at this angle on the baked
+   * image, in degrees clockwise from the right (as on the map), allowing for
+   * the camera's elevation and azimuth. Bridges use it to lie along a road.
+   */
+  along?: number;
   /** Rigged models: the clip and time (seconds) to pose. Default: a clip called "Idle", at 0. */
   pose?: { clip?: string; time?: number };
   /** Node names to hide (e.g. spare weapons in a character pack). */

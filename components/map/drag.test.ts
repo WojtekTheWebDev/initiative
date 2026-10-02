@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Pos, World } from "@/lib/types";
-import { layoutWorld } from "@/lib/map/layout";
+import { MAIN_GAP, heroShape, layoutWorld, monsterShape } from "@/lib/map/layout";
 import { LINK_GAP, linksOf } from "@/lib/map/links";
-import { HERO_BASE_RADIUS, baseRim } from "@/lib/map/rings";
+import { HERO_BASE_RADIUS, baseRim, monsterBaseRadius } from "@/lib/map/rings";
 import { miniBodyRect, monsterMini } from "@/lib/map/minis";
 import { makeWorld } from "@/lib/domain/test-fixtures";
 import {
@@ -13,6 +13,7 @@ import {
   layoutWithDrag,
   pastThreshold,
   resolveHeroDrop,
+  type WorldOp,
 } from "./drag";
 
 const hero = (w: World, id: string) => w.heroes.find((h) => h.id === id)!;
@@ -28,16 +29,16 @@ describe("pastThreshold", () => {
 });
 
 describe("hitTestMonster", () => {
-  /** m1 S r=26 at (-100, 10), m2 M r=34 at (-200, 20), m3 L r=44 at (300, 30). */
+  /** m1 S r=31 at (-100, 10), m2 M r=40 at (-200, 20), m3 L r=52 at (300, 30). */
   const monsters = layoutWorld(makeWorld()).monsters.map((m) => ({ ...m, pos: m.monster.pos }));
 
   it("hits inside the base ellipse, including its rim", () => {
     expect(hitTestMonster(monsters, { x: -100, y: 10 })?.monster.id).toBe("m1");
-    expect(hitTestMonster(monsters, { x: -74, y: 10 })?.monster.id).toBe("m1");
+    expect(hitTestMonster(monsters, { x: -100 + monsterBaseRadius("S"), y: 10 })?.monster.id).toBe("m1");
   });
 
   it("misses just outside the base and on empty ground", () => {
-    expect(hitTestMonster(monsters, { x: -73, y: 10 })).toBeNull();
+    expect(hitTestMonster(monsters, { x: -99 + monsterBaseRadius("S"), y: 10 })).toBeNull();
     expect(hitTestMonster(monsters, { x: 1000, y: 1000 })).toBeNull();
   });
 
@@ -70,7 +71,7 @@ describe("hitTestMonster", () => {
     }).monsters.map((m) => ({ ...m, pos: m.monster.pos }));
     // On the far monster's base, and on the near goblin's body, which is drawn over it.
     expect(hitTestMonster(pair, { x: 0, y: 30 })?.monster.id).toBe("near");
-    expect(hitTestMonster(pair, { x: 0, y: -10 })?.monster.id).toBe("far");
+    expect(hitTestMonster(pair, { x: 0, y: -20 })?.monster.id).toBe("far");
   });
 
   it("picks the nearest center when bases overlap at the same depth", () => {
@@ -178,10 +179,11 @@ describe("live drag", () => {
   it("pins a dragged monster at its drawn position and lays the map out around it", () => {
     const w = makeWorld();
     const layout = layoutWorld(w);
-    const out = layoutWithDrag(w, layout, { kind: "monster", id: "m1", pos: { x: 400, y: 10 } });
-    expect(out.monsters.find((m) => m.monster.id === "m1")!.pos).toEqual({ x: 400, y: 10 });
+    const out = layoutWithDrag(w, layout, { kind: "monster", id: "m1", pos: { x: 900, y: 10 } });
+    expect(out.monsters.find((m) => m.monster.id === "m1")!.pos).toEqual({ x: 900, y: 10 });
     // Bob fights only m1, so he comes along.
-    expect(dist(out.heroes.find((h) => h.hero.id === "bob")!.pos, { x: 400, y: 10 })).toBeLessThan(100);
+    const reach = monsterBaseRadius("S") + HERO_BASE_RADIUS + MAIN_GAP + 20;
+    expect(dist(out.heroes.find((h) => h.hero.id === "bob")!.pos, { x: 900, y: 10 })).toBeLessThan(reach);
   });
 
   it("a dragged hero stands at the cursor and keeps its targets; nothing else moves", () => {
@@ -197,13 +199,36 @@ describe("live drag", () => {
 
   it("a dragged hero's arrows start from the cursor", () => {
     const w = makeWorld();
-    const out = layoutWithDrag(w, layoutWorld(w), { kind: "hero", id: "ana", pos: { x: -150, y: -300 } });
+    const out = layoutWithDrag(w, layoutWorld(w), { kind: "hero", id: "ana", pos: { x: -600, y: 0 } });
     const ana = linksOf(out).filter((l) => l.heroId === "ana");
     expect(ana.map((l) => l.monsterId)).toEqual(["m1", "m2"]);
     for (const l of ana) {
-      const d = Math.hypot(l.from.x + 150, l.from.y + 300);
-      const [ux, uy] = [(l.from.x + 150) / d, (l.from.y + 300) / d];
+      const d = Math.hypot(l.from.x + 600, l.from.y);
+      const [ux, uy] = [(l.from.x + 600) / d, l.from.y / d];
       expect(d).toBeCloseTo(baseRim(HERO_BASE_RADIUS, ux, uy) + LINK_GAP);
+    }
+  });
+
+  it("a monster dragged over many frames, each laid out from the one before, brings its fighters and covers nothing", () => {
+    const w = makeWorld();
+    const base = layoutWorld(w);
+    const start = base.monsters.find((m) => m.monster.id === "m1")!.pos;
+    let frame = base;
+    let pos = start;
+    for (let i = 1; i <= 30; i++) {
+      pos = { x: start.x + i * 20, y: start.y - i * 8 };
+      frame = layoutWithDrag(w, base, { kind: "monster", id: "m1", pos }, frame);
+    }
+    expect(frame.monsters.find((m) => m.monster.id === "m1")!.pos).toEqual(pos);
+    const reach = monsterBaseRadius("S") + HERO_BASE_RADIUS + MAIN_GAP + 40;
+    expect(dist(frame.heroes.find((h) => h.hero.id === "bob")!.pos, pos)).toBeLessThan(reach);
+    const rects = [...frame.monsters.map((m) => monsterShape(m)), ...frame.heroes.map((h) => heroShape(h))].flatMap((s) => [s.body, s.tag]);
+    for (let i = 0; i < rects.length; i++) {
+      for (let j = i + 1; j < rects.length; j++) {
+        if (Math.floor(i / 2) === Math.floor(j / 2)) continue; // a figure's own body and tag
+        const [a, b] = [rects[i], rects[j]];
+        expect(a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height).toBe(false);
+      }
     }
   });
 
@@ -220,11 +245,18 @@ describe("dropping moves the home by the drag offset", () => {
   });
 
   it("a dropped monster settles where it was let go when no other monster shares its heroes", () => {
-    // Ana and Bob fight only m1, so m1 and its fighters move as one.
-    const w = applyOp(makeWorld(), { kind: "removeTarget", heroId: "ana", monsterId: "m2" });
+    // Ana and Bob fight only m1, so m1 and its fighters move as one. Everything
+    // else stands well away, so nothing crowds them before or after the drop.
+    const ops: WorldOp[] = [
+      { kind: "removeTarget", heroId: "ana", monsterId: "m2" },
+      { kind: "moveMonster", id: "m2", pos: { x: -900, y: 20 } },
+      { kind: "moveMonster", id: "m3", pos: { x: 900, y: -600 } },
+      { kind: "dropHero", heroId: "cid", drop: { pos: { x: -900, y: -600 } } },
+    ];
+    const w = ops.reduce(applyOp, makeWorld());
     const before = layoutWorld(w);
     const press = before.monsters.find((m) => m.monster.id === "m1")!.pos;
-    const drop = { x: press.x + 500, y: press.y + 260 };
+    const drop = { x: press.x + 1500, y: press.y + 900 };
     const home = homeAfterDrag(monster(w, "m1").pos, press, drop);
     const after = layoutWorld(applyOp(w, { kind: "moveMonster", id: "m1", pos: home }));
     expect(dist(after.monsters.find((m) => m.monster.id === "m1")!.pos, drop)).toBeLessThan(1);

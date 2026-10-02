@@ -1,0 +1,19 @@
+{
+  "name": "Stone bridge",
+  "kind": "terrain",
+  "radius": 45,
+  "along": 135,
+  "parts": [
+    {
+      "model": "bridge_stoneRound",
+      "x": -1.04
+    },
+    {
+      "model": "bridge_stoneRound"
+    },
+    {
+      "model": "bridge_stoneRound",
+      "x": 1.04
+    }
+  ]
+}

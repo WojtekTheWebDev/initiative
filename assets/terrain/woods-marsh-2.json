@@ -2,6 +2,12 @@
   "name": "Marsh trees",
   "kind": "terrain",
   "radius": 60,
+  "colors": {
+    "leafsDark": "#6f8a3c",
+    "leafsGreen": "#86a046",
+    "woodBark": "#8a6a48",
+    "woodBarkDark": "#735a40"
+  },
   "parts": [
     {
       "model": "crops_wheatStageB",
@@ -10,8 +16,8 @@
       "rotate": 226,
       "scale": 0.75,
       "colors": {
-        "woodInner": "#5a7340",
-        "_defaultMat": "#5b3b22"
+        "woodInner": "#94a656",
+        "_defaultMat": "#8a6438"
       }
     },
     {
@@ -21,7 +27,7 @@
       "rotate": 217,
       "scale": 0.75,
       "colors": {
-        "grass": "#5a7748"
+        "grass": "#86a052"
       }
     },
     {
@@ -31,7 +37,7 @@
       "rotate": 270,
       "scale": 0.33,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -41,7 +47,7 @@
       "rotate": 322,
       "scale": 0.362,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -51,7 +57,7 @@
       "rotate": 104,
       "scale": 0.86,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -61,7 +67,7 @@
       "rotate": 156,
       "scale": 0.875,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -71,7 +77,7 @@
       "rotate": 73,
       "scale": 0.414,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -81,7 +87,7 @@
       "rotate": 350,
       "scale": 0.283,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -91,7 +97,7 @@
       "rotate": 312,
       "scale": 0.398,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     },
     {
@@ -101,7 +107,7 @@
       "rotate": 229,
       "scale": 1.111,
       "colors": {
-        "Bark": "#5f5444"
+        "Bark": "#98886a"
       }
     }
   ]

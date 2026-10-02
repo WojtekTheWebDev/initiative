@@ -1,9 +1,9 @@
 import type { Pos, Size } from "@/lib/types";
 
 /** Radius of a monster's round base, in world units. */
-export const MONSTER_BASE_RADIUS: Record<Size, number> = { S: 26, M: 34, L: 44, XL: 58 };
+export const MONSTER_BASE_RADIUS: Record<Size, number> = { S: 31, M: 40, L: 52, XL: 68 };
 /** Radius of a hero's round base, in world units. */
-export const HERO_BASE_RADIUS = 18;
+export const HERO_BASE_RADIUS = 22;
 
 /**
  * The table is seen from 38 degrees above, so a round base shows as an ellipse

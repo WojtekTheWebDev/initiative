@@ -37,6 +37,8 @@ export type TargetRef = { heroId: string; monsterId: string };
 
 type Live = {
   drag: LiveDrag;
+  /** The layout to draw this frame (see layoutWithDrag). */
+  layout: WorldLayout;
   /** Hero drags: the monster under the cursor and what dropping there would do. */
   hint: { monsterId: string; kind: DropHint } | null;
 };
@@ -60,6 +62,8 @@ type Session = {
   pos: Pos;
   /** The pointer is over the visible map (not over the side panel, header or trophies). */
   onMap: boolean;
+  /** The layout drawn for the last pointer move: the next one starts from it. */
+  frame: WorldLayout;
   end: () => void;
 };
 
@@ -91,10 +95,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
 
   const drag = live?.drag ?? null;
   const baseLayout = useMemo(() => layoutWorld(optimisticWorld), [optimisticWorld]);
-  const layout = useMemo(
-    () => layoutWithDrag(optimisticWorld, baseLayout, drag),
-    [optimisticWorld, baseLayout, drag],
-  );
+  const layout = live?.layout ?? baseLayout;
 
   // Stop listening if the Board unmounts mid-drag.
   useEffect(() => () => session.current?.end(), []);
@@ -122,7 +123,9 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
         hint = { monsterId: drop.monsterId, kind: drop.shift ? "secondary" : "assign" };
       }
     }
-    setLive({ drag: { kind: s.kind, id: s.id, pos: s.pos }, hint });
+    const drag: LiveDrag = { kind: s.kind, id: s.id, pos: s.pos };
+    s.frame = layoutWithDrag(s.world, s.layout, drag, s.frame);
+    setLive({ drag, layout: s.frame, hint });
   }
 
   function track(s: Session, clientX: number, clientY: number) {
@@ -222,6 +225,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       cursor: startWorld,
       pos: origin,
       onMap: true,
+      frame: layout,
       end: () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
@@ -278,8 +282,6 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     world: optimisticWorld,
     /** Layout to draw: optimistic changes plus the figure being dragged. */
     layout,
-    /** A figure is being dragged: draw `layout` as it is, without gliding. */
-    dragging: drag !== null,
     bindFigure,
     bindLink,
     /** Highlight for a monster while a hero is dragged over it. */
