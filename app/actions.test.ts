@@ -8,6 +8,7 @@ vi.mock("next/cache", () => ({ refresh: vi.fn() }));
 
 import { refresh } from "next/cache";
 import { readWorld } from "@/lib/store/store";
+import { unwrap } from "@/lib/action-result";
 import * as actions from "./actions";
 
 const repo = process.cwd();
@@ -55,7 +56,7 @@ describe("server actions (smoke)", () => {
   });
 
   it("creates, slays and deletes monsters", async () => {
-    const id = await actions.createMonster({ name: "  Test Goblin ", size: "S", pos: { x: 1, y: 1 } });
+    const id = await unwrap(actions.createMonster({ name: "  Test Goblin ", size: "S", pos: { x: 1, y: 1 } }));
     expect(id).toBe("test-goblin");
     expect((await world()).monsters.find((m) => m.id === id)?.name).toBe("Test Goblin");
 
@@ -70,7 +71,7 @@ describe("server actions (smoke)", () => {
   });
 
   it("creates and updates heroes", async () => {
-    const id = await actions.createHero({ name: "Eve", class: "cleric", pos: { x: 3, y: 4 } });
+    const id = await unwrap(actions.createHero({ name: "Eve", class: "cleric", pos: { x: 3, y: 4 } }));
     await actions.updateHero(id, { name: "Eva" });
     const h = (await world()).heroes.find((x) => x.id === id);
     expect(h).toMatchObject({ id: "eve", name: "Eva", class: "cleric", pos: { x: 3, y: 4 } });
@@ -78,14 +79,30 @@ describe("server actions (smoke)", () => {
     expect((await world()).heroes.find((x) => x.id === id)).toBeUndefined();
   });
 
-  it("rejects bad input with readable errors", async () => {
-    await expect(actions.createMonster({ name: " ", size: "S", pos: { x: 0, y: 0 } })).rejects.toThrow(/name/);
-    await expect(
-      actions.createMonster({ name: "X", size: "XXL" as never, pos: { x: 0, y: 0 } }),
-    ).rejects.toThrow(/Size/);
-    await expect(actions.moveMonster("flaky-ci", { x: NaN, y: 0 })).rejects.toThrow(/finite/);
-    await expect(actions.moveMonster(42 as never, { x: 0, y: 0 })).rejects.toThrow(/id/);
-    await expect(actions.slayMonster("nope")).rejects.toThrow();
+  it("returns ok results", async () => {
+    expect(await actions.moveMonster("flaky-ci", { x: 5, y: 5 })).toEqual({ ok: true, value: undefined });
+    expect(await actions.createHero({ name: "Zed", class: "mage", pos: { x: 0, y: 0 } })).toEqual({
+      ok: true,
+      value: "zed",
+    });
+  });
+
+  // Errors are returned, not thrown: Next.js hides thrown messages in production.
+  it("returns bad input as readable errors and does not refresh", async () => {
+    const error = (r: { ok: boolean; error?: string }) => (r.ok ? "" : r.error);
+    expect(error(await actions.createMonster({ name: " ", size: "S", pos: { x: 0, y: 0 } }))).toMatch(/name/);
+    expect(
+      error(await actions.createMonster({ name: "X", size: "XXL" as never, pos: { x: 0, y: 0 } })),
+    ).toMatch(/Size/);
+    expect(error(await actions.moveMonster("flaky-ci", { x: NaN, y: 0 }))).toMatch(/finite/);
+    expect(error(await actions.moveMonster(42 as never, { x: 0, y: 0 }))).toMatch(/id/);
+    expect(error(await actions.slayMonster("nope"))).toMatch(/nope/);
+    expect(error(await actions.dropHero("ana", null as never))).toMatch(/Drop/);
     expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("unwrap throws the returned message on the client", async () => {
+    await expect(unwrap(actions.slayMonster("nope"))).rejects.toThrow(/nope/);
+    await expect(unwrap(actions.deleteHero("ana"))).resolves.toBeUndefined();
   });
 });

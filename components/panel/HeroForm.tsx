@@ -4,6 +4,7 @@ import { useId, useState, type FormEvent } from "react";
 import type { Hero, Pos } from "@/lib/types";
 import { HERO_CLASSES, heroGlyph } from "@/lib/map/glyphs";
 import { createHero, updateHero } from "@/app/actions";
+import { unwrap } from "@/lib/action-result";
 import { Button, ErrorNote, Field, inputClass, useAction } from "./ui";
 
 type Props =
@@ -38,14 +39,14 @@ export function HeroForm(props: Props) {
       if (name.trim() !== h.name) patch.name = name;
       if (cls.trim() !== h.class) patch.class = cls;
       run(async () => {
-        if (Object.keys(patch).length > 0) await updateHero(h.id, patch);
+        if (Object.keys(patch).length > 0) await unwrap(updateHero(h.id, patch));
         props.onSaved();
       });
     } else {
       const pos = props.spawnAt();
       const { onCreated } = props;
       run(async () => {
-        const id = await createHero({ name, class: cls, pos });
+        const id = await unwrap(createHero({ name, class: cls, pos }));
         onCreated(id, pos);
       });
     }

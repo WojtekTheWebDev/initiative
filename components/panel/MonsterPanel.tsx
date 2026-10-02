@@ -4,6 +4,7 @@ import type { Hero, Monster, World } from "@/lib/types";
 import { creatureOf, fightersOf, territoryOf } from "@/lib/domain";
 import { heroGlyph, monsterGlyph } from "@/lib/map/glyphs";
 import { deleteMonster, slayMonster } from "@/app/actions";
+import { unwrap } from "@/lib/action-result";
 import { Button, ConfirmButton, ErrorNote, SectionLabel, useAction } from "./ui";
 
 const TERRITORY_LABEL = { team: "Team battlefield", keep: "Your keep" } as const;
@@ -99,7 +100,7 @@ export function MonsterPanel({
           disabled={pending}
           onClick={() =>
             run(async () => {
-              await slayMonster(monster.id);
+              await unwrap(slayMonster(monster.id));
               onGone();
             })
           }
@@ -111,7 +112,7 @@ export function MonsterPanel({
           confirmLabel="Delete for good? Can't be undone"
           onConfirm={() =>
             run(async () => {
-              await deleteMonster(monster.id);
+              await unwrap(deleteMonster(monster.id));
               onGone();
             })
           }

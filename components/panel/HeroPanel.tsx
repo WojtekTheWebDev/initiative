@@ -3,6 +3,7 @@
 import type { Hero, Monster, World } from "@/lib/types";
 import { heroGlyph, monsterGlyph } from "@/lib/map/glyphs";
 import { deleteHero } from "@/app/actions";
+import { unwrap } from "@/lib/action-result";
 import { Button, ConfirmButton, ErrorNote, SectionLabel, useAction } from "./ui";
 
 export function HeroPanel({
@@ -66,7 +67,7 @@ export function HeroPanel({
           confirmLabel="Delete for good? Can't be undone"
           onConfirm={() =>
             run(async () => {
-              await deleteHero(hero.id);
+              await unwrap(deleteHero(hero.id));
               onGone();
             })
           }

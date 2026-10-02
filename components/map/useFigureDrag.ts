@@ -16,6 +16,7 @@ import type { Pos, World } from "@/lib/types";
 import { territoryOf } from "@/lib/domain";
 import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import * as actions from "@/app/actions";
+import { unwrap } from "@/lib/action-result";
 import type { MapHandle } from "./MapCanvas";
 import type { FigureHandlers } from "./MonsterFigure";
 import {
@@ -293,12 +294,12 @@ function round(p: Pos): Pos {
 function callServer(op: WorldOp): Promise<void> {
   switch (op.kind) {
     case "moveMonster":
-      return actions.moveMonster(op.id, op.pos);
+      return unwrap(actions.moveMonster(op.id, op.pos));
     case "dropHero":
-      return actions.dropHero(op.heroId, op.drop);
+      return unwrap(actions.dropHero(op.heroId, op.drop));
     case "makeMain":
-      return actions.makeMain(op.heroId, op.monsterId);
+      return unwrap(actions.makeMain(op.heroId, op.monsterId));
     case "removeTarget":
-      return actions.removeTarget(op.heroId, op.monsterId);
+      return unwrap(actions.removeTarget(op.heroId, op.monsterId));
   }
 }

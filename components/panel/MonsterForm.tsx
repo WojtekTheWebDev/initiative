@@ -5,6 +5,7 @@ import type { Monster, Pos, Size, Territory } from "@/lib/types";
 import { creatureOf } from "@/lib/domain";
 import { monsterGlyph } from "@/lib/map/glyphs";
 import { createMonster, updateMonster } from "@/app/actions";
+import { unwrap } from "@/lib/action-result";
 import { Button, ErrorNote, Field, inputClass, useAction } from "./ui";
 
 const SIZES: Size[] = ["S", "M", "L", "XL"];
@@ -44,14 +45,14 @@ export function MonsterForm(props: Props) {
       if (size !== m.size) patch.size = size;
       if (notes !== (m.notes ?? "")) patch.notes = notes;
       run(async () => {
-        if (Object.keys(patch).length > 0) await updateMonster(m.id, patch);
+        if (Object.keys(patch).length > 0) await unwrap(updateMonster(m.id, patch));
         props.onSaved();
       });
     } else {
       const pos = props.spawnAt(side);
       const { onCreated } = props;
       run(async () => {
-        const id = await createMonster({ name, size, notes: notes || undefined, pos });
+        const id = await unwrap(createMonster({ name, size, notes: notes || undefined, pos }));
         onCreated(id, pos);
       });
     }

@@ -80,18 +80,22 @@ Invariant every write must keep: `hero.targets.length > 0` ⇔ `hero.pos === und
 
 Client tasks (T5–T8) code against these signatures. Every action re-reads the files, applies a T1 function, writes through T2, then calls `refresh()` from `next/cache`.
 
+Actions return their errors instead of throwing them, because in production Next.js replaces a thrown message with a generic one. `ActionResult<T>` and `unwrap` live in `lib/action-result.ts`. Clients call `await unwrap(action(...))`, which gives the value or throws `Error(message)`.
+
 ```ts
-moveMonster(id: string, pos: Pos): Promise<void>
-dropHero(heroId: string, drop: { monsterId: string; shift: boolean } | { pos: Pos }): Promise<void>
-makeMain(heroId: string, monsterId: string): Promise<void>
-removeTarget(heroId: string, monsterId: string): Promise<void>
-createMonster(input: { name: string; size: Size; notes?: string; pos: Pos }): Promise<string> // returns id
-updateMonster(id: string, patch: { name?: string; size?: Size; notes?: string }): Promise<void>
-slayMonster(id: string): Promise<void>
-deleteMonster(id: string): Promise<void>
-createHero(input: { name: string; class: string; pos: Pos }): Promise<string>
-updateHero(id: string, patch: { name?: string; class?: string }): Promise<void>
-deleteHero(id: string): Promise<void>
+type ActionResult<T = void> = { ok: true; value: T } | { ok: false; error: string };
+
+moveMonster(id: string, pos: Pos): Promise<ActionResult>
+dropHero(heroId: string, drop: { monsterId: string; shift: boolean } | { pos: Pos }): Promise<ActionResult>
+makeMain(heroId: string, monsterId: string): Promise<ActionResult>
+removeTarget(heroId: string, monsterId: string): Promise<ActionResult>
+createMonster(input: { name: string; size: Size; notes?: string; pos: Pos }): Promise<ActionResult<string>> // value = id
+updateMonster(id: string, patch: { name?: string; size?: Size; notes?: string }): Promise<ActionResult>
+slayMonster(id: string): Promise<ActionResult>
+deleteMonster(id: string): Promise<ActionResult>
+createHero(input: { name: string; class: string; pos: Pos }): Promise<ActionResult<string>> // value = id
+updateHero(id: string, patch: { name?: string; class?: string }): Promise<ActionResult>
+deleteHero(id: string): Promise<ActionResult>
 ```
 
 The client computes spawn positions (it knows the view) and passes `pos`. The server does not know the camera.
