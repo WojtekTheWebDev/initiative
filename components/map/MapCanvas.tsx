@@ -32,6 +32,8 @@ export type MapHandle = {
   screenToWorld(screen: Pos): Pos;
   /** Converts `clientX`/`clientY` from a pointer event to world coordinates. */
   clientToWorld(clientX: number, clientY: number): Pos;
+  /** The client point shows the map: inside the canvas and not under something drawn over it (e.g. the side panel). */
+  isOnMap(clientX: number, clientY: number): boolean;
   /** Animates (about 300ms) to center `point` at a readable zoom. */
   flyTo(point: Pos): void;
   /** Animates to an exact camera (e.g. from `fitBounds`). */
@@ -106,6 +108,10 @@ export function MapCanvas({
         clientToWorld(clientX, clientY) {
           const r = svgRef.current?.getBoundingClientRect();
           return toWorld({ x: clientX - (r?.left ?? 0), y: clientY - (r?.top ?? 0) });
+        },
+        isOnMap(clientX, clientY) {
+          const top = document.elementFromPoint(clientX, clientY);
+          return Boolean(top && containerRef.current?.contains(top));
         },
         flyTo,
         animateTo,

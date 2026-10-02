@@ -59,6 +59,8 @@ type Session = {
   shift: boolean;
   cursor: Pos;
   pos: Pos;
+  /** The pointer is over the visible map (not over the side panel, header or trophies). */
+  onMap: boolean;
   end: () => void;
 };
 
@@ -109,7 +111,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
 
   function showLive(s: Session) {
     let hint: Live["hint"] = null;
-    if (s.kind === "hero") {
+    if (s.kind === "hero" && s.onMap) {
       const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, s.pos, s.shift);
       if (drop && "monsterId" in drop) {
         hint = { monsterId: drop.monsterId, kind: drop.shift ? "ghost" : "assign" };
@@ -123,6 +125,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     const handle = map.current;
     if (!handle) return;
     s.cursor = handle.clientToWorld(clientX, clientY);
+    s.onMap = handle.isOnMap(clientX, clientY);
     s.pos = {
       x: s.origin.x + (s.cursor.x - s.startWorld.x),
       y: s.origin.y + (s.cursor.y - s.startWorld.y),
@@ -140,6 +143,9 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       run({ kind: "moveMonster", id: s.id, pos: round(s.pos) });
       return;
     }
+    // A hero let go over the side panel (or off the map) snaps back: it must not
+    // land on a monster hidden under the panel, nor stand idle there.
+    if (!s.onMap) return;
     const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, round(s.pos), e.shiftKey);
     if (drop) run({ kind: "dropHero", heroId: s.id, drop });
   }
@@ -207,6 +213,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       shift: e.shiftKey,
       cursor: startWorld,
       pos: origin,
+      onMap: true,
       end: () => {
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
