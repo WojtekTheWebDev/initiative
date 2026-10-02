@@ -183,6 +183,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     };
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
+        ev.preventDefault(); // tells the side panel this Esc is taken
         finish(s, null);
         return;
       }

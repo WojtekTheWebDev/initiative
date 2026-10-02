@@ -13,6 +13,10 @@ import { UnfoughtAlarm } from "@/components/UnfoughtAlarm";
 import { EdgeArrows } from "@/components/map/EdgeArrows";
 import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { DragOverlay } from "@/components/map/DragOverlay";
+import { SidePanel } from "@/components/panel/SidePanel";
+import { CreateButtons } from "@/components/panel/CreateButtons";
+import { usePanel } from "@/components/panel/usePanel";
+import { Trophies } from "@/components/Trophies";
 
 export type Selection = { kind: "monster" | "hero"; id: string } | null;
 
@@ -29,22 +33,22 @@ export function Board({ world }: { world: World }) {
   // Counted from the optimistic world, so the alarm updates the moment you drop.
   const unfoughtMonsters = useMemo(() => unfought(drag.world), [drag.world]);
   const flyTo = (m: Monster) => map.current?.flyTo(m.pos);
+  // T8: side panel / forms state; `panel.selection` is null once the item is slain or deleted.
+  const panel = usePanel(drag.world, selection, setSelection);
 
   // Only the first call matters: MapCanvas computes the opening camera once.
   const initialCamera = (viewport: ViewportSize) =>
     fitBounds(openingPoints(layout), viewport, OPENING_PADDING);
-
-  const selectedName = selectionName(world, selection);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <FigureStyles />
       <Header>
         <UnfoughtAlarm monsters={unfoughtMonsters} onPick={flyTo} />
-        {/* T8: "+ Monster" / "+ Hero" buttons */}
+        <CreateButtons panel={panel} />
       </Header>
 
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         <MapCanvas
           ref={map}
           initialCamera={initialCamera}
@@ -60,33 +64,19 @@ export function Board({ world }: { world: World }) {
             <Figures
               drag={drag}
               scale={camera.scale}
-              selection={selection}
+              selection={panel.selection}
               onSelect={setSelection}
             />
           )}
         </MapCanvas>
 
-        {/* T8: replace with the real side panel */}
-        {selection && selectedName !== null && (
-          <SidePanel onClose={() => setSelection(null)}>
-            <p className="text-xs uppercase tracking-wide opacity-60">{selection.kind}</p>
-            <h2 className="text-lg font-semibold">{selectedName}</h2>
-          </SidePanel>
-        )}
+        {/* T8: side panel, an overlay on the right edge of the map */}
+        <SidePanel panel={panel} world={drag.world} map={map} />
       </div>
 
-      {/* T8: trophies strip */}
-      <TrophiesPlaceholder count={world.monsters.filter((m) => m.slain).length} />
+      <Trophies monsters={drag.world.monsters} openId={panel.trophyId} onOpen={panel.openTrophy} />
     </div>
   );
-}
-
-function selectionName(world: World, selection: Selection): string | null {
-  if (!selection) return null;
-  const list = selection.kind === "monster" ? world.monsters : world.heroes;
-  const item = list.find((x) => x.id === selection.id);
-  if (!item || ("slain" in item && item.slain)) return null;
-  return item.name;
 }
 
 /** World-space figures. Draw order: ghosts, heroes, monsters (so monster labels sit on top). */
@@ -148,29 +138,5 @@ function Header({ children }: { children?: ReactNode }) {
       <h1 className="text-base font-semibold tracking-tight">⚔️ Initiative</h1>
       <div className="flex flex-1 items-center justify-end gap-2">{children}</div>
     </header>
-  );
-}
-
-function SidePanel({ children, onClose }: { children: ReactNode; onClose: () => void }) {
-  return (
-    <aside className="relative w-80 shrink-0 overflow-y-auto border-l border-foreground/10 bg-background p-4">
-      <button
-        type="button"
-        aria-label="Close panel"
-        className="absolute top-2 right-2 rounded px-2 py-1 text-sm opacity-60 hover:bg-foreground/10 hover:opacity-100"
-        onClick={onClose}
-      >
-        ✕
-      </button>
-      {children}
-    </aside>
-  );
-}
-
-function TrophiesPlaceholder({ count }: { count: number }) {
-  return (
-    <footer className="flex h-9 shrink-0 items-center border-t border-foreground/10 px-4 text-sm opacity-70">
-      🏆 {count} slain
-    </footer>
   );
 }

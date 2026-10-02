@@ -31,7 +31,10 @@ export function GhostPopover({ anchor, offset, heroName, monsterName, onMakeMain
       if (ref.current && !ref.current.contains(e.target as Node)) onCloseRef.current();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onCloseRef.current();
+      if (e.key === "Escape") {
+        e.preventDefault(); // tells the side panel this Esc is taken
+        onCloseRef.current();
+      }
     };
     // Capture phase, so a press that starts a pan or drag still closes it.
     window.addEventListener("pointerdown", onPointerDown, true);
