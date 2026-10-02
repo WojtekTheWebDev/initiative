@@ -1,13 +1,16 @@
 "use client";
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import type { World } from "@/lib/types";
+import type { Monster, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
 import { layoutWorld, openingPoints, type WorldLayout } from "@/lib/map/layout";
 import { MapCanvas, type MapHandle } from "@/components/map/MapCanvas";
 import { FigureStyles, MonsterFigure } from "@/components/map/MonsterFigure";
 import { HeroFigure } from "@/components/map/HeroFigure";
 import { GhostMarker } from "@/components/map/GhostMarker";
+import { unfought } from "@/lib/domain";
+import { UnfoughtAlarm } from "@/components/UnfoughtAlarm";
+import { EdgeArrows } from "@/components/map/EdgeArrows";
 
 export type Selection = { kind: "monster" | "hero"; id: string } | null;
 
@@ -20,6 +23,8 @@ export function Board({ world }: { world: World }) {
   const [selection, setSelection] = useState<Selection>(null);
   // T6: apply live drag positions / optimistic updates to `world` before layout.
   const layout = useMemo(() => layoutWorld(world), [world]);
+  const unfoughtMonsters = useMemo(() => unfought(world), [world]);
+  const flyTo = (m: Monster) => map.current?.flyTo(m.pos);
 
   // Only the first call matters: MapCanvas computes the opening camera once.
   const initialCamera = (viewport: ViewportSize) =>
@@ -31,7 +36,7 @@ export function Board({ world }: { world: World }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <FigureStyles />
       <Header>
-        {/* T7: header alarm (unfought counter) */}
+        <UnfoughtAlarm monsters={unfoughtMonsters} onPick={flyTo} />
         {/* T8: "+ Monster" / "+ Hero" buttons */}
       </Header>
 
@@ -40,7 +45,11 @@ export function Board({ world }: { world: World }) {
           ref={map}
           initialCamera={initialCamera}
           onBackgroundClick={() => setSelection(null)}
-          // T7: overlay={(view) => <EdgeArrows ... />}
+          overlay={(view) => (
+            <>
+              <EdgeArrows view={view} monsters={unfoughtMonsters} onPick={flyTo} />
+            </>
+          )}
         >
           {({ camera }) => (
             <Figures
