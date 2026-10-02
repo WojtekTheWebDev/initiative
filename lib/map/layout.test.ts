@@ -70,11 +70,9 @@ describe("layoutWorld", () => {
     expect(flags).toEqual({ m1: false, m2: false, m3: true });
   });
 
-  it("gives each monster its base radius and territory", () => {
-    const [m1, , m3] = layoutWorld(world()).monsters;
+  it("gives each monster its base radius", () => {
+    const [m1] = layoutWorld(world()).monsters;
     expect(m1.radius).toBe(monsterBaseRadius("XL"));
-    expect(m1.territory).toBe("team");
-    expect(m3.territory).toBe("keep");
   });
 
   it("keeps idle heroes at their pos", () => {

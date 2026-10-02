@@ -1,11 +1,10 @@
 import type { PointerEvent, MouseEvent } from "react";
-import type { Territory } from "@/lib/types";
 import type { PlacedMonster } from "@/lib/map/layout";
 import { monsterGlyph } from "@/lib/map/glyphs";
 
-/** Rim colours per territory (match the banners in Territories.tsx). */
-const RIM: Record<Territory, string> = { team: "#b4432c", keep: "#2f5fb3" };
-const FILL: Record<Territory, string> = { team: "#fde7e1", keep: "#e1e9fb" };
+/** Neutral stone base, themed in globals.css so it reads in light and dark mode. */
+const RIM = "var(--monster-rim)";
+const FILL = "var(--monster-fill)";
 const UNFOUGHT = "#dc2626";
 export const SELECTED = "#f59e0b";
 /** Drop highlights while a hero is dragged over a monster: plain drop vs Shift+drop. */
@@ -31,7 +30,7 @@ type Props = FigureHandlers & {
 };
 
 export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown, onClick }: Props) {
-  const { monster, pos, radius, territory, unfought } = placed;
+  const { monster, pos, radius, unfought } = placed;
   const px = 1 / scale;
   return (
     <g
@@ -70,7 +69,7 @@ export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown
           strokeDasharray={dropHint === "ghost" ? `${Math.max(8, 6 * px)} ${Math.max(5, 4 * px)}` : undefined}
         />
       )}
-      <circle r={radius} fill={FILL[territory]} stroke={RIM[territory]} strokeWidth={Math.max(3, 1.5 * px)} />
+      <circle r={radius} fill={FILL} stroke={RIM} strokeWidth={Math.max(3, 1.5 * px)} />
       <text
         textAnchor="middle"
         dominantBaseline="central"
@@ -90,7 +89,7 @@ export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown
  * A name label whose top edge sits `y` world units below the figure's center
  * (or, with `above`, whose baseline sits `y` above it).
  * It keeps at least MIN_LABEL_PX on screen, and has a halo so it stays readable
- * over the grid, tints and other figures.
+ * over the grid and other figures.
  */
 export function FigureLabel(props: {
   y: number;

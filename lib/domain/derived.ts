@@ -1,9 +1,4 @@
-import type { Hero, Monster, Pos, Size, Territory, World } from "@/lib/types";
-
-/** x < 0 is the team battlefield; x >= 0 (including 0) is your keep. */
-export function territoryOf(pos: Pos): Territory {
-  return pos.x < 0 ? "team" : "keep";
-}
+import type { Hero, Monster, Size, World } from "@/lib/types";
 
 export function alive(monsters: Monster[]): Monster[] {
   return monsters.filter((m) => !m.slain);

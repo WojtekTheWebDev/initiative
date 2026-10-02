@@ -13,7 +13,6 @@ import {
   type RefObject,
 } from "react";
 import type { Pos, World } from "@/lib/types";
-import { territoryOf } from "@/lib/domain";
 import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import * as actions from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
@@ -38,8 +37,6 @@ type Live = {
   drag: LiveDrag;
   /** Hero drags: the monster under the cursor and what dropping there would do. */
   hint: { monsterId: string; kind: DropHint } | null;
-  /** Monster drags: the monster is now on the other side of x = 0 than where it started. */
-  crossed: boolean;
 };
 
 /** One pointer press on a figure, from pointerdown until pointerup. */
@@ -117,8 +114,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
         hint = { monsterId: drop.monsterId, kind: drop.shift ? "ghost" : "assign" };
       }
     }
-    const crossed = s.kind === "monster" && territoryOf(s.pos) !== territoryOf(s.origin);
-    setLive({ drag: { kind: s.kind, id: s.id, pos: s.pos }, hint, crossed });
+    setLive({ drag: { kind: s.kind, id: s.id, pos: s.pos }, hint });
   }
 
   function track(s: Session, clientX: number, clientY: number) {
@@ -277,8 +273,6 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       live?.hint?.monsterId === monsterId ? live.hint.kind : null,
     /** The hero being dragged, to draw on top of everything. */
     liftedHeroId: drag?.kind === "hero" ? drag.id : null,
-    /** A dragged monster has crossed x = 0. */
-    crossing: live?.crossed ?? false,
     ghost,
     closeGhost: () => setGhost(null),
     makeMain: (g: GhostRef) => {

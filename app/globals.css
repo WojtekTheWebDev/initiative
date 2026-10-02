@@ -3,6 +3,8 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --monster-fill: #f5f5f4;
+  --monster-rim: #57534e;
 }
 
 @theme inline {
@@ -16,6 +18,8 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --monster-fill: #292524;
+    --monster-rim: #a8a29e;
   }
 }
 

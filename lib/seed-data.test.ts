@@ -15,9 +15,7 @@ describe("data.example", () => {
     expect(monsters.find((m) => m.slain)?.slain).toBe("2026-09-28");
   });
 
-  it("covers both territories and every size", () => {
-    expect(monsters.some((m) => m.pos.x < 0)).toBe(true);
-    expect(monsters.some((m) => m.pos.x >= 0)).toBe(true);
+  it("covers every size", () => {
     expect(new Set(monsters.map((m) => m.size))).toEqual(new Set(["S", "M", "L", "XL"]));
   });
 

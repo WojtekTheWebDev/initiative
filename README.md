@@ -4,8 +4,6 @@
 
 A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** (bigger scope means a bigger creature) and the people dealing with them are **heroes**. You plan by dragging heroes onto monsters on an infinite map. Monsters nobody is fighting pulse red, so gaps are easy to spot.
 
-The map has two territories: the **team battlefield** (engineers against initiatives, incidents and tech debt) and **your keep** (your own work: hiring, people issues, stakeholder asks).
-
 It runs only on your machine, for one user. The data is plain YAML that you or an agent can edit by hand.
 
 > Status: implemented. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full spec.
@@ -29,7 +27,7 @@ Open [http://localhost:3000](http://localhost:3000).
 ## How to use
 
 - **Move around:** the wheel (or a trackpad pinch) zooms at the cursor. Drag empty ground to pan.
-- **Monsters:** drag one to move it. Dragging it across the border moves it between the team battlefield and your keep. Click it to open the side panel with notes, **Edit**, **Slay** and **Delete**.
+- **Monsters:** drag one to move it. Click it to open the side panel with notes, **Edit**, **Slay** and **Delete**.
 - **Heroes:** drag a hero onto a monster to make that its only target. Hold **Shift** while dropping to add the monster as a secondary target instead; it shows as a faint ghost and the hero stays at its main fight. Drop a hero on empty ground to make it idle there.
 - **Ghosts:** click a ghost for **Make main** or **Remove**.
 - **Unfought monsters** pulse red. The header counter lists them, and red arrows at the edge of the view point to the ones off-screen. Click either to fly there.
@@ -43,7 +41,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - On first run, `data/` is seeded from the committed `data.example/`.
 - You can edit the YAML by hand at any time. Reload the page to see your changes. The app keeps your comments when it writes the files. There is no file watcher.
 - To start over from the example data, stop the app and delete `data/`.
-- The format is described in [`docs/DESIGN.md`](docs/DESIGN.md#data-model). Anything that can be worked out (territory, who fights what) is not stored.
+- The format is described in [`docs/DESIGN.md`](docs/DESIGN.md#data-model). Anything that can be worked out (who fights what, the creature type) is not stored.
 
 ## Stack
 

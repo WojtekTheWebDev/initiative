@@ -1,15 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { alive, creatureOf, fightersOf, territoryOf, unfought } from "./derived";
+import { alive, creatureOf, fightersOf, unfought } from "./derived";
 import { makeWorld } from "./test-fixtures";
-
-describe("territoryOf", () => {
-  it("splits at x = 0, with 0 in the keep", () => {
-    expect(territoryOf({ x: -1, y: 0 })).toBe("team");
-    expect(territoryOf({ x: 0, y: 0 })).toBe("keep");
-    expect(territoryOf({ x: 1, y: 0 })).toBe("keep");
-    expect(territoryOf({ x: -0.001, y: 99 })).toBe("team");
-  });
-});
 
 describe("alive", () => {
   it("drops slain monsters", () => {
