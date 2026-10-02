@@ -12,7 +12,6 @@ It is a tool for one person (an engineering manager) to use in daily work. It is
 | --------- | ----------------------------------------------------------------------- |
 | Monster   | Something to deal with: an initiative, incident, tech debt, a hire, a people issue, a stakeholder ask |
 | Hero      | An engineer on the team, or you (e.g. class `commander`)                 |
-| Territory | Where a monster stands: the **team battlefield** (x < 0) or **your keep** (x ≥ 0) |
 | Main target | The monster a hero's figure stands beside                             |
 | Ghost     | A faint marker for a hero's secondary targets                            |
 | Unfought  | A living monster that no hero targets. It pulses red                     |
@@ -27,7 +26,7 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
 - id: search-rewrite        # slug from name; unique suffix on clash
   name: Search Rewrite
   size: XL                  # S | M | L | XL → goblin | orc | troll | dragon
-  pos: { x: -420, y: 180 }  # always present; x < 0 team, x ≥ 0 keep
+  pos: { x: -420, y: 180 }  # always present
   notes: |                  # optional, free text
     Next step: spike on Meilisearch
   slain: 2026-10-14         # optional; absent = alive
@@ -42,7 +41,6 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
 ```
 
 Rules worked out from the data, not stored:
-- **Territory** comes from the sign of `pos.x`. There is no `layer` field.
 - **Engaged or unfought** depends on whether any hero has the monster in `targets`. There is no `fighters` or `status` field.
 - **Creature type** comes from `size`. There is no `kind` field.
 - **Engaged hero position** is on an arc above the main target, fanned out from the top in hero-id order. A wedge at the bottom stays clear for the monster's name label; if the arc gets crowded, its radius grows. Ghosts stand on a second, outer arc (or the inner one if the monster has no main fighters). Everything follows the monster when it moves.
@@ -58,8 +56,7 @@ Rules for writing:
   - Dragging empty ground pans. A light grid scales with the zoom.
   - Dragging a figure moves it.
 - **Opening view:** fits the bounding box of everything still alive.
-- **Territories:** a dashed vertical border at x = 0 that spans the whole view, a faint red tint on the team side and a faint blue tint on the keep. Two banners stay pinned near the top of the view at a fixed screen size: a red "⚔️ Team battlefield" and a blue "🏰 Your keep". The border glows while a monster is dragged across it.
-- **Figures:** emoji glyphs on SVG circle bases, with name labels that never shrink below a readable size. Monster rims take the territory colour. Real art can come later.
+- **Figures:** emoji glyphs on SVG circle bases, with name labels that never shrink below a readable size. Monster bases are a neutral stone colour, light or dark to match the theme. Real art can come later.
   - Monsters by size: S 👺 goblin, M 👹 orc, L 🧌 troll, XL 🐉 dragon. The base grows with size.
   - Heroes by class: commander 👑, warrior ⚔️, archer 🏹, mage 🧙, rogue 🗡️, cleric ✨, paladin 🔱, ranger 🌲, druid 🌿, bard 🎻, monk 🥋, ninja 🥷, artificer 🔧, alchemist ⚗️, scout 🔭, necromancer 💀. Common synonyms map onto these (wizard → mage, knight → warrior, engineer → artificer, …). Any other class gets 🛡️. The table is in `lib/map/glyphs.ts`.
   - Ghosts are the hero glyph, faint, with a dashed outline.
@@ -67,7 +64,7 @@ Rules for writing:
 ## Interactions
 
 **Monsters**
-- **Drag** to move it. This saves `pos`, and crossing x = 0 changes its territory.
+- **Drag** to move it. This saves `pos`.
 - **Click** to open the side panel, which has notes, fighters, edit, slay and delete.
 
 **Heroes**
@@ -93,7 +90,7 @@ Rules for writing:
 
 **Create, edit, delete** (side-panel forms)
 - The side panel is an overlay on the right edge of the map. The map keeps its size underneath. Esc leaves an edit form first, then closes the panel.
-- **Monster form:** name, size, notes, and "Team or Keep?". The last only picks the spawn side, near the visible center of that side (not counting the area under the panel). If that side is out of view, the monster still spawns on it, next to the border.
+- **Monster form:** name, size and notes. A new monster spawns at the center of the visible map (not counting the area under the panel).
 - **Hero form:** name and class, with the known classes suggested and a glyph preview. A new hero spawns idle at the center of the view.
 - A new monster or hero is selected and the view flies to it. A rename never changes the id.
 
@@ -110,7 +107,6 @@ Rules for writing:
 Use Vitest unit tests on the pure functions that change data:
 - assign, Shift-add, and promoting or removing a ghost
 - slay and delete cleanup
-- territory from `pos.x`
 - comments kept on write
 - seeding from `data.example/`
 

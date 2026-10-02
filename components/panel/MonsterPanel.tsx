@@ -1,17 +1,14 @@
 "use client";
 
 import type { Hero, Monster, World } from "@/lib/types";
-import { creatureOf, fightersOf, territoryOf } from "@/lib/domain";
+import { creatureOf, fightersOf } from "@/lib/domain";
 import { heroGlyph, monsterGlyph } from "@/lib/map/glyphs";
 import { deleteMonster, slayMonster } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
 import { Button, ConfirmButton, ErrorNote, SectionLabel, useAction } from "./ui";
 
-const TERRITORY_LABEL = { team: "Team battlefield", keep: "Your keep" } as const;
-
 /** Read-only facts about a monster, shared with the trophy view. */
 export function MonsterFacts({ monster }: { monster: Monster }) {
-  const territory = territoryOf(monster.pos);
   return (
     <>
       <div className="flex items-center gap-3 pr-8">
@@ -25,27 +22,22 @@ export function MonsterFacts({ monster }: { monster: Monster }) {
           </p>
         </div>
       </div>
-      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-        <dt className="opacity-60">Territory</dt>
-        <dd>
-          <span
-            className={`mr-1.5 inline-block size-2 rounded-full ${territory === "team" ? "bg-[#b4432c]" : "bg-[#2f5fb3]"}`}
-          />
-          {TERRITORY_LABEL[territory]}
-        </dd>
-        {monster.externalKey && (
-          <>
-            <dt className="opacity-60">Key</dt>
-            <dd className="font-mono">{monster.externalKey}</dd>
-          </>
-        )}
-        {monster.slain && (
-          <>
-            <dt className="opacity-60">Slain</dt>
-            <dd>{monster.slain}</dd>
-          </>
-        )}
-      </dl>
+      {(monster.externalKey || monster.slain) && (
+        <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
+          {monster.externalKey && (
+            <>
+              <dt className="opacity-60">Key</dt>
+              <dd className="font-mono">{monster.externalKey}</dd>
+            </>
+          )}
+          {monster.slain && (
+            <>
+              <dt className="opacity-60">Slain</dt>
+              <dd>{monster.slain}</dd>
+            </>
+          )}
+        </dl>
+      )}
       {monster.notes && (
         <>
           <SectionLabel>Notes</SectionLabel>

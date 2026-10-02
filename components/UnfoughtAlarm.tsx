@@ -1,11 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import type { Monster, Territory } from "@/lib/types";
-import { territoryOf } from "@/lib/domain";
+import type { Monster } from "@/lib/types";
 import { monsterGlyph } from "@/lib/map/glyphs";
-
-const TERRITORY_LABEL: Record<Territory, string> = { team: "Team", keep: "Keep" };
 
 type Props = {
   /** Living monsters no hero is fighting. */
@@ -117,7 +114,6 @@ export function UnfoughtAlarm({ monsters, onPick }: Props) {
                   {monsterGlyph(m.size)}
                 </span>
                 <span className="min-w-0 flex-1 truncate">{m.name}</span>
-                <span className="text-xs opacity-60">{TERRITORY_LABEL[territoryOf(m.pos)]}</span>
               </button>
             </li>
           ))}

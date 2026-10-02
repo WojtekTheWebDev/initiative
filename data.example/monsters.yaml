@@ -1,4 +1,4 @@
-# Monsters: anything to deal with. x < 0 is the team battlefield, x >= 0 is your keep.
+# Monsters: anything to deal with. pos is where it stands on the map.
 # size: S | M | L | XL  ->  goblin | orc | troll | dragon
 
 - id: search-rewrite

@@ -9,11 +9,10 @@ import { DragError } from "./DragError";
 
 /**
  * Screen-space pieces of the drag interactions, for MapCanvas' `overlay`:
- * the border glow while a monster crosses x = 0, the ghost popover and the error toast.
+ * the ghost popover and the error toast.
  */
 export function DragOverlay({ drag, view }: { drag: FigureDrag; view: MapView }) {
   const { camera } = view;
-  const borderX = worldToScreen(camera, { x: 0, y: 0 }).x;
   const ghost = drag.ghost;
   const placed = ghost
     ? drag.layout.ghosts.find((g) => g.hero.id === ghost.heroId && g.monsterId === ghost.monsterId)
@@ -24,13 +23,6 @@ export function DragOverlay({ drag, view }: { drag: FigureDrag; view: MapView })
 
   return (
     <>
-      {drag.crossing && (
-        <div
-          aria-hidden="true"
-          className="absolute inset-y-0 w-1.5 -translate-x-1/2 bg-amber-400/70 shadow-[0_0_14px_4px_rgba(251,191,36,0.55)]"
-          style={{ left: borderX }}
-        />
-      )}
       {ghost && placed && monster && (
         <GhostPopover
           key={`${ghost.heroId}:${ghost.monsterId}`}

@@ -1,5 +1,5 @@
-import type { Hero, Monster, Pos, Territory, World } from "@/lib/types";
-import { alive, territoryOf } from "@/lib/domain";
+import type { Hero, Monster, Pos, World } from "@/lib/types";
+import { alive } from "@/lib/domain";
 import { HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
 
 /*
@@ -34,7 +34,6 @@ export type PlacedMonster = {
   monster: Monster;
   pos: Pos;
   radius: number;
-  territory: Territory;
   /** Nobody has this monster in their targets. */
   unfought: boolean;
 };
@@ -144,7 +143,6 @@ export function layoutWorld(world: World): WorldLayout {
       monster,
       pos: monster.pos,
       radius,
-      territory: territoryOf(monster.pos),
       unfought: !targeted.has(monster.id),
     });
 

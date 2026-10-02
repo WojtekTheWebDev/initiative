@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import type { World } from "@/lib/types";
 import { validateWorld } from "./validate";
 
-/** A small world: m1/m2 team side, m3 keep side, m4 slain. */
+/** A small world: m1, m2 and m3 living, m4 slain. */
 export function makeWorld(): World {
   return {
     monsters: [

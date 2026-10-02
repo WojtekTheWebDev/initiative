@@ -67,7 +67,7 @@ export function SidePanel({
   if (mode?.type === "create" && mode.kind === "monster") {
     content = (
       <MonsterForm
-        spawnAt={(side) => monsterSpawn(visible(), side)}
+        spawnAt={() => monsterSpawn(visible())}
         onCreated={created("monster")}
         onCancel={panel.back}
       />

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Monster, World } from "@/lib/types";
 import {
-  BORDER_MARGIN,
   SPAWN_JITTER,
   heroSpawn,
   liveSelection,
@@ -67,53 +66,24 @@ describe("visibleViewBox", () => {
 });
 
 describe("monsterSpawn", () => {
-  const both = { x: -600, y: -100, width: 1000, height: 200 }; // x from -600 to 400
+  const view = { x: -600, y: -100, width: 1000, height: 200 };
 
-  it("uses the centre of the visible part of each side", () => {
-    expect(monsterSpawn(both, "team", mid)).toEqual({ x: -300, y: 0 });
-    expect(monsterSpawn(both, "keep", mid)).toEqual({ x: 200, y: 0 });
+  it("spawns at the view centre", () => {
+    expect(monsterSpawn(view, mid)).toEqual({ x: -100, y: 0 });
   });
 
-  it("clamps to the chosen side when the view shows only the other side", () => {
-    const keepOnly = { x: 100, y: 0, width: 500, height: 100 };
-    const teamOnly = { x: -900, y: 0, width: 500, height: 100 };
-    for (const rand of [low, mid, high]) {
-      expect(monsterSpawn(keepOnly, "team", rand).x).toBeLessThanOrEqual(-BORDER_MARGIN);
-      expect(monsterSpawn(teamOnly, "keep", rand).x).toBeGreaterThanOrEqual(BORDER_MARGIN);
-    }
+  it("adds bounded jitter on both axes", () => {
+    expect(monsterSpawn(view, low)).toEqual({ x: -100 - SPAWN_JITTER, y: -SPAWN_JITTER });
+    const b = monsterSpawn(view, high);
+    expect(b.x + 100).toBeCloseTo(SPAWN_JITTER, 0);
+    expect(b.y).toBeCloseTo(SPAWN_JITTER, 0);
   });
 
-  it("keeps clear of the border when only a sliver of the side is visible", () => {
-    const sliver = { x: -20, y: 0, width: 800, height: 100 };
-    expect(monsterSpawn(sliver, "team", high).x).toBeLessThanOrEqual(-BORDER_MARGIN);
-  });
-
-  it("adds bounded jitter", () => {
-    const a = monsterSpawn(both, "team", low);
-    const b = monsterSpawn(both, "team", high);
-    expect(Math.abs(a.x + 300)).toBe(SPAWN_JITTER);
-    expect(a.y).toBe(-SPAWN_JITTER);
-    expect(Math.abs(b.x + 300)).toBeCloseTo(SPAWN_JITTER, 0);
-    expect(a.x).not.toBe(b.x);
-  });
-
-  it("still jitters spawns that were clamped, so they don't stack", () => {
-    const teamOnly = { x: -900, y: 0, width: 500, height: 100 };
-    const xs = [low, mid, high].map((r) => monsterSpawn(teamOnly, "keep", r).x);
-    expect(new Set(xs).size).toBeGreaterThan(1);
-    for (const x of xs) expect(x).toBeLessThanOrEqual(BORDER_MARGIN + SPAWN_JITTER);
-  });
-
-  it("always lands on the chosen territory", () => {
-    for (let i = 0; i < 200; i++) {
-      const view = {
-        x: (Math.random() - 0.5) * 4000,
-        y: 0,
-        width: Math.random() * 2000 + 1,
-        height: 100,
-      };
-      expect(monsterSpawn(view, "team").x).toBeLessThan(0);
-      expect(monsterSpawn(view, "keep").x).toBeGreaterThanOrEqual(0);
+  it("follows the view anywhere on the map", () => {
+    for (const x of [-5000, -300, 0, 4000]) {
+      const pos = monsterSpawn({ x, y: 0, width: 400, height: 100 });
+      expect(pos.x).toBeGreaterThanOrEqual(x + 200 - SPAWN_JITTER);
+      expect(pos.x).toBeLessThanOrEqual(x + 200 + SPAWN_JITTER);
     }
   });
 });

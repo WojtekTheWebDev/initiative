@@ -148,7 +148,6 @@ describe("live drag overrides", () => {
     const bobBefore = before.heroes.find((h) => h.hero.id === "bob")!.pos;
     const bobAfter = after.heroes.find((h) => h.hero.id === "bob")!.pos;
     expect(bobAfter.x - bobBefore.x).toBeCloseTo(500);
-    expect(after.monsters.find((m) => m.monster.id === "m1")!.territory).toBe("keep");
   });
 
   it("a dragged hero stands at the cursor; nothing else moves", () => {

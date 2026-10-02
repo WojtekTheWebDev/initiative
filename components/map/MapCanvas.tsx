@@ -21,7 +21,6 @@ import {
   type ViewBox,
   type ViewportSize,
 } from "@/lib/map/camera";
-import { Territories } from "./Territories";
 import { useCamera, type InitialCamera } from "./useCamera";
 
 /** Imperative API exposed through `ref`. Getters always return the latest values. */
@@ -265,7 +264,6 @@ export function MapCanvas({
         {view && (
           <>
             <Grid viewBox={view.viewBox} scale={view.camera.scale} />
-            <Territories viewBox={view.viewBox} scale={view.camera.scale} />
             <g>{typeof children === "function" ? children(view) : children}</g>
           </>
         )}

@@ -1,6 +1,5 @@
 export type Pos = { x: number; y: number };
 export type Size = "S" | "M" | "L" | "XL";
-export type Territory = "team" | "keep";
 
 export type Monster = {
   id: string;
