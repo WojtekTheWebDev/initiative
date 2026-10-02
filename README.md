@@ -23,6 +23,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build` then `npm start` | Production build and server |
 | `npm test` | Vitest unit tests (`npm run test:watch` to watch) |
 | `npm run lint` | ESLint |
+| `npm run bake:minis` | Re-render the miniature images in `public/minis/` (see [Minis](#minis)) |
 
 ## How to use
 
@@ -43,6 +44,22 @@ Open [http://localhost:3000](http://localhost:3000).
 - To start over from the example data, stop the app and delete `data/`.
 - The format is described in [`docs/DESIGN.md`](docs/DESIGN.md#data-model). Anything that can be worked out (who fights what, the creature type) is not stored.
 
+## Minis
+
+Every figure is a painted miniature: a 3D model rendered once into an image, so the browser only draws pictures. The models live in `assets/minis/` (sources and licences in [`assets/minis/LICENSES.md`](assets/minis/LICENSES.md)), and the baked images and `manifest.json` in `public/minis/` are committed.
+
+To add a model:
+
+1. Put the model in `assets/minis/` as `<id>.glb`, named after what it shows (e.g. `paladin.glb`). Use a CC0 or otherwise free model and add it to `LICENSES.md`. If it is rigged, keep only the clip you want it posed in to keep the file small.
+2. Add a sidecar `<id>.json` next to it:
+   ```json
+   { "name": "Paladin", "kind": "hero" }
+   ```
+   A monster also needs its size, e.g. `{ "name": "Dragon", "kind": "monster", "size": "XL" }`; the size picks which monster mini is used. Optional keys: `pose` (`{ "clip": "Idle", "time": 0.5 }`), `height` (in base radii, default 2.2), `footprint`, `rotate` (degrees), `hide` (node names), `colors` (material name to colour) and `primer` (one flat colour). They are described in `scripts/bake-minis.ts`.
+3. Run `npm run bake:minis` and commit the changed files in `public/minis/`. A new hero mini shows up in the hero form's picker.
+
+The bake renders with three.js in headless Chromium (installed by the script through Playwright on first run), with a fixed camera and lights, so rerunning it gives the same files. `npm run bake:minis -- knight` rebakes only some ids. Other folders can be baked the same way, e.g. terrain pieces: `npm run bake:minis -- --src assets/terrain --out public/terrain`, with sidecars of `"kind": "terrain"` and a `"radius"` (world units per model unit); terrain gets no base.
+
 ## Stack
 
-Next.js 16 (App Router, Server Actions), React 19, Tailwind 4, the `yaml` package, and Vitest.
+Next.js 16 (App Router, Server Actions), React 19, Tailwind 4, the `yaml` package, and Vitest. The minis are baked with three.js and Playwright (dev only).

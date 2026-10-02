@@ -14,7 +14,8 @@ export type Monster = {
 export type Hero = {
   id: string;
   name: string;
-  class: string;
+  class: string; // free-text label, shown as text only
+  mini?: string; // id of a baked hero mini; absent or unknown = the neutral adventurer
   targets: string[]; // ordered; [0] = main, rest = secondary targets; [] = idle
   pos?: Pos; // present only when targets is empty
 };

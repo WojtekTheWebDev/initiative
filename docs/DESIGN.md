@@ -37,20 +37,22 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
 # data/heroes.yaml
 - id: ana
   name: Ana
-  class: archer             # free label → token glyph (mapping table + fallback)
+  class: archer             # free-text label, shown as text only
+  mini: hooded-rogue        # optional; a hero mini id (public/minis/manifest.json); absent or unknown = neutral adventurer
   targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = secondary targets
   pos: { x: -600, y: 40 }   # home while idle; stored only while idle (targets empty)
 ```
 
 Rules worked out from the data, not stored:
 - **Engaged or unfought** depends on whether any hero has the monster in `targets`. There is no `fighters` or `status` field.
-- **Creature type** comes from `size`. There is no `kind` field.
+- **Creature type** comes from `size`. There is no `kind` field. The size also picks the monster's mini.
+- **A hero's mini** is its `mini` pick. A hero with no `mini`, or with an id that isn't in the roster, is drawn as the neutral adventurer. `class` never affects the art.
 - **Where figures are drawn** comes from the targets, through a force layout (`lib/map/layout.ts` on top of the solver in `lib/map/force.ts`). The drawn position is never saved.
   - A stored `pos` is a **home**. Every monster and every idle hero is held to its home by the same weak spring, so it stays near it but can be nudged aside, and drifts back when there is room.
   - An engaged hero has no home. A spring to each of its targets pulls it toward them and pulls them toward it, so heroes and monsters that target each other gather into a cluster: a monster that shares a hero with another is drawn between its home and theirs. The main target pulls harder and holds the hero closer than secondary targets.
   - Clusters push other figures aside, so nothing overlaps and no figure stands on a monster's name label.
   - The layout is pure and deterministic: the same files always give the same picture, in whatever order they list things. The tuning constants are exported from `lib/map/layout.ts`.
-- **Target arrows** come from the layout: one per hero and living target, from the hero's rim to the monster's rim. They are never stored, so anything that moves a figure moves its arrows too.
+- **Target arrows** come from the layout: one per hero and living target, from the edge of the hero's base ellipse to the edge of the monster's. They are never stored, so anything that moves a figure moves its arrows too.
 
 Rules for writing:
 - Use the [`yaml`](https://eemeli.org/yaml/) package's Document API, so hand-written comments are kept.
@@ -64,10 +66,16 @@ Rules for writing:
   - Dragging a figure moves it (see Interactions).
   - When the layout changes after a drop, an edit or new data from the server, figures glide to their new places (about 350 ms, ease-out). During a drag they follow the layout directly, and with `prefers-reduced-motion` they jump.
 - **Opening view:** fits the bounding box of everything still alive.
-- **Figures:** emoji glyphs on SVG circle bases, with name labels that never shrink below a readable size. Monster bases are a neutral stone colour, light or dark to match the theme. Real art can come later.
-  - Monsters by size: S 👺 goblin, M 👹 orc, L 🧌 troll, XL 🐉 dragon. The base grows with size.
-  - Heroes by class: commander 👑, warrior ⚔️, archer 🏹, mage 🧙, rogue 🗡️, cleric ✨, paladin 🔱, ranger 🌲, druid 🌿, bard 🎻, monk 🥋, ninja 🥷, artificer 🔧, alchemist ⚗️, scout 🔭, necromancer 💀. Common synonyms map onto these (wizard → mage, knight → warrior, engineer → artificer, …). Any other class gets 🛡️. The table is in `lib/map/glyphs.ts`.
-  - **Target arrows** run from each hero to each of its targets, below the figures. The main arrow is solid with a filled head, secondary arrows are thinner, dashed and fainter. Line widths and heads keep the same screen size at any zoom. Selecting a hero turns its arrows amber and fades the rest; selecting a monster does the same for the arrows pointing at it.
+- **Figures:** painted miniatures standing on the table, seen from a three-quarter angle (38° up, 18° around). Each is one baked image (see Art), never live 3D.
+  - Every figure is a soft contact shadow on the felt, the baked mini anchored on the centre of its round base, and a name tag. The base radius is the mini's unit, so a mini scales with its base.
+  - Monsters by size: S goblin, M orc, L troll, XL dragon. The base grows with size.
+  - Heroes stand as the mini they picked (`mini`), or as the neutral adventurer, an unpainted grey mini. Idle heroes are slightly faded.
+  - **Base rings** are ellipses squashed by `BASE_SQUASH = sin 38°` (`lib/map/rings.ts`), the way a round base looks from that angle. The unfought pulse (red), selection (amber) and the drop hints (green for a plain drop, purple with Shift) all sit around the base.
+  - **Name tags** are slim dark tags with gold small capitals (Cinzel) just below the front of the base, red for an unfought monster. They never shrink below a readable size, and they are drawn above every mini, so no mini hides a name. Hero names hide when zoomed far out.
+  - **Draw order:** target arrows, then contact shadows, then the minis sorted by their drawn y, so nearer minis overlap farther ones. The figure being dragged is always on top.
+  - **Hit areas:** a figure is hit on its base ellipse or on the body of its mini (the box around the model's silhouette, without the base), never on the empty corners of its image. Dropping a hero on a dragon's wing or on the top of a tall mini counts as dropping on that monster. Where figures overlap, the one drawn in front wins.
+  - **Target arrows** are gold cords laid on the table with a soft shadow, running from each hero to each of its targets below the figures, trimmed to the base ellipses. The main arrow is solid, secondary arrows are thinner and dashed. Line widths and heads keep the same screen size at any zoom. Selecting a hero turns its arrows amber and fades the rest; selecting a monster does the same for the arrows pointing at it.
+  - The table looks the same in light and dark mode; only the UI around it follows the theme.
 
 ## Interactions
 
@@ -101,8 +109,19 @@ Rules for writing:
 **Create, edit, delete** (side-panel forms)
 - The side panel is an overlay on the right edge of the map. The map keeps its size underneath. Esc leaves an edit form first, then closes the panel.
 - **Monster form:** name, size and notes. A new monster spawns at the center of the visible map (not counting the area under the panel).
-- **Hero form:** name and class, with the known classes suggested and a glyph preview. A new hero spawns idle at the center of the view.
+- **Hero form:** name, class and mini. Class is plain free text. The mini picker is a grid of baked portraits with the current pick ringed and "Neutral" first. A pick that isn't in the roster shows as missing, with Neutral ringed, so you can choose again. Changing only the mini writes only `mini` to the YAML. A new hero spawns idle at the center of the view.
+- The side panel, the unfought alarm and the trophies show each figure's mini as a small portrait.
 - A new monster or hero is selected and the view flies to it. A rename never changes the id.
+
+## Art
+
+- **Models** are CC0 low-poly glTF files in `assets/minis/`, from KayKit (Kay Lousberg) and Quaternius. Every source and licence is listed in `assets/minis/LICENSES.md`.
+- Each model is `<id>.glb` with a small sidecar `<id>.json`: its display name, its kind (`hero`, `monster` or `terrain`), a monster's `size`, and optional bake settings (pose clip, height, rotation, recolouring, primer). Adding a model, including an AI-generated one later, means dropping in the two files and rebaking.
+- **Baking** (`npm run bake:minis`, `scripts/bake-minis.ts`) renders every model once with three.js in headless Chromium (Playwright), both dev dependencies only. It uses one orthographic camera (38° elevation, 18° azimuth) and one light rig, with the key light from the upper left so the shading matches the contact shadows on the map. It stands each hero and monster on a round black base with green flock (radius 1, the model's unit), scales the model onto it, and gives every material the same matte painted finish.
+- The output is `public/minis/<id>.webp` at 4 px per world unit (sharp at zoom 2 on a high-density screen) and `public/minis/manifest.json`: per mini, its image size in base radii, the anchor (where the base centre sits in the image) and the body box used for hit areas. The output is committed, so neither `npm run dev` nor `npm run build` bakes anything. Rendering uses software GL, so a rebake from the same files gives the same bytes.
+- The same script bakes other model folders with the same camera and lighting (`--src assets/terrain --out public/terrain`); terrain sidecars set `"kind": "terrain"` and a `radius`, and get no base.
+- `lib/map/minis.ts` reads the manifest: `monsterMini(size)`, `heroMini(id)` and `HERO_MINIS`, the roster for the picker, neutral first.
+- No WebGL ships to the browser: the map stays SVG with hand-rolled pan and zoom, and each figure is one `<image>`.
 
 ## Technical notes (Next.js 16)
 
@@ -117,7 +136,8 @@ Rules for writing:
 Use Vitest unit tests on the pure functions that change data:
 - assign, Shift-add, and promoting or removing a secondary target
 - the force solver and the layout: the user's example, separate clusters, homes, no overlaps, determinism and speed
-- target arrows from the layout
+- target arrows from the layout, trimmed to the base ellipses
+- the mini lookup (every size and roster entry is baked, missing and unknown ids give the neutral mini), mini hit areas and draw order
 - the home after a drag
 - slay and delete cleanup
 - comments kept on write

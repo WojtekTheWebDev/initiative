@@ -1,0 +1,210 @@
+{
+  "barbarian": {
+    "name": "Barbarian",
+    "kind": "hero",
+    "image": "/minis/barbarian.webp",
+    "width": 2.014,
+    "height": 2.75,
+    "anchor": {
+      "x": 1.007,
+      "y": 2.069
+    },
+    "body": {
+      "x": 0.125,
+      "y": 0,
+      "width": 1.653,
+      "height": 2.181
+    }
+  },
+  "dragon": {
+    "name": "Dragon",
+    "kind": "monster",
+    "size": "XL",
+    "image": "/minis/dragon.webp",
+    "width": 2.082,
+    "height": 2.034,
+    "anchor": {
+      "x": 1,
+      "y": 1.356
+    },
+    "body": {
+      "x": 0.25,
+      "y": 0,
+      "width": 1.832,
+      "height": 1.586
+    }
+  },
+  "goblin": {
+    "name": "Goblin",
+    "kind": "monster",
+    "size": "S",
+    "image": "/minis/goblin.webp",
+    "width": 2,
+    "height": 2.74,
+    "anchor": {
+      "x": 1.004,
+      "y": 2.056
+    },
+    "body": {
+      "x": 0.231,
+      "y": 0,
+      "width": 1.538,
+      "height": 2.183
+    }
+  },
+  "hooded-rogue": {
+    "name": "Hooded Rogue",
+    "kind": "hero",
+    "image": "/minis/hooded-rogue.webp",
+    "width": 2.014,
+    "height": 2.653,
+    "anchor": {
+      "x": 1.007,
+      "y": 1.972
+    },
+    "body": {
+      "x": 0.278,
+      "y": 0,
+      "width": 1.444,
+      "height": 1.944
+    }
+  },
+  "knight": {
+    "name": "Knight",
+    "kind": "hero",
+    "image": "/minis/knight.webp",
+    "width": 2.014,
+    "height": 2.861,
+    "anchor": {
+      "x": 1.007,
+      "y": 2.18
+    },
+    "body": {
+      "x": 0.056,
+      "y": 0,
+      "width": 1.708,
+      "height": 2.111
+    }
+  },
+  "mage": {
+    "name": "Mage",
+    "kind": "hero",
+    "image": "/minis/mage.webp",
+    "width": 2.014,
+    "height": 2.736,
+    "anchor": {
+      "x": 1.007,
+      "y": 2.057
+    },
+    "body": {
+      "x": 0.139,
+      "y": 0,
+      "width": 1.764,
+      "height": 2.125
+    }
+  },
+  "neutral": {
+    "name": "Adventurer",
+    "kind": "hero",
+    "image": "/minis/neutral.webp",
+    "width": 2.014,
+    "height": 2.889,
+    "anchor": {
+      "x": 1.007,
+      "y": 2.21
+    },
+    "body": {
+      "x": 0.028,
+      "y": 0,
+      "width": 1.847,
+      "height": 2.111
+    }
+  },
+  "ninja": {
+    "name": "Ninja",
+    "kind": "hero",
+    "image": "/minis/ninja.webp",
+    "width": 2.056,
+    "height": 2.5,
+    "anchor": {
+      "x": 1.007,
+      "y": 1.822
+    },
+    "body": {
+      "x": 0.222,
+      "y": 0,
+      "width": 1.833,
+      "height": 2.056
+    }
+  },
+  "orc": {
+    "name": "Orc",
+    "kind": "monster",
+    "size": "M",
+    "image": "/minis/orc.webp",
+    "width": 2.044,
+    "height": 2.132,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.455
+    },
+    "body": {
+      "x": 0.154,
+      "y": 0,
+      "width": 1.89,
+      "height": 1.654
+    }
+  },
+  "pirate": {
+    "name": "Pirate Captain",
+    "kind": "hero",
+    "image": "/minis/pirate.webp",
+    "width": 2.014,
+    "height": 2.833,
+    "anchor": {
+      "x": 1.007,
+      "y": 2.148
+    },
+    "body": {
+      "x": 0.181,
+      "y": 0,
+      "width": 1.639,
+      "height": 2.333
+    }
+  },
+  "rogue": {
+    "name": "Rogue",
+    "kind": "hero",
+    "image": "/minis/rogue.webp",
+    "width": 2.014,
+    "height": 2.792,
+    "anchor": {
+      "x": 1.007,
+      "y": 2.111
+    },
+    "body": {
+      "x": 0.097,
+      "y": 0,
+      "width": 1.597,
+      "height": 2.042
+    }
+  },
+  "troll": {
+    "name": "Troll",
+    "kind": "monster",
+    "size": "L",
+    "image": "/minis/troll.webp",
+    "width": 2,
+    "height": 1.955,
+    "anchor": {
+      "x": 0.999,
+      "y": 1.277
+    },
+    "body": {
+      "x": 0.142,
+      "y": 0,
+      "width": 1.824,
+      "height": 1.273
+    }
+  }
+}

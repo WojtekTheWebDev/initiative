@@ -43,6 +43,13 @@ function checkNotes(value: unknown): string | undefined {
   return value;
 }
 
+/** A hero's mini pick: any text, or "" for none (the neutral adventurer). */
+function checkMini(value: unknown): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string") throw new Error("Mini must be text");
+  return value;
+}
+
 function checkPos(value: unknown): Pos {
   if (!isObject(value) || !Number.isFinite(value.x) || !Number.isFinite(value.y)) {
     throw new Error("Position must be { x, y } with finite numbers");
@@ -195,6 +202,7 @@ export async function deleteMonster(id: string): Promise<ActionResult> {
 export async function createHero(input: {
   name: string;
   class: string;
+  mini?: string;
   pos: Pos;
 }): Promise<ActionResult<string>> {
   return act(async () => {
@@ -202,6 +210,7 @@ export async function createHero(input: {
     const clean = {
       name: checkName(input.name, "Hero name"),
       class: checkName(input.class, "Hero class"),
+      mini: checkMini(input.mini),
       pos: checkPos(input.pos),
     };
     let id = "";
@@ -216,7 +225,7 @@ export async function createHero(input: {
 
 export async function updateHero(
   id: string,
-  patch: { name?: string; class?: string },
+  patch: { name?: string; class?: string; mini?: string },
 ): Promise<ActionResult> {
   return act(async () => {
     const heroId = checkId(id, "Hero id");
@@ -224,6 +233,7 @@ export async function updateHero(
     const clean: domain.HeroPatch = {};
     if (p.name !== undefined) clean.name = checkName(p.name, "Hero name");
     if (p.class !== undefined) clean.class = checkName(p.class, "Hero class");
+    if ("mini" in p) clean.mini = checkMini(p.mini) ?? "";
     await updateWorld((w) => domain.updateHero(w, heroId, clean));
   });
 }

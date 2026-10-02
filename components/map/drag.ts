@@ -1,6 +1,7 @@
 import type { Pos, World } from "@/lib/types";
 import * as domain from "@/lib/domain";
 import { idleHome, layoutWorld, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
+import { hitsMini, monsterMini } from "@/lib/map/minis";
 
 /*
  * Pure helpers behind figure dragging (no React, no DOM), so they can be unit-tested.
@@ -51,13 +52,19 @@ export function applyOp(world: World, op: WorldOp): World {
   }
 }
 
-/** The monster whose base contains `point` (nearest center wins when bases overlap), or null. */
+/**
+ * The monster under `point`, or null. A monster is hit on its base ellipse or
+ * on the body of its mini, so a hero dropped on a dragon's wing lands on the
+ * dragon. Where figures overlap, the one drawn in front (lower on the screen)
+ * wins, then the one with the nearest center.
+ */
 export function hitTestMonster(monsters: PlacedMonster[], point: Pos): PlacedMonster | null {
   let best: PlacedMonster | null = null;
   let bestDist = Infinity;
   for (const m of monsters) {
+    if (!hitsMini(monsterMini(m.monster.size), m.pos, m.radius, point)) continue;
     const d = Math.hypot(point.x - m.pos.x, point.y - m.pos.y);
-    if (d <= m.radius && d < bestDist) {
+    if (!best || m.pos.y > best.pos.y || (m.pos.y === best.pos.y && d < bestDist)) {
       best = m;
       bestDist = d;
     }

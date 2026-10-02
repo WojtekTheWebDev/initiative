@@ -1,7 +1,7 @@
 import type { Hero, Monster, Pos, World } from "@/lib/types";
 import { alive } from "@/lib/domain";
 import { fnv1a, relax, type ForceLink, type ForceNode } from "./force";
-import { HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
+import { BASE_SQUASH, HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
 
 /*
  * Where every figure stands on the map, worked out from the data alone by the
@@ -33,7 +33,7 @@ export const LABEL_CHAR_WIDTH = 8;
 export const LABEL_MAX_WIDTH = 240;
 /** Height of the keep-out box under a monster's name, in world units. */
 export const LABEL_HEIGHT = 22;
-/** Space between a monster's base and its name label, in world units. */
+/** Space between the front of a monster's base and its name label, in world units. */
 export const LABEL_GAP = 4;
 /** How far from the middle of its targets' homes an engaged hero starts, so heroes that share targets never start on one point. */
 const START_SPREAD = 12;
@@ -64,12 +64,17 @@ export type LayoutOptions = {
   pin?: { id: string; pos: Pos };
 };
 
-/** The keep-out box under a monster, roughly the size of its name label. */
-export function labelBox(name: string): { width: number; height: number; gap: number } {
+/**
+ * The keep-out box under a monster with a base of `radius`, roughly the size of
+ * its name label. The label hangs just below the front of the base ellipse,
+ * `radius * BASE_SQUASH` below the centre, so the gap the solver adds below the
+ * radius is negative.
+ */
+export function labelBox(name: string, radius: number): { width: number; height: number; gap: number } {
   return {
     width: Math.min(LABEL_MAX_WIDTH, name.length * LABEL_CHAR_WIDTH),
     height: LABEL_HEIGHT,
-    gap: LABEL_GAP,
+    gap: LABEL_GAP - radius * (1 - BASE_SQUASH),
   };
 }
 
@@ -122,7 +127,7 @@ export function layoutWorld(world: World, opts: LayoutOptions = {}): WorldLayout
       start: starts.get(m.monster.id)!,
       pinned: m.monster.id === pin?.id,
       anchor: { pos: m.monster.pos, strength: ANCHOR },
-      keepOut: labelBox(m.monster.name),
+      keepOut: labelBox(m.monster.name, m.radius),
     });
   }
   const radii = new Map(monsters.map((m) => [m.monster.id, m.radius]));

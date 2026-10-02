@@ -17,7 +17,7 @@ import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import * as actions from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
 import type { MapHandle } from "./MapCanvas";
-import type { FigureHandlers } from "./MonsterFigure";
+import type { FigureHandlers } from "./MiniFigure";
 import {
   applyOp,
   heroHomeAfterDrag,
@@ -30,7 +30,7 @@ import {
 } from "./drag";
 
 /** How a monster is highlighted while a hero is dragged over it. */
-export type DropHint = "assign" | "ghost";
+export type DropHint = "assign" | "secondary";
 
 /** A target arrow: a hero and one of its targets. */
 export type TargetRef = { heroId: string; monsterId: string };
@@ -119,7 +119,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     if (s.kind === "hero" && s.onMap) {
       const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, s.pos, s.shift);
       if (drop && "monsterId" in drop) {
-        hint = { monsterId: drop.monsterId, kind: drop.shift ? "ghost" : "assign" };
+        hint = { monsterId: drop.monsterId, kind: drop.shift ? "secondary" : "assign" };
       }
     }
     setLive({ drag: { kind: s.kind, id: s.id, pos: s.pos }, hint });
@@ -285,8 +285,8 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     /** Highlight for a monster while a hero is dragged over it. */
     dropHint: (monsterId: string): DropHint | null =>
       live?.hint?.monsterId === monsterId ? live.hint.kind : null,
-    /** The hero being dragged, to draw on top of everything. */
-    liftedHeroId: drag?.kind === "hero" ? drag.id : null,
+    /** The figure being dragged, to draw on top of everything. */
+    lifted: drag ? { kind: drag.kind, id: drag.id } : null,
     /** The arrow whose popover is open. */
     link,
     closeLink: () => setLink(null),
