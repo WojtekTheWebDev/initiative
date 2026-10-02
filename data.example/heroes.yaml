@@ -1,6 +1,7 @@
 # Heroes: engineers on the team, plus you.
 # targets: ordered list of monster ids; first = main fight, rest = secondary targets.
-# pos is stored only while a hero is idle (targets empty).
+# pos is an idle hero's home, stored only while it is idle (targets empty).
+# An engaged hero is drawn between its targets.
 
 - id: ana
   name: Ana

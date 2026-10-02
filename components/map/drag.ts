@@ -1,6 +1,6 @@
 import type { Pos, World } from "@/lib/types";
 import * as domain from "@/lib/domain";
-import type { PlacedMonster, WorldLayout } from "@/lib/map/layout";
+import { idleHome, layoutWorld, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
 
 /*
  * Pure helpers behind figure dragging (no React, no DOM), so they can be unit-tested.
@@ -88,25 +88,45 @@ export function resolveHeroDrop(
   return { monsterId, shift };
 }
 
-/** A figure being dragged right now, in world units. */
-export type LiveDrag =
-  | { kind: "monster"; id: string; pos: Pos }
-  | { kind: "hero"; id: string; pos: Pos };
-
-/** Moves a dragged monster in the world before layout, so its heroes and arrows follow it. */
-export function worldWithDrag(world: World, drag: LiveDrag | null): World {
-  if (!drag || drag.kind !== "monster") return world;
-  return applyOp(world, { kind: "moveMonster", id: drag.id, pos: drag.pos });
-}
+/** A figure being dragged right now. `pos` is where it is drawn, in world units. */
+export type LiveDrag = { kind: "monster" | "hero"; id: string; pos: Pos };
 
 /**
- * Puts a dragged hero at the cursor after layout, so its arrows follow it. Its targets
- * (and so the monsters' unfought state) stay as they are until the drop.
+ * The layout to draw during a drag. `layout` is `world` laid out without the drag.
+ * - A dragged monster is pinned at `pos` and the map is laid out again around
+ *   it, so its cluster comes along and anything in the way is nudged aside.
+ * - A dragged hero only moves itself (its arrows follow). Nothing else moves
+ *   until the drop, so monsters never slide out from under the cursor. Its
+ *   targets, and so the monsters' unfought state, stay as they are too.
  */
-export function layoutWithDrag(layout: WorldLayout, drag: LiveDrag | null): WorldLayout {
-  if (!drag || drag.kind !== "hero") return layout;
+export function layoutWithDrag(world: World, layout: WorldLayout, drag: LiveDrag | null): WorldLayout {
+  if (!drag) return layout;
+  if (drag.kind === "monster") return layoutWorld(world, { pin: { id: drag.id, pos: drag.pos } });
   return {
     ...layout,
     heroes: layout.heroes.map((h) => (h.hero.id === drag.id ? { ...h, pos: drag.pos } : h)),
   };
+}
+
+/**
+ * Where a dragged figure's home goes: it moves by as much as the figure was
+ * dragged (`drop - press`, both drawn positions). The drawn position can differ
+ * from the home when the figure is pulled or nudged, so saving the drop point
+ * itself would make it jump. The layout moves with the homes, so a monster
+ * whose heroes fight nothing else settles exactly where it was let go. One
+ * that shares heroes with other monsters is pulled back toward them a little,
+ * since their homes stay where they are.
+ */
+export function homeAfterDrag(home: Pos, press: Pos, drop: Pos): Pos {
+  return { x: home.x + drop.x - press.x, y: home.y + drop.y - press.y };
+}
+
+/**
+ * Where a hero dropped on empty ground stands idle: an idle hero's home moves
+ * by the drag offset, and an engaged hero (which has no home) stays where it
+ * was let go.
+ */
+export function heroHomeAfterDrag(placed: PlacedHero, press: Pos, drop: Pos): Pos {
+  if (placed.targets.length > 0) return { x: drop.x, y: drop.y };
+  return homeAfterDrag(idleHome(placed.hero), press, drop);
 }

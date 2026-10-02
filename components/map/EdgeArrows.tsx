@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import type { Monster } from "@/lib/types";
 import { offscreenArrows } from "@/lib/map/arrows";
+import type { PlacedMonster } from "@/lib/map/layout";
 import type { MapView } from "./MapCanvas";
 
 const UNFOUGHT = "#dc2626";
@@ -11,8 +12,8 @@ const SIZE = 30;
 
 type Props = {
   view: MapView;
-  /** Unfought monsters; only the off-screen ones get an arrow. */
-  monsters: Monster[];
+  /** Unfought monsters where they are drawn; only the off-screen ones get an arrow. */
+  monsters: PlacedMonster[];
   onPick: (monster: Monster) => void;
 };
 
@@ -23,8 +24,9 @@ type Props = {
  */
 export function EdgeArrows({ view, monsters, onPick }: Props) {
   const { camera, viewport } = view;
-  const byId = useMemo(() => new Map(monsters.map((m) => [m.id, m])), [monsters]);
-  const arrows = offscreenArrows(monsters, camera, viewport, { margin: SIZE / 2 + 6, gap: SIZE + 4 });
+  const byId = useMemo(() => new Map(monsters.map((m) => [m.monster.id, m.monster])), [monsters]);
+  const targets = useMemo(() => monsters.map((m) => ({ id: m.monster.id, pos: m.pos })), [monsters]);
+  const arrows = offscreenArrows(targets, camera, viewport, { margin: SIZE / 2 + 6, gap: SIZE + 4 });
 
   return (
     <>

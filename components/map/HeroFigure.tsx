@@ -50,8 +50,8 @@ export function HeroFigure({ placed, scale, selected, onPointerDown, onClick }: 
         {heroGlyph(hero.class)}
       </text>
       {scale >= HERO_LABEL_MIN_SCALE && (
-        // Engaged heroes stand above or beside their monster, so the label goes
-        // above them, away from the monster's base and its name.
+        // Monster names sit below their bases, so an engaged hero's label goes
+        // above it, where it stays clear of the names of the monsters around it.
         <FigureLabel y={HERO_BASE_RADIUS} size={11} scale={scale} above={!idle}>
           {hero.name}
         </FigureLabel>

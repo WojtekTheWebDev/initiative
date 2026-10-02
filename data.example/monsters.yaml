@@ -1,4 +1,5 @@
-# Monsters: anything to deal with. pos is where it stands on the map.
+# Monsters: anything to deal with. pos is its home: the figure is drawn near it,
+# pulled toward the monsters that share its heroes.
 # size: S | M | L | XL  ->  goblin | orc | troll | dragon
 
 - id: search-rewrite

@@ -87,6 +87,26 @@ describe("relax", () => {
     expect(dist(out.get("a")!, anchor)).toBeLessThan(1);
   });
 
+  it("brings a weakly anchored node all the way home from far away", () => {
+    const home = { x: -40, y: 70 };
+    const node: ForceNode = { id: "a", radius: 20, start: { x: 360, y: -230 }, anchor: { pos: home, strength: 0.03 } };
+    expect(dist(relax([node], []).get("a")!, home)).toBeLessThan(1);
+    // Cooling alone leaves it short: settling is what finishes the pull.
+    expect(dist(relax([node], [], { settle: 0 }).get("a")!, home)).toBeGreaterThan(1);
+  });
+
+  it("settles a linked node and a weak anchor at their balance, not at the anchor", () => {
+    // A pinned node pulls an anchored one with a spring of rest length 0, and
+    // the anchor pulls it back: each step the spring moves it by 0.4 of the
+    // gap to `pin`, the anchor by 0.03 of the gap to `home`.
+    const nodes: ForceNode[] = [
+      { id: "pin", radius: 1, start: { x: 0, y: 0 }, pinned: true },
+      { id: "a", radius: 1, start: { x: 0, y: 0 }, anchor: { pos: { x: 500, y: 0 }, strength: 0.03 } },
+    ];
+    const out = relax(nodes, [{ source: "pin", target: "a", length: 0, strength: 0.4 }]);
+    expect(out.get("a")!.x).toBeCloseTo((500 * 0.03) / (0.4 + 0.03), 0);
+  });
+
   it("moves with its input: shifting every start and anchor shifts every output", () => {
     const { nodes, links } = scene();
     const dx = 1234.5;

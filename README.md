@@ -28,7 +28,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Move around:** the wheel (or a trackpad pinch) zooms at the cursor. Drag empty ground to pan.
 - **Monsters:** drag one to move it. Click it to open the side panel with notes, **Edit**, **Slay** and **Delete**.
-- **Heroes:** drag a hero onto a monster to make that its only target. Hold **Shift** while dropping to add the monster as a secondary target instead; the hero stays at its main fight. Every hero has an arrow to each of its targets: solid for the main target, dashed for secondary ones. Drop a hero on empty ground to make it idle there.
+- **Heroes:** drag a hero onto a monster to make that its only target. Hold **Shift** while dropping to add the monster as a secondary target instead; the hero stays closest to its main target. Every hero has an arrow to each of its targets: solid for the main target, dashed for secondary ones. Drop a hero on empty ground to make it idle there.
 - **Arrows:** click an arrow for **Make main** or **Remove target**. Selecting a hero or monster highlights its arrows.
 - **Unfought monsters** pulse red. The header counter lists them, and red arrows at the edge of the view point to the ones off-screen. Click either to fly there.
 - **Slay** moves a monster to the trophies strip at the bottom. Heroes fighting it move on to their next target, or stand idle where it was. **Delete** does the same cleanup but removes the monster for good, so it asks you to click twice.

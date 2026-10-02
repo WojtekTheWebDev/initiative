@@ -68,7 +68,12 @@ describe("linksOf", () => {
   });
 
   it("skips links whose figures overlap or touch", () => {
-    const layout = placeAt(layoutWorld(world()), { ana: { x: 10, y: 0 }, cid: { x: 400, y: -70 } });
+    const layout = placeAt(layoutWorld(world()), {
+      m1: { x: 0, y: 0 },
+      m2: { x: 400, y: 0 },
+      ana: { x: 10, y: 0 },
+      cid: { x: 400, y: -70 },
+    });
     const links = linksOf(layout).map((l) => `${l.heroId}:${l.monsterId}`);
     expect(links).not.toContain("ana:m1");
     expect(links).not.toContain("cid:m2"); // 70 apart: closer than both rims plus their gaps

@@ -5,11 +5,22 @@ import type { Pos } from "@/lib/types";
  * It knows nothing about heroes or monsters: callers map their figures onto
  * nodes and links, and read back where every node settled.
  *
- * Each iteration works out every push and pull from the positions at the
- * start of that iteration and only then moves the nodes, so the result does
- * not depend on the order of the input beyond floating-point rounding. Every
- * force works on differences between positions, so moving every `start` and
- * `anchor` by the same offset moves the whole result by that offset.
+ * A relax runs in three stages:
+ * 1. Cooling: `iterations` steps while `alpha`, the scale of every spring and
+ *    anchor, decays from 1 to ALPHA_MIN, so the picture forms without jitter.
+ * 2. Settling: steps at alpha SETTLE_ALPHA until no node moves more than
+ *    SETTLE_EPSILON in a step (at most `settle` steps). Weak anchors only pull
+ *    their nodes all the way home once they act at full strength for a while.
+ *    Springs and anchors scale together, so this changes how close the result
+ *    gets to its balance, never where that balance is.
+ * 3. Collision-only passes, so nothing overlaps even where springs fight
+ *    collisions.
+ *
+ * Each step works out every push and pull from the positions at the start of
+ * that step and only then moves the nodes, so the result does not depend on
+ * the order of the input beyond floating-point rounding. Every force works on
+ * differences between positions, so moving every `start` and `anchor` by the
+ * same offset moves the whole result by that offset.
  *
  * Pure and deterministic: no randomness, no clock.
  */
@@ -32,8 +43,10 @@ export type ForceNode = {
 export type ForceLink = { source: string; target: string; length: number; strength: number };
 
 export type RelaxOptions = {
-  /** Number of simulation steps (default DEFAULT_ITERATIONS). */
+  /** Number of cooling steps (default DEFAULT_ITERATIONS). */
   iterations?: number;
+  /** Most settling steps (default DEFAULT_SETTLE). Settling stops early once nothing moves. */
+  settle?: number;
 };
 
 /** Space added between two colliding circles. */
@@ -43,6 +56,12 @@ export const DEFAULT_ITERATIONS = 300;
 export const ALPHA_MIN = 0.001;
 /** Share of a node's velocity kept from one step to the next. */
 export const DAMPING = 0.6;
+/** Upper bound on the settling steps run after cooling. */
+export const DEFAULT_SETTLE = 200;
+/** `alpha` while settling. */
+export const SETTLE_ALPHA = 1;
+/** Settling stops once no node moves more than this (in world units) in one step. */
+export const SETTLE_EPSILON = 0.01;
 /** Share of an overlap removed per step during the simulation. */
 const COLLIDE_STRENGTH = 0.5;
 /** Upper bound on the collision-only passes run after the simulation. */
@@ -54,6 +73,7 @@ const EPSILON = 1e-6;
 export function relax(nodes: ForceNode[], links: ForceLink[], opts: RelaxOptions = {}): Map<string, Pos> {
   const n = nodes.length;
   const iterations = Math.max(0, Math.floor(opts.iterations ?? DEFAULT_ITERATIONS));
+  const settle = Math.max(0, Math.floor(opts.settle ?? DEFAULT_SETTLE));
 
   const index = new Map<string, number>();
   nodes.forEach((node, i) => index.set(node.id, i));
@@ -197,8 +217,8 @@ export function relax(nodes: ForceNode[], links: ForceLink[], opts: RelaxOptions
     fy.fill(0);
   };
 
-  for (let step = 0; step < iterations; step++) {
-    const alpha = iterations === 1 ? 1 : Math.pow(ALPHA_MIN, step / (iterations - 1));
+  /** One simulation step with springs and anchors scaled by `alpha`. Returns the largest distance a node moved. */
+  const step = (alpha: number): number => {
     clearForces();
 
     for (const s of springs) {
@@ -222,13 +242,23 @@ export function relax(nodes: ForceNode[], links: ForceLink[], opts: RelaxOptions
 
     collide(COLLIDE_STRENGTH);
 
+    let moved = 0;
     for (let i = 0; i < n; i++) {
       if (pinned[i]) continue;
       vx[i] = (vx[i] + fx[i]) * DAMPING;
       vy[i] = (vy[i] + fy[i]) * DAMPING;
       x[i] += vx[i];
       y[i] += vy[i];
+      moved = Math.max(moved, vx[i] * vx[i] + vy[i] * vy[i]);
     }
+    return Math.sqrt(moved);
+  };
+
+  for (let i = 0; i < iterations; i++) {
+    step(iterations === 1 ? 1 : Math.pow(ALPHA_MIN, i / (iterations - 1)));
+  }
+  for (let i = 0; i < settle; i++) {
+    if (step(SETTLE_ALPHA) <= SETTLE_EPSILON) break;
   }
 
   // Collision-only passes at full strength, so springs that fight collisions
@@ -254,14 +284,14 @@ export function relax(nodes: ForceNode[], links: ForceLink[], opts: RelaxOptions
  */
 function tieBreak(a: string, b: string, out: Pos): void {
   const [lo, hi] = a < b ? [a, b] : [b, a];
-  const angle = (hash(`${lo}\u0000${hi}`) / 0x100000000) * 2 * Math.PI;
+  const angle = (fnv1a(`${lo}\u0000${hi}`) / 0x100000000) * 2 * Math.PI;
   const sign = a < b ? 1 : -1;
   out.x = Math.cos(angle) * sign;
   out.y = Math.sin(angle) * sign;
 }
 
-/** FNV-1a, 32 bits. */
-function hash(text: string): number {
+/** FNV-1a, 32 bits: a stable hash for picking directions from ids. */
+export function fnv1a(text: string): number {
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i);

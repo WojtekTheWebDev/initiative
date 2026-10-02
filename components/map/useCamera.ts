@@ -14,7 +14,7 @@ const FLY_MS = 300;
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-function prefersReducedMotion(): boolean {
+export function prefersReducedMotion(): boolean {
   return (
     typeof window !== "undefined" &&
     window.matchMedia?.("(prefers-reduced-motion: reduce)").matches

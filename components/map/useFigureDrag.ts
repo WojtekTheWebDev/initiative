@@ -20,10 +20,11 @@ import type { MapHandle } from "./MapCanvas";
 import type { FigureHandlers } from "./MonsterFigure";
 import {
   applyOp,
+  heroHomeAfterDrag,
+  homeAfterDrag,
   layoutWithDrag,
   pastThreshold,
   resolveHeroDrop,
-  worldWithDrag,
   type LiveDrag,
   type WorldOp,
 } from "./drag";
@@ -48,7 +49,7 @@ type Session = {
   startClient: Pos;
   /** World point under the pointer at the press. */
   startWorld: Pos;
-  /** The figure's position at the press. */
+  /** Where the figure was drawn at the press. */
   origin: Pos;
   /** World and layout at the press (for hit-testing and no-op checks). */
   world: World;
@@ -69,14 +70,16 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
  *
  * - Press a monster or hero and move more than DRAG_THRESHOLD px to drag it;
  *   a shorter press is a click (selection). Clicks after a drag are swallowed.
- * - While dragging, the figure follows the pointer: a monster moves in the world
- *   before layout (its heroes follow), a hero is drawn at the cursor. Arrows
- *   come from the layout, so they follow either way.
+ * - While dragging, the figure follows the pointer: a monster is pinned under
+ *   it and the map re-lays out around it on every move (its cluster follows),
+ *   while a hero moves alone. Arrows come from the layout, so they follow
+ *   either way.
  * - Clicking an arrow opens its popover (`link`).
- * - On drop, the change is applied optimistically with the same lib/domain rule
- *   the server uses, then the Server Action runs. The optimistic world stays
- *   until the refreshed server data arrives (no snap-back); on failure it reverts
- *   and `error` is set.
+ * - On drop, a dragged monster's home, or an idle hero's, moves by the drag
+ *   offset (see homeAfterDrag). The change is applied optimistically with the
+ *   same lib/domain rule the server uses, then the Server Action runs. The
+ *   optimistic world stays until the refreshed server data arrives (no
+ *   snap-back); on failure it reverts and `error` is set.
  */
 export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const [optimisticWorld, addOp] = useOptimistic(world, applyOp);
@@ -87,9 +90,11 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const suppressClick = useRef(false);
 
   const drag = live?.drag ?? null;
-  const shownWorld = useMemo(() => worldWithDrag(optimisticWorld, drag), [optimisticWorld, drag]);
-  const baseLayout = useMemo(() => layoutWorld(shownWorld), [shownWorld]);
-  const layout = useMemo(() => layoutWithDrag(baseLayout, drag), [baseLayout, drag]);
+  const baseLayout = useMemo(() => layoutWorld(optimisticWorld), [optimisticWorld]);
+  const layout = useMemo(
+    () => layoutWithDrag(optimisticWorld, baseLayout, drag),
+    [optimisticWorld, baseLayout, drag],
+  );
 
   // Stop listening if the Board unmounts mid-drag.
   useEffect(() => () => session.current?.end(), []);
@@ -139,13 +144,17 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     if (!e) return; // cancelled
     track(s, e.clientX, e.clientY);
     if (s.kind === "monster") {
-      run({ kind: "moveMonster", id: s.id, pos: round(s.pos) });
+      const home = s.world.monsters.find((m) => m.id === s.id)?.pos;
+      if (home) run({ kind: "moveMonster", id: s.id, pos: round(homeAfterDrag(home, s.origin, s.pos)) });
       return;
     }
     // A hero let go over the side panel (or off the map) snaps back: it must not
     // land on a monster hidden under the panel, nor stand idle there.
     if (!s.onMap) return;
-    const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, round(s.pos), e.shiftKey);
+    const placed = s.layout.heroes.find((h) => h.hero.id === s.id);
+    if (!placed) return;
+    const standAt = round(heroHomeAfterDrag(placed, s.origin, s.pos));
+    const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, standAt, e.shiftKey);
     if (drop) run({ kind: "dropHero", heroId: s.id, drop });
   }
 
@@ -269,6 +278,8 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     world: optimisticWorld,
     /** Layout to draw: optimistic changes plus the figure being dragged. */
     layout,
+    /** A figure is being dragged: draw `layout` as it is, without gliding. */
+    dragging: drag !== null,
     bindFigure,
     bindLink,
     /** Highlight for a monster while a hero is dragged over it. */

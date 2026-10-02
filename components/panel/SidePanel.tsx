@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode, type RefObject } from "react";
-import type { World } from "@/lib/types";
+import type { Pos, World } from "@/lib/types";
 import type { MapHandle } from "@/components/map/MapCanvas";
 import { heroSpawn, monsterSpawn, visibleViewBox } from "./helpers";
 import type { PanelState } from "./usePanel";
@@ -9,6 +9,9 @@ import { MonsterFacts, MonsterPanel } from "./MonsterPanel";
 import { HeroPanel } from "./HeroPanel";
 import { MonsterForm } from "./MonsterForm";
 import { HeroForm } from "./HeroForm";
+
+/** Flies the view to where a figure is drawn. `fallback` is used until the figure is on the map (e.g. just created). */
+export type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void;
 
 /** Panel width in px (Tailwind w-80). It covers the right edge of the map. */
 export const PANEL_WIDTH = 320;
@@ -21,10 +24,12 @@ export function SidePanel({
   panel,
   world,
   map,
+  flyTo,
 }: {
   panel: PanelState;
   world: World;
   map: RefObject<MapHandle | null>;
+  flyTo: FlyToFigure;
 }) {
   const { selection, mode } = panel;
   const isOpen = selection !== null || mode !== null;
@@ -58,9 +63,9 @@ export function SidePanel({
     if (!m) return { x: -200, y: -200, width: 400, height: 400 };
     return visibleViewBox(m.camera, m.viewportSize, PANEL_WIDTH);
   };
-  const created = (kind: "monster" | "hero") => (id: string, pos: { x: number; y: number }) => {
+  const created = (kind: "monster" | "hero") => (id: string, pos: Pos) => {
     panel.select({ kind, id });
-    map.current?.flyTo(pos);
+    flyTo(kind, id, pos);
   };
 
   let content: ReactNode = null;
@@ -116,7 +121,7 @@ export function SidePanel({
             hero={hero}
             onEdit={panel.edit}
             onGone={panel.close}
-            onFlyTo={(m) => map.current?.flyTo(m.pos)}
+            onFlyTo={(m) => flyTo("monster", m.id, m.pos)}
           />
         );
     }

@@ -12,8 +12,9 @@ It is a tool for one person (an engineering manager) to use in daily work. It is
 | --------- | ----------------------------------------------------------------------- |
 | Monster   | Something to deal with: an initiative, incident, tech debt, a hire, a people issue, a stakeholder ask |
 | Hero      | An engineer on the team, or you (e.g. class `commander`)                 |
-| Main target | The monster a hero's figure stands beside (`targets[0]`)            |
-| Secondary target | Any other monster in a hero's `targets`. The hero doesn't move for it |
+| Main target | The monster that pulls a hero hardest and closest (`targets[0]`)    |
+| Secondary target | Any other monster in a hero's `targets`. It pulls the hero more weakly |
+| Home      | A stored `pos`: where a monster or an idle hero is held, loosely. The figure is drawn near it, not always on it |
 | Target arrow | An arrow from a hero to each of its targets: solid for the main target, dashed for secondary ones |
 | Unfought  | A living monster that no hero targets. It pulses red                     |
 | Slain     | Done. It leaves the map and goes into the trophies strip                 |
@@ -27,7 +28,7 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
 - id: search-rewrite        # slug from name; unique suffix on clash
   name: Search Rewrite
   size: XL                  # S | M | L | XL → goblin | orc | troll | dragon
-  pos: { x: -420, y: 180 }  # always present
+  pos: { x: -420, y: 180 }  # home: the figure is held near it; always present
   notes: |                  # optional, free text
     Next step: spike on Meilisearch
   slain: 2026-10-14         # optional; absent = alive
@@ -38,13 +39,17 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
   name: Ana
   class: archer             # free label → token glyph (mapping table + fallback)
   targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = secondary targets
-  pos: { x: -600, y: 40 }   # stored only while idle (targets empty)
+  pos: { x: -600, y: 40 }   # home while idle; stored only while idle (targets empty)
 ```
 
 Rules worked out from the data, not stored:
 - **Engaged or unfought** depends on whether any hero has the monster in `targets`. There is no `fighters` or `status` field.
 - **Creature type** comes from `size`. There is no `kind` field.
-- **Engaged hero position** is on an arc above the main target, fanned out from the top in hero-id order. A wedge at the bottom stays clear for the monster's name label; if the arc gets crowded, its radius grows. Secondary targets don't move a hero. Everything follows the monster when it moves.
+- **Where figures are drawn** comes from the targets, through a force layout (`lib/map/layout.ts` on top of the solver in `lib/map/force.ts`). The drawn position is never saved.
+  - A stored `pos` is a **home**. Every monster and every idle hero is held to its home by the same weak spring, so it stays near it but can be nudged aside, and drifts back when there is room.
+  - An engaged hero has no home. A spring to each of its targets pulls it toward them and pulls them toward it, so heroes and monsters that target each other gather into a cluster: a monster that shares a hero with another is drawn between its home and theirs. The main target pulls harder and holds the hero closer than secondary targets.
+  - Clusters push other figures aside, so nothing overlaps and no figure stands on a monster's name label.
+  - The layout is pure and deterministic: the same files always give the same picture, in whatever order they list things. The tuning constants are exported from `lib/map/layout.ts`.
 - **Target arrows** come from the layout: one per hero and living target, from the hero's rim to the monster's rim. They are never stored, so anything that moves a figure moves its arrows too.
 
 Rules for writing:
@@ -56,7 +61,8 @@ Rules for writing:
 - **Canvas:** infinite, built by hand with an SVG `viewBox` and pointer events, with no pan/zoom library.
   - The wheel always zooms at the cursor, and so does a trackpad pinch. Two-finger scrolling zooms too; it does not pan.
   - Dragging empty ground pans. A light grid scales with the zoom.
-  - Dragging a figure moves it.
+  - Dragging a figure moves it (see Interactions).
+  - When the layout changes after a drop, an edit or new data from the server, figures glide to their new places (about 350 ms, ease-out). During a drag they follow the layout directly, and with `prefers-reduced-motion` they jump.
 - **Opening view:** fits the bounding box of everything still alive.
 - **Figures:** emoji glyphs on SVG circle bases, with name labels that never shrink below a readable size. Monster bases are a neutral stone colour, light or dark to match the theme. Real art can come later.
   - Monsters by size: S 👺 goblin, M 👹 orc, L 🧌 troll, XL 🐉 dragon. The base grows with size.
@@ -66,13 +72,15 @@ Rules for writing:
 ## Interactions
 
 **Monsters**
-- **Drag** to move it. This saves `pos`.
+- **Drag** to move it. While dragging, the monster stays under the cursor and the map lays itself out around it: its fighters come along, monsters that share them are pulled after it, and anything in the way is nudged aside.
+- On drop, its home moves by as much as the monster was dragged (`newHome = oldHome + (drop - press)`, measured between drawn positions), and that is saved as `pos`. A monster whose heroes fight nothing else settles exactly where it was let go; one that shares heroes with other monsters eases back toward them a little.
 - **Click** to open the side panel, which has notes, fighters, edit, slay and delete.
 
 **Heroes**
 - A **plain drop on a monster** sets `targets` to just that monster. A plain drop back on the current main target changes nothing, so the secondary targets stay.
-- **Shift+drop on a monster** adds it to the end of `targets` as a secondary target. The figure stays at its main fight and gets a dashed arrow to it. If the monster is already a target, nothing happens. An idle hero gets it as the main target.
-- A **drop on empty ground** clears `targets` and saves `pos`.
+- **Shift+drop on a monster** adds it to the end of `targets` as a secondary target. The hero stays closest to its main target, the new target is pulled toward it more weakly, and it gets a dashed arrow. If the monster is already a target, nothing happens. An idle hero gets it as the main target.
+- A **drop on empty ground** clears `targets` and saves `pos`. An idle hero's home moves by the drag offset, like a monster's; an engaged hero stays where it was let go.
+- While a hero is dragged, nothing else moves until the drop, so monsters never slide out from under the cursor.
 - A drop over the side panel, or off the map, does nothing and the hero snaps back.
 - While dragging, the monster under the cursor is highlighted: green for a plain drop, purple with Shift.
 - **Clicking a target arrow** opens a popover at its midpoint, worded as "Ana → Search Rewrite", with **Make main** (only on a secondary arrow) and **Remove target**. Esc or a click outside closes it.
@@ -87,7 +95,7 @@ Rules for writing:
 - Slay sets `slain: <today>` (local date) and moves the monster to the trophies strip, which sits below the canvas, newest first. Clicking a trophy shows it read-only. Slaying a monster that is already slain changes nothing. To revive one, delete its `slain` line by hand.
 - Slay and delete clean up the same way. The monster is removed from every hero's `targets`.
   - If it was a hero's main target, the next target becomes main.
-  - If the hero has no targets left, they go idle where the monster stood, and `pos` is saved.
+  - If the hero has no targets left, they go idle at the monster's home, and `pos` is saved. The figure walks there.
 - Delete needs a second click on a button that says it can't be undone. That is the only safeguard, since there is no backup. Deleting a hero works the same way.
 
 **Create, edit, delete** (side-panel forms)
@@ -108,7 +116,9 @@ Rules for writing:
 
 Use Vitest unit tests on the pure functions that change data:
 - assign, Shift-add, and promoting or removing a secondary target
+- the force solver and the layout: the user's example, separate clusters, homes, no overlaps, determinism and speed
 - target arrows from the layout
+- the home after a drag
 - slay and delete cleanup
 - comments kept on write
 - seeding from `data.example/`
