@@ -1,0 +1,14 @@
+{
+  "name": "Dry grass",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "grass",
+      "scale": 0.75,
+      "colors": {
+        "grass": "#a6924a"
+      }
+    }
+  ]
+}

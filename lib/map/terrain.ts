@@ -1,5 +1,6 @@
 import type { Pos } from "@/lib/types";
 import { labelBox, type WorldLayout } from "./layout";
+import { heroMini, miniBodyRect, monsterMini } from "./minis";
 import { HERO_BASE_RADIUS } from "./rings";
 
 /*
@@ -63,7 +64,6 @@ export type Scatter = {
   y: number;
   scale: number;
   variant: number;
-  flip: boolean;
 };
 
 export type PieceKind = "woods" | "ruins" | "watchtower" | "camp" | "stones";
@@ -76,7 +76,6 @@ export type RaisedPiece = {
   x: number;
   y: number;
   variant: number;
-  flip: boolean;
   /** Radius of its footprint, in world units. */
   radius: number;
   /** How far it rises above its footprint centre on screen, in world units. */
@@ -560,12 +559,13 @@ const SCATTER: Record<Biome, { density: number; kinds: [ScatterKind, number][] }
   marsh: { density: 0.28, kinds: [["reeds", 6], ["tuft", 2], ["puddle", 1.6], ["log", 0.8]] },
 };
 
-const PIECE_SIZE: Record<PieceKind, { radius: number; height: number }> = {
-  woods: { radius: 125, height: 150 },
-  ruins: { radius: 100, height: 105 },
-  watchtower: { radius: 60, height: 230 },
-  camp: { radius: 80, height: 75 },
-  stones: { radius: 90, height: 90 },
+/** Footprint radius and on-screen height of each raised piece, in world units: room for the widest and tallest of its baked variants. */
+export const PIECE_SIZE: Record<PieceKind, { radius: number; height: number }> = {
+  woods: { radius: 110, height: 120 },
+  ruins: { radius: 70, height: 95 },
+  watchtower: { radius: 60, height: 165 },
+  camp: { radius: 75, height: 75 },
+  stones: { radius: 75, height: 80 },
 };
 
 /** Which raised pieces each biome offers, with weights. */
@@ -718,13 +718,12 @@ export function terrainChunk(cx: number, cy: number): TerrainChunk {
     const y = y0 + PIECE_MARGIN + rand() * (CHUNK_SIZE - 2 * PIECE_MARGIN);
     const rKind = rand();
     const r2 = rand();
-    const r3 = rand();
     const biome = biomeAt(x, y);
     const kind = pick(PIECES[biome], rKind);
     const { radius, height } = PIECE_SIZE[kind];
     if (pieces.some((p) => Math.hypot(p.x - x, p.y - y) < PIECE_SPACING)) continue;
     if (!clearOf({ x, y }, radius + 20, radius + 30)) continue;
-    pieces.push({ kind, biome, x, y, variant: Math.floor(r2 * 3), flip: r3 < 0.5, radius, height });
+    pieces.push({ kind, biome, x, y, variant: Math.floor(r2 * 3), radius, height });
   }
 
   // Scatter: a jittered grid, thinned by biome, clear of roads, water and raised pieces.
@@ -757,7 +756,7 @@ export function terrainChunk(cx: number, cy: number): TerrainChunk {
         kind = pick(table.kinds, rKind);
       }
       if (distanceToLines(p, roads) < ROAD_WIDTH / 2 + 8) continue;
-      scatter.push({ kind, x, y, scale: 0.8 + rScale * 0.45, variant: Math.floor(rVar * 3), flip: rVar * 3 - Math.floor(rVar * 3) < 0.5 });
+      scatter.push({ kind, x, y, scale: 0.8 + rScale * 0.45, variant: Math.floor(rVar * 3) });
     }
   }
   scatter.sort((a, b) => a.y - b.y);
@@ -806,9 +805,6 @@ export function chunksIn(area: { x: number; y: number; width: number; height: nu
 /* What terrain must not hide                                               */
 /* ------------------------------------------------------------------------ */
 
-/** How tall a mini stands above its base centre, in base radii. */
-const MINI_HEIGHT = 2.8;
-
 /** The area a raised piece covers on screen, in world units. */
 export function pieceBox(p: RaisedPiece): Box {
   return {
@@ -824,22 +820,24 @@ export function figureBoxes(layout: WorldLayout): Box[] {
   const boxes: Box[] = [];
   for (const m of layout.monsters) {
     const r = m.radius;
+    const body = miniBodyRect(monsterMini(m.monster.size), m.pos, r);
     const label = labelBox(m.monster.name, r);
-    const half = Math.max(r * 1.2, label.width / 2 + 10);
+    const half = Math.max(r * 1.1, label.width / 2 + 10);
     boxes.push({
-      x0: m.pos.x - half,
-      x1: m.pos.x + half,
-      y0: m.pos.y - r * MINI_HEIGHT,
+      x0: Math.min(m.pos.x - half, body.x - 6),
+      x1: Math.max(m.pos.x + half, body.x + body.width + 6),
+      y0: body.y - 6,
       y1: m.pos.y + r + label.gap + label.height + 6,
     });
   }
   for (const h of layout.heroes) {
     const r = HERO_BASE_RADIUS;
-    const half = Math.max(r * 1.4, h.hero.name.length * 4 + 12);
+    const body = miniBodyRect(heroMini(h.hero.mini), h.pos, r);
+    const half = Math.max(r * 1.1, h.hero.name.length * 4 + 12);
     boxes.push({
-      x0: h.pos.x - half,
-      x1: h.pos.x + half,
-      y0: h.pos.y - r * MINI_HEIGHT - 24,
+      x0: Math.min(h.pos.x - half, body.x - 6),
+      x1: Math.max(h.pos.x + half, body.x + body.width + 6),
+      y0: body.y - 24,
       y1: h.pos.y + r + 28,
     });
   }

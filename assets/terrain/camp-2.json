@@ -1,0 +1,49 @@
+{
+  "name": "Camp",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "tent_detailedOpen",
+      "x": -0.6,
+      "z": -0.45,
+      "rotate": 35,
+      "scale": 1.3,
+      "colors": {
+        "colorRed": "#c9b58c",
+        "colorRedDark": "#a8936a"
+      }
+    },
+    {
+      "model": "tent_smallOpen",
+      "x": 0.7,
+      "z": -0.55,
+      "rotate": -40,
+      "scale": 1.25,
+      "colors": {
+        "colorRed": "#8a5a3c",
+        "colorRedDark": "#6e4630"
+      }
+    },
+    {
+      "model": "bonfire",
+      "x": 0.05,
+      "z": 0.35,
+      "scale": 0.2
+    },
+    {
+      "model": "log",
+      "x": -0.55,
+      "z": 0.55,
+      "rotate": 100,
+      "scale": 0.85
+    },
+    {
+      "model": "log_stack",
+      "x": 1,
+      "z": 0.35,
+      "rotate": -15,
+      "scale": 0.65
+    }
+  ]
+}

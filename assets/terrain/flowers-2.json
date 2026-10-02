@@ -1,0 +1,32 @@
+{
+  "name": "Flowers",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "grass",
+      "x": 0.02,
+      "z": -0.04,
+      "scale": 0.6
+    },
+    {
+      "model": "flower_redA",
+      "x": -0.12,
+      "z": 0.02,
+      "scale": 1.1
+    },
+    {
+      "model": "flower_redB",
+      "x": 0.1,
+      "z": -0.06,
+      "rotate": 50,
+      "scale": 1.1
+    },
+    {
+      "model": "flower_redC",
+      "z": 0.1,
+      "rotate": -30,
+      "scale": 1.1
+    }
+  ]
+}

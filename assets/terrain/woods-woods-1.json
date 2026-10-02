@@ -1,0 +1,111 @@
+{
+  "name": "Autumn woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bushDetailed",
+      "x": -0.072,
+      "z": -0.465,
+      "rotate": 354,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#c8621c"
+      }
+    },
+    {
+      "model": "plant_bush",
+      "x": 1.339,
+      "z": -0.252,
+      "rotate": 232,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#a8341f"
+      }
+    },
+    {
+      "model": "log",
+      "x": 0.999,
+      "z": 0.829,
+      "rotate": 30,
+      "scale": 0.9
+    },
+    {
+      "model": "grass",
+      "x": -0.404,
+      "z": 1.166,
+      "rotate": 165,
+      "scale": 0.75
+    },
+    {
+      "model": "tree_fat_fall",
+      "x": -0.433,
+      "z": -0.928,
+      "rotate": 135,
+      "scale": 1.072,
+      "colors": {
+        "leafsFall": "#a8341f"
+      }
+    },
+    {
+      "model": "tree_simple_fall",
+      "x": 0.952,
+      "z": -0.696,
+      "rotate": 142,
+      "scale": 1.029,
+      "colors": {
+        "leafsFall": "#a8341f"
+      }
+    },
+    {
+      "model": "tree_oak_fall",
+      "x": 0.38,
+      "z": -0.319,
+      "rotate": 104,
+      "scale": 0.876,
+      "colors": {
+        "leafsFall": "#c8621c"
+      }
+    },
+    {
+      "model": "tree_fat_fall",
+      "x": -1.297,
+      "z": -0.027,
+      "rotate": 291,
+      "scale": 0.936,
+      "colors": {
+        "leafsFall": "#d49a26"
+      }
+    },
+    {
+      "model": "tree_fat_fall",
+      "x": -0.498,
+      "z": 0.291,
+      "rotate": 208,
+      "scale": 1.117,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    },
+    {
+      "model": "tree_simple_fall",
+      "x": 0.647,
+      "z": 0.746,
+      "rotate": 215,
+      "scale": 1.146,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    },
+    {
+      "model": "tree_oak_fall",
+      "x": -0.863,
+      "z": 0.882,
+      "rotate": 132,
+      "scale": 0.89,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    }
+  ]
+}

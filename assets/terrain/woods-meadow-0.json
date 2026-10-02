@@ -1,0 +1,84 @@
+{
+  "name": "Small woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bushDetailed",
+      "x": 0.915,
+      "z": -0.818,
+      "rotate": 135,
+      "scale": 0.75
+    },
+    {
+      "model": "plant_bush",
+      "x": -0.057,
+      "z": -0.439,
+      "rotate": 77,
+      "scale": 0.75
+    },
+    {
+      "model": "grass_large",
+      "x": -1.765,
+      "z": 0.282,
+      "rotate": 10,
+      "scale": 0.75
+    },
+    {
+      "model": "flower_yellowA",
+      "x": -1.512,
+      "z": 0.623,
+      "rotate": 12,
+      "scale": 0.75
+    },
+    {
+      "model": "plant_bushDetailed",
+      "x": -0.782,
+      "z": 0.685,
+      "rotate": 249,
+      "scale": 0.75
+    },
+    {
+      "model": "tree_oak_dark",
+      "x": -0.539,
+      "z": -0.92,
+      "rotate": 225,
+      "scale": 1.092
+    },
+    {
+      "model": "tree_oak",
+      "x": 0.408,
+      "z": -0.917,
+      "rotate": 322,
+      "scale": 1.094
+    },
+    {
+      "model": "tree_oak",
+      "x": -1.317,
+      "z": -0.394,
+      "rotate": 194,
+      "scale": 0.868
+    },
+    {
+      "model": "tree_default_dark",
+      "x": 1.037,
+      "z": 0.076,
+      "rotate": 111,
+      "scale": 1.011
+    },
+    {
+      "model": "tree_fat",
+      "x": -0.166,
+      "z": 0.332,
+      "rotate": 298,
+      "scale": 0.905
+    },
+    {
+      "model": "tree_oak_dark",
+      "x": 0.522,
+      "z": 0.882,
+      "rotate": 80,
+      "scale": 1.032
+    }
+  ]
+}

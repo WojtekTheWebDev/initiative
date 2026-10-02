@@ -191,7 +191,7 @@ const ChunkLayer = memo(function ChunkLayer({ cx, cy, layer, detail }: { cx: num
       return (
         <>
           {c.scatter.map((s, i) => (
-            <Art key={i} artKey={scatterKey(s)} x={s.x} y={s.y} scale={s.scale} flip={s.flip} />
+            <Art key={i} artKey={scatterKey(s)} x={s.x} y={s.y} scale={s.scale} />
           ))}
         </>
       );
@@ -345,7 +345,7 @@ export function TablePieces({
           opacity={opacity}
           style={{ transition: "opacity 200ms ease-out" }}
         >
-          <Art artKey={pieceKey(piece)} x={piece.x} y={piece.y} flip={piece.flip} />
+          <Art artKey={pieceKey(piece)} x={piece.x} y={piece.y} />
         </g>
       ))}
     </g>

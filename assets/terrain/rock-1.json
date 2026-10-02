@@ -1,0 +1,18 @@
+{
+  "name": "Rock",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "stone_smallI",
+      "rotate": -30,
+      "scale": 0.9
+    },
+    {
+      "model": "stone_smallC",
+      "x": 0.2,
+      "z": 0.12,
+      "scale": 0.45
+    }
+  ]
+}

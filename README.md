@@ -59,7 +59,25 @@ To add a model:
    A monster also needs its size, e.g. `{ "name": "Dragon", "kind": "monster", "size": "XL" }`; the size picks which monster mini is used. Optional keys: `pose` (`{ "clip": "Idle", "time": 0.5 }`), `height` (in base radii, default 2.2), `footprint`, `rotate` (degrees), `hide` (node names), `colors` (material name to colour) and `primer` (one flat colour). They are described in `scripts/bake-minis.ts`.
 3. Run `npm run bake:minis` and commit the changed files in `public/minis/`. A new hero mini shows up in the hero form's picker.
 
-The bake renders with three.js in headless Chromium (installed by the script through Playwright on first run), with a fixed camera and lights, so rerunning it gives the same files. `npm run bake:minis -- knight` rebakes only some ids. Other folders can be baked the same way, e.g. terrain pieces: `npm run bake:minis -- --src assets/terrain --out public/terrain`, with sidecars of `"kind": "terrain"` and a `"radius"` (world units per model unit); terrain gets no base.
+The bake renders with three.js in headless Chromium (installed by the script through Playwright on first run), with a fixed camera and lights, so rerunning it gives the same files. `npm run bake:minis -- knight` rebakes only some ids.
+
+## Terrain
+
+The scatter, raised pieces and bridges on the table are baked the same way, from CC0 models in `assets/terrain/models/` (sources and licences in [`assets/terrain/LICENSES.md`](assets/terrain/LICENSES.md)). Each piece of art is a sidecar named after its art key, e.g. `assets/terrain/camp-0.json`, that puts it together from those models:
+
+```json
+{
+  "name": "Camp",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    { "model": "tent_detailedOpen", "x": -0.45, "z": -0.35, "scale": 1.4, "rotate": 20 },
+    { "model": "bonfire", "x": 0.6, "z": 0.3, "scale": 0.2 }
+  ]
+}
+```
+
+`radius` is world units per model unit, `x` and `z` place a part (x to the right, z toward the viewer) around the piece's footprint centre, and a part can also take `y`, `rotate`, `scale` and `colors`. `assets/terrain/colors.json` holds the material colours shared by every piece. Run `npm run bake:terrain` (or `npm run bake:terrain -- camp-0` for some keys) and commit the changed files in `public/terrain/`. If a raised piece grows, raise its kind's `PIECE_SIZE` in `lib/map/terrain.ts`; `npm test` fails when a baked piece outgrows it.
 
 ## Stack
 

@@ -1,0 +1,11 @@
+{
+  "name": "Bush",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bushDetailed",
+      "scale": 0.75
+    }
+  ]
+}

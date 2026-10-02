@@ -1,0 +1,70 @@
+{
+  "name": "Small woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bushDetailed",
+      "x": -0.334,
+      "z": -0.408,
+      "rotate": 246,
+      "scale": 0.75
+    },
+    {
+      "model": "plant_bush",
+      "x": 0.216,
+      "z": 0.3,
+      "rotate": 263,
+      "scale": 0.75
+    },
+    {
+      "model": "tree_oak",
+      "x": -0.486,
+      "z": -0.855,
+      "rotate": 90,
+      "scale": 1.016
+    },
+    {
+      "model": "tree_oak",
+      "x": 1.282,
+      "z": -0.598,
+      "rotate": 142,
+      "scale": 1.065
+    },
+    {
+      "model": "tree_oak_dark",
+      "x": 0.017,
+      "z": -0.356,
+      "rotate": 104,
+      "scale": 1.135
+    },
+    {
+      "model": "tree_oak_dark",
+      "x": 0.704,
+      "z": 0.063,
+      "rotate": 66,
+      "scale": 0.911
+    },
+    {
+      "model": "tree_oak",
+      "x": -1.006,
+      "z": 0.452,
+      "rotate": 118,
+      "scale": 0.856
+    },
+    {
+      "model": "tree_simple",
+      "x": 1.002,
+      "z": 0.749,
+      "rotate": 125,
+      "scale": 0.981
+    },
+    {
+      "model": "tree_simple",
+      "x": -0.124,
+      "z": 0.838,
+      "rotate": 267,
+      "scale": 1.047
+    }
+  ]
+}

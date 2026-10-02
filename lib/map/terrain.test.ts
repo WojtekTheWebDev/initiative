@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import terrainArt from "@/public/terrain/manifest.json";
 import type { Pos } from "@/lib/types";
 import {
   BIOMES,
@@ -7,6 +8,7 @@ import {
   GRID_FULL_SCALE,
   GRID_GONE_SCALE,
   MAX_PIECES,
+  PIECE_SIZE,
   PIECE_SPACING,
   biomeWeights,
   chunksIn,
@@ -14,6 +16,7 @@ import {
   pieceBox,
   pieceDepth,
   terrainChunk,
+  type PieceKind,
   type Polyline,
   type RaisedPiece,
   type TerrainChunk,
@@ -152,6 +155,34 @@ describe("biomeWeights", () => {
   });
 });
 
+describe("baked raised pieces", () => {
+  const art = terrainArt as Record<string, { radius: number; anchor: Pos; body: { x: number; y: number; width: number; height: number } }>;
+  const kinds = Object.keys(PIECE_SIZE) as PieceKind[];
+
+  it("has art for every variant of every raised piece", () => {
+    for (const kind of kinds) {
+      for (let v = 0; v < 3; v++) {
+        const keys = kind === "woods" ? BIOMES.map((b) => `woods-${b}-${v}`) : [`${kind}-${v}`];
+        for (const key of keys) expect(art[key], key).toBeDefined();
+      }
+    }
+  });
+
+  it("keeps every baked piece inside the box that fades it", () => {
+    for (const [key, e] of Object.entries(art)) {
+      const kind = kinds.find((k) => key.startsWith(`${k}-`));
+      if (!kind) continue;
+      const { radius, height } = PIECE_SIZE[kind];
+      const box = pieceBox({ kind, biome: "meadow", x: 0, y: 0, variant: 0, radius, height });
+      const r = e.radius;
+      expect((e.body.x - e.anchor.x) * r, key).toBeGreaterThanOrEqual(box.x0);
+      expect((e.body.x + e.body.width - e.anchor.x) * r, key).toBeLessThanOrEqual(box.x1);
+      expect((e.body.y - e.anchor.y) * r, key).toBeGreaterThanOrEqual(box.y0);
+      expect((e.body.y + e.body.height - e.anchor.y) * r, key).toBeLessThanOrEqual(box.y1);
+    }
+  });
+});
+
 describe("raised pieces among the figures", () => {
   const piece: RaisedPiece = {
     kind: "watchtower",
@@ -159,7 +190,6 @@ describe("raised pieces among the figures", () => {
     x: 0,
     y: 0,
     variant: 0,
-    flip: false,
     radius: 60,
     height: 200,
   };

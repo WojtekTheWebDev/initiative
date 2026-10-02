@@ -1,0 +1,17 @@
+{
+  "name": "Watchtower",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "watch-tower",
+      "scale": 2
+    },
+    {
+      "model": "grass_large",
+      "x": 0.6,
+      "z": 0.5,
+      "scale": 0.8
+    }
+  ]
+}

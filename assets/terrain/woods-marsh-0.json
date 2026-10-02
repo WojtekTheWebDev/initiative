@@ -1,0 +1,109 @@
+{
+  "name": "Marsh trees",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "crops_wheatStageB",
+      "x": -1.247,
+      "z": -0.627,
+      "rotate": 73,
+      "scale": 0.75,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "grass_large",
+      "x": 0.479,
+      "z": -0.427,
+      "rotate": 57,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#5a7748"
+      }
+    },
+    {
+      "model": "crops_wheatStageB",
+      "x": 0.045,
+      "z": 0.241,
+      "rotate": 63,
+      "scale": 0.75,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "stump_old",
+      "x": -0.736,
+      "z": 0.636,
+      "rotate": 7,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#5a7748"
+      }
+    },
+    {
+      "model": "ruins-deadtree-3",
+      "x": -0.909,
+      "z": -0.673,
+      "rotate": 45,
+      "scale": 0.295,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "tree_thin_dark",
+      "x": 0.945,
+      "z": -0.333,
+      "rotate": 277,
+      "scale": 1.119,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-1",
+      "x": 0.357,
+      "z": -0.123,
+      "rotate": 284,
+      "scale": 0.396,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-3",
+      "x": -1.419,
+      "z": 0.252,
+      "rotate": 246,
+      "scale": 0.276,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-1",
+      "x": 0.194,
+      "z": 0.648,
+      "rotate": 343,
+      "scale": 0.435,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-2",
+      "x": -0.44,
+      "z": 0.826,
+      "rotate": 125,
+      "scale": 0.35,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    }
+  ]
+}

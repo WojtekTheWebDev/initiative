@@ -1,0 +1,108 @@
+{
+  "name": "Marsh trees",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "crops_wheatStageB",
+      "x": 0.072,
+      "z": -0.959,
+      "rotate": 226,
+      "scale": 0.75,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "grass_large",
+      "x": -1.135,
+      "z": -0.217,
+      "rotate": 217,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#5a7748"
+      }
+    },
+    {
+      "model": "ruins-deadtree-3",
+      "x": -0.562,
+      "z": -0.834,
+      "rotate": 270,
+      "scale": 0.33,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-2",
+      "x": 0.801,
+      "z": -0.349,
+      "rotate": 322,
+      "scale": 0.362,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "tree_thin_dark",
+      "x": -0.155,
+      "z": -0.329,
+      "rotate": 104,
+      "scale": 0.86,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "tree_tall_dark",
+      "x": 1.558,
+      "z": 0.011,
+      "rotate": 156,
+      "scale": 0.875,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-2",
+      "x": -1.033,
+      "z": 0.285,
+      "rotate": 73,
+      "scale": 0.414,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-3",
+      "x": -0.134,
+      "z": 0.58,
+      "rotate": 350,
+      "scale": 0.283,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "ruins-deadtree-2",
+      "x": 0.684,
+      "z": 0.7,
+      "rotate": 312,
+      "scale": 0.398,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "stump_oldTall",
+      "x": -0.771,
+      "z": 0.916,
+      "rotate": 229,
+      "scale": 1.111,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    }
+  ]
+}

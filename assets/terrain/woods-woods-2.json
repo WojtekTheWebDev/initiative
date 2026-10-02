@@ -1,0 +1,121 @@
+{
+  "name": "Autumn woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bushDetailed",
+      "x": -0.125,
+      "z": -1.174,
+      "rotate": 64,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#c8621c"
+      }
+    },
+    {
+      "model": "plant_bush",
+      "x": 1.278,
+      "z": -0.545,
+      "rotate": 140,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#a8341f"
+      }
+    },
+    {
+      "model": "log",
+      "x": -0.289,
+      "z": 0.226,
+      "rotate": 261,
+      "scale": 0.9
+    },
+    {
+      "model": "grass",
+      "x": -1.38,
+      "z": 0.725,
+      "rotate": 154,
+      "scale": 0.75
+    },
+    {
+      "model": "tree_tall_fall",
+      "x": -0.708,
+      "z": -0.882,
+      "rotate": 90,
+      "scale": 0.944,
+      "colors": {
+        "leafsFall": "#d49a26"
+      }
+    },
+    {
+      "model": "tree_detailed_fall",
+      "x": -1.346,
+      "z": -0.347,
+      "rotate": 7,
+      "scale": 0.931,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    },
+    {
+      "model": "tree_default_fall",
+      "x": 0.775,
+      "z": -0.339,
+      "rotate": 149,
+      "scale": 1.058,
+      "colors": {
+        "leafsFall": "#d49a26"
+      }
+    },
+    {
+      "model": "tree_simple_fall",
+      "x": -0.425,
+      "z": -0.238,
+      "rotate": 246,
+      "scale": 0.918,
+      "colors": {
+        "leafsFall": "#c8621c"
+      }
+    },
+    {
+      "model": "tree_simple_fall",
+      "x": 0.274,
+      "z": 0.182,
+      "rotate": 253,
+      "scale": 1.041,
+      "colors": {
+        "leafsFall": "#a8341f"
+      }
+    },
+    {
+      "model": "tree_oak_fall",
+      "x": 0.947,
+      "z": 0.276,
+      "rotate": 350,
+      "scale": 0.856,
+      "colors": {
+        "leafsFall": "#a8341f"
+      }
+    },
+    {
+      "model": "tree_default_fall",
+      "x": -0.914,
+      "z": 0.276,
+      "rotate": 312,
+      "scale": 0.912,
+      "colors": {
+        "leafsFall": "#d49a26"
+      }
+    },
+    {
+      "model": "tree_detailed_fall",
+      "x": -0.265,
+      "z": 0.763,
+      "rotate": 229,
+      "scale": 1.055,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    }
+  ]
+}

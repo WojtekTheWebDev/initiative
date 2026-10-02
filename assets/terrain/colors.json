@@ -1,0 +1,23 @@
+{
+  "leafsGreen": "#4f7d2a",
+  "leafsDark": "#2c5532",
+  "leafsFall": "#c8621c",
+  "grass": "#5f8c30",
+  "dirt": "#8d8576",
+  "dirtDark": "#736c60",
+  "stone": "#aaa496",
+  "stoneDark": "#7f7a6e",
+  "_defaultMat": "#9d9789",
+  "wood": "#8a6040",
+  "woodDark": "#5e4128",
+  "woodBark": "#6d4b2e",
+  "woodBarkDark": "#4f3925",
+  "woodBirch": "#d6cfbd",
+  "woodInner": "#d4ac76",
+  "colorRed": "#b8402e",
+  "colorRedDark": "#8e3022",
+  "colorPurple": "#9468cc",
+  "colorYellow": "#ecc23e",
+  "colorWhite": "#f1ede0",
+  "colorTan": "#d6b484"
+}

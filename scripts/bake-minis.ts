@@ -2,12 +2,14 @@
  * Bakes 3D models into the images the map draws (D10). Dev only: the output is
  * committed, so neither `npm run dev` nor `npm run build` runs this.
  *
- *   npm run bake:minis                                   # assets/minis -> public/minis
- *   npm run bake:minis -- --src assets/terrain --out public/terrain
- *   npm run bake:minis -- knight dragon                  # only these ids (the manifest keeps the rest)
+ *   npm run bake:minis                         # assets/minis -> public/minis
+ *   npm run bake:terrain                       # assets/terrain -> public/terrain
+ *   npm run bake:minis -- knight dragon        # only these ids (the manifest keeps the rest)
+ *   npm run bake:terrain -- rock-0 camp-1      # the same, for terrain
  *
- * Every model is `<id>.glb` with a sidecar `<id>.json` (see ModelSpec). Each is
- * rendered with three.js in headless Chromium (Playwright), with the same
+ * Every model is a sidecar `<id>.json` (see ModelSpec) with either a
+ * `<id>.glb` next to it or a list of `parts` taken from `<src>/models/`. Each
+ * is rendered with three.js in headless Chromium (Playwright), with the same
  * orthographic camera (38 degrees elevation, 18 degrees azimuth) and lighting,
  * into `<out>/<id>.webp` at PX_PER_WORLD_UNIT, plus an entry in
  * `<out>/manifest.json`. Rendering uses Chromium's software GL (SwiftShader),
@@ -23,21 +25,46 @@ import type { Size } from "../lib/types";
 /** Output pixels per world unit: sharp at zoom 2 on a high-density screen. */
 const PX_PER_WORLD_UNIT = 4;
 
-/** The sidecar `<id>.json` next to each `<id>.glb`. */
+/** One model in a piece put together from several (`ModelSpec.parts`). */
+type Part = {
+  /** File name in `<src>/models/`, without `.glb`. */
+  model: string;
+  /** Where the part's footprint centre stands, in model units: x to the right, z toward the viewer. */
+  x?: number;
+  z?: number;
+  /** Height its lowest point stands at, in model units. Default 0, on the table. */
+  y?: number;
+  /** Turn around the vertical axis, in degrees. */
+  rotate?: number;
+  /** Model units per unit of the part's file. Default 1. */
+  scale?: number;
+  hide?: string[];
+  /** Recolour by material name, on top of the piece's `colors`. */
+  colors?: Record<string, string>;
+  primer?: string;
+};
+
+/** The sidecar `<id>.json`, next to `<id>.glb` unless it lists `parts`. */
 type ModelSpec = {
   /** Display name, e.g. in the hero form's picker. */
   name: string;
   kind: "hero" | "monster" | "terrain";
   /** Monsters only: the size this model stands for (D14). */
   size?: Size;
-  /** World units per model unit. Defaults to the base radius of the kind (and size). Required for terrain. */
+  /**
+   * World units per model unit. Defaults to the base radius of the kind (and
+   * size). Required for terrain, which keeps the size it has in its files (one
+   * unit of the file is one model unit) rather than being fitted to a base.
+   */
   radius?: number;
-  /** Stand it on a round black flocked base. Default: true, except for terrain. */
+  /** Stand it on a round black flocked base. Default: true, except for terrain, which casts its shadow on the table instead. */
   base?: boolean;
-  /** Target height in model units (base radii). Default 2.2. */
+  /** Heroes and monsters: target height in model units (base radii). Default 2.2. */
   height?: number;
-  /** Widest footprint allowed, in model units. Default 1.9 (just inside the base). */
+  /** Heroes and monsters: widest footprint allowed, in model units. Default 1.9 (just inside the base). */
   footprint?: number;
+  /** Put the piece together from these models, with no `<id>.glb`. Its footprint centre is the origin. */
+  parts?: Part[];
   /** Turn around the vertical axis, in degrees, before baking. */
   rotate?: number;
   /** Rigged models: the clip and time (seconds) to pose. Default: a clip called "Idle", at 0. */
@@ -56,6 +83,8 @@ export type ManifestEntry = {
   name: string;
   kind: ModelSpec["kind"];
   size?: Size;
+  /** Terrain only: world units per model unit. */
+  radius?: number;
   /** Public URL of the image. */
   image: string;
   /** Image size in model units (base radii). */
@@ -68,6 +97,13 @@ export type ManifestEntry = {
 };
 
 const root = path.resolve(__dirname, "..");
+
+/**
+ * An optional `<src>/colors.json`: material colours by material name for
+ * every model in the folder, so a pack's materials are painted once. A
+ * sidecar's `colors`, and a part's, go on top.
+ */
+const PALETTE = "colors.json";
 
 function args(argv: string[]) {
   let src = "assets/minis";
@@ -149,7 +185,7 @@ async function main() {
   const { src, out, only } = args(process.argv.slice(2));
   const prefix = urlPrefix(out);
   const ids = (await readdir(src))
-    .filter((f) => f.endsWith(".json"))
+    .filter((f) => f.endsWith(".json") && f !== PALETTE)
     .map((f) => f.slice(0, -".json".length))
     .sort();
   if (ids.length === 0) throw new Error(`no <id>.json sidecars in ${src}`);
@@ -160,11 +196,15 @@ async function main() {
   const previous: Record<string, ManifestEntry> =
     only.length > 0 ? JSON.parse(await readFile(manifestPath, "utf8").catch(() => "{}")) : {};
 
+  const palette: Record<string, string> = JSON.parse(
+    await readFile(path.join(src, PALETTE), "utf8").catch(() => "{}"),
+  );
   const page = await openPage(src);
   const manifest: Record<string, ManifestEntry> = {};
   try {
     for (const id of ids) {
       const spec = JSON.parse(await readFile(path.join(src, `${id}.json`), "utf8")) as ModelSpec;
+      spec.colors = { ...palette, ...spec.colors };
       if (only.length > 0 && !only.includes(id)) {
         if (previous[id]) manifest[id] = previous[id];
         continue;
@@ -172,7 +212,12 @@ async function main() {
       const radius = radiusOf(id, spec);
       const result = (await page.evaluate(
         (s) => (window as unknown as { bake: (s: unknown) => Promise<unknown> }).bake(s),
-        { ...spec, url: `/models/${encodeURIComponent(id)}.glb`, pxPerUnit: PX_PER_WORLD_UNIT * radius },
+        {
+          ...spec,
+          url: `/models/${encodeURIComponent(id)}.glb`,
+          parts: spec.parts?.map((p) => ({ ...p, url: `/models/models/${encodeURIComponent(p.model)}.glb` })),
+          pxPerUnit: PX_PER_WORLD_UNIT * radius,
+        },
       )) as BakeResult;
       const { dataUrl, ...geometry } = result;
       await writeFile(path.join(out, `${id}.webp`), Buffer.from(dataUrl.split(",")[1], "base64"));
@@ -180,6 +225,7 @@ async function main() {
         name: spec.name,
         kind: spec.kind,
         ...(spec.size ? { size: spec.size } : {}),
+        ...(spec.kind === "terrain" ? { radius } : {}),
         image: `${prefix}${id}.webp`,
         width: geometry.width,
         height: geometry.height,

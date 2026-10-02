@@ -1,0 +1,25 @@
+{
+  "name": "Reeds",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "crops_wheatStageB",
+      "rotate": 60,
+      "scale": 0.75,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "grass_large",
+      "x": 0.16,
+      "z": 0.1,
+      "scale": 0.7,
+      "colors": {
+        "grass": "#5a7748"
+      }
+    }
+  ]
+}

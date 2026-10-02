@@ -1,0 +1,18 @@
+{
+  "name": "Boulder",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "rock_smallH",
+      "rotate": 40,
+      "scale": 0.85
+    },
+    {
+      "model": "stone_smallFlatB",
+      "x": -0.2,
+      "z": 0.14,
+      "scale": 0.5
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "Pebbles",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "stone_smallFlatA",
+      "x": -0.1,
+      "z": 0.02,
+      "scale": 0.45
+    },
+    {
+      "model": "stone_smallC",
+      "x": 0.08,
+      "z": -0.04,
+      "scale": 0.4
+    },
+    {
+      "model": "stone_smallFlatC",
+      "x": 0.04,
+      "z": 0.1,
+      "rotate": 60,
+      "scale": 0.4
+    }
+  ]
+}

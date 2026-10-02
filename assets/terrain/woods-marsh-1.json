@@ -1,0 +1,108 @@
+{
+  "name": "Marsh trees",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "crops_wheatStageB",
+      "x": -0.658,
+      "z": -0.558,
+      "rotate": 210,
+      "scale": 0.75,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "grass_large",
+      "x": 0.694,
+      "z": -0.015,
+      "rotate": 274,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#5a7748"
+      }
+    },
+    {
+      "model": "crops_wheatStageB",
+      "x": 0.67,
+      "z": 0.54,
+      "rotate": 146,
+      "scale": 0.75,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "tree_thin_dark",
+      "x": 1.341,
+      "z": -0.291,
+      "scale": 1.145,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "stump_oldTall",
+      "x": -1.282,
+      "z": -0.29,
+      "rotate": 52,
+      "scale": 0.92,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "stump_oldTall",
+      "x": -0.526,
+      "z": -0.148,
+      "rotate": 284,
+      "scale": 0.998,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "stump_oldTall",
+      "x": 0.312,
+      "z": -0.036,
+      "rotate": 336,
+      "scale": 1.121,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "tree_thin_dark",
+      "x": -1.136,
+      "z": 0.629,
+      "rotate": 298,
+      "scale": 1.082,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "tree_tall_dark",
+      "x": -0.287,
+      "z": 0.775,
+      "rotate": 35,
+      "scale": 0.971,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    },
+    {
+      "model": "stump_oldTall",
+      "x": 0.523,
+      "z": 0.876,
+      "rotate": 177,
+      "scale": 0.857,
+      "colors": {
+        "Bark": "#5f5444"
+      }
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "name": "Pine woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "stone_smallG",
+      "x": 0.555,
+      "z": -0.87,
+      "rotate": 97,
+      "scale": 0.75
+    },
+    {
+      "model": "tree_pineTallA",
+      "x": -0.142,
+      "z": -0.679,
+      "rotate": 270,
+      "scale": 0.856
+    },
+    {
+      "model": "tree_pineRoundA",
+      "x": 0.587,
+      "z": -0.408,
+      "rotate": 52,
+      "scale": 1.054
+    },
+    {
+      "model": "tree_pineDefaultB",
+      "x": -1.355,
+      "z": -0.268,
+      "rotate": 194,
+      "scale": 0.955
+    },
+    {
+      "model": "tree_pineDefaultB",
+      "x": -0.689,
+      "z": -0.146,
+      "rotate": 246,
+      "scale": 1.128
+    },
+    {
+      "model": "tree_pineTallB",
+      "x": -0.012,
+      "z": 0.035,
+      "rotate": 253,
+      "scale": 1.107
+    },
+    {
+      "model": "tree_pineDefaultA",
+      "x": 0.648,
+      "z": 0.274,
+      "rotate": 215,
+      "scale": 1.051
+    },
+    {
+      "model": "tree_pineTallB",
+      "x": -1.026,
+      "z": 0.383,
+      "rotate": 87,
+      "scale": 0.91
+    }
+  ]
+}

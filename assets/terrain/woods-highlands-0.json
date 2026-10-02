@@ -1,0 +1,77 @@
+{
+  "name": "Pine woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "stone_smallG",
+      "x": 1.076,
+      "z": -0.18,
+      "rotate": 200,
+      "scale": 0.75
+    },
+    {
+      "model": "rock_smallC",
+      "x": -0.922,
+      "z": 0.18,
+      "rotate": 252,
+      "scale": 0.75
+    },
+    {
+      "model": "grass",
+      "x": -0.445,
+      "z": 0.255,
+      "rotate": 188,
+      "scale": 0.75
+    },
+    {
+      "model": "stone_smallE",
+      "x": -0.029,
+      "z": 0.944,
+      "rotate": 207,
+      "scale": 0.75
+    },
+    {
+      "model": "tree_pineTallB",
+      "x": 0.645,
+      "z": -0.492,
+      "rotate": 315,
+      "scale": 0.907
+    },
+    {
+      "model": "tree_pineRoundA",
+      "x": 1.497,
+      "z": -0.262,
+      "rotate": 187,
+      "scale": 0.871
+    },
+    {
+      "model": "tree_pineSmallA",
+      "x": -1.46,
+      "z": -0.238,
+      "rotate": 239,
+      "scale": 0.927
+    },
+    {
+      "model": "tree_pineSmallA",
+      "x": -0.486,
+      "z": -0.095,
+      "rotate": 246,
+      "scale": 0.885
+    },
+    {
+      "model": "tree_pineSmallA",
+      "x": 1.081,
+      "z": 0.615,
+      "rotate": 298,
+      "scale": 0.956
+    },
+    {
+      "model": "tree_pineTallB",
+      "x": 0.33,
+      "z": 0.758,
+      "rotate": 215,
+      "scale": 0.969
+    }
+  ]
+}

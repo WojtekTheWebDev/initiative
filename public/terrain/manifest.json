@@ -1,0 +1,938 @@
+{
+  "autumnBush-0": {
+    "name": "Autumn bush",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/autumnBush-0.webp",
+    "width": 0.579,
+    "height": 0.396,
+    "anchor": {
+      "x": 0.219,
+      "y": 0.277
+    },
+    "body": {
+      "x": 0.004,
+      "y": 0,
+      "width": 0.429,
+      "height": 0.358
+    }
+  },
+  "autumnBush-1": {
+    "name": "Autumn bush",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/autumnBush-1.webp",
+    "width": 0.525,
+    "height": 0.408,
+    "anchor": {
+      "x": 0.192,
+      "y": 0.317
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.383,
+      "height": 0.363
+    }
+  },
+  "autumnBush-2": {
+    "name": "Autumn bush",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/autumnBush-2.webp",
+    "width": 0.617,
+    "height": 0.425,
+    "anchor": {
+      "x": 0.253,
+      "y": 0.284
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.538,
+      "height": 0.383
+    }
+  },
+  "bridge": {
+    "name": "Stone bridge",
+    "kind": "terrain",
+    "radius": 45,
+    "image": "/terrain/bridge.webp",
+    "width": 3.606,
+    "height": 1.528,
+    "anchor": {
+      "x": 1.647,
+      "y": 0.941
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.289,
+      "height": 1.528
+    }
+  },
+  "bush-0": {
+    "name": "Bush",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/bush-0.webp",
+    "width": 0.579,
+    "height": 0.396,
+    "anchor": {
+      "x": 0.219,
+      "y": 0.277
+    },
+    "body": {
+      "x": 0.004,
+      "y": 0,
+      "width": 0.429,
+      "height": 0.358
+    }
+  },
+  "bush-1": {
+    "name": "Bush",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/bush-1.webp",
+    "width": 0.525,
+    "height": 0.408,
+    "anchor": {
+      "x": 0.192,
+      "y": 0.317
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.383,
+      "height": 0.363
+    }
+  },
+  "bush-2": {
+    "name": "Bush",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/bush-2.webp",
+    "width": 0.617,
+    "height": 0.425,
+    "anchor": {
+      "x": 0.253,
+      "y": 0.284
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.538,
+      "height": 0.383
+    }
+  },
+  "camp-0": {
+    "name": "Camp",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/camp-0.webp",
+    "width": 2.246,
+    "height": 1.671,
+    "anchor": {
+      "x": 0.946,
+      "y": 1.158
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.192,
+      "height": 1.654
+    }
+  },
+  "camp-1": {
+    "name": "Camp",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/camp-1.webp",
+    "width": 2.513,
+    "height": 1.45,
+    "anchor": {
+      "x": 1.022,
+      "y": 1.017
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.2,
+      "height": 1.442
+    }
+  },
+  "camp-2": {
+    "name": "Camp",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/camp-2.webp",
+    "width": 2.758,
+    "height": 1.729,
+    "anchor": {
+      "x": 1.086,
+      "y": 1.179
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 2.442,
+      "height": 1.717
+    }
+  },
+  "dryTuft-0": {
+    "name": "Dry grass",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/dryTuft-0.webp",
+    "width": 0.338,
+    "height": 0.213,
+    "anchor": {
+      "x": 0.136,
+      "y": 0.152
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.258,
+      "height": 0.208
+    }
+  },
+  "dryTuft-1": {
+    "name": "Dry grass",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/dryTuft-1.webp",
+    "width": 0.442,
+    "height": 0.317,
+    "anchor": {
+      "x": 0.19,
+      "y": 0.205
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.375,
+      "height": 0.317
+    }
+  },
+  "dryTuft-2": {
+    "name": "Dry grass",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/dryTuft-2.webp",
+    "width": 0.483,
+    "height": 0.283,
+    "anchor": {
+      "x": 0.204,
+      "y": 0.158
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.417,
+      "height": 0.283
+    }
+  },
+  "flowers-0": {
+    "name": "Flowers",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/flowers-0.webp",
+    "width": 0.479,
+    "height": 0.304,
+    "anchor": {
+      "x": 0.204,
+      "y": 0.197
+    },
+    "body": {
+      "x": 0.004,
+      "y": 0,
+      "width": 0.425,
+      "height": 0.263
+    }
+  },
+  "flowers-1": {
+    "name": "Flowers",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/flowers-1.webp",
+    "width": 0.492,
+    "height": 0.346,
+    "anchor": {
+      "x": 0.2,
+      "y": 0.241
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.425,
+      "height": 0.308
+    }
+  },
+  "flowers-2": {
+    "name": "Flowers",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/flowers-2.webp",
+    "width": 0.538,
+    "height": 0.392,
+    "anchor": {
+      "x": 0.204,
+      "y": 0.284
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.429,
+      "height": 0.35
+    }
+  },
+  "log-0": {
+    "name": "Fallen log",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/log-0.webp",
+    "width": 0.813,
+    "height": 0.425,
+    "anchor": {
+      "x": 0.358,
+      "y": 0.274
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 0.717,
+      "height": 0.404
+    }
+  },
+  "log-1": {
+    "name": "Fallen log",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/log-1.webp",
+    "width": 1.021,
+    "height": 0.408,
+    "anchor": {
+      "x": 0.44,
+      "y": 0.247
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.879,
+      "height": 0.404
+    }
+  },
+  "log-2": {
+    "name": "Fallen log",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/log-2.webp",
+    "width": 0.742,
+    "height": 0.333,
+    "anchor": {
+      "x": 0.33,
+      "y": 0.23
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.617,
+      "height": 0.333
+    }
+  },
+  "pebbles-0": {
+    "name": "Pebbles",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/pebbles-0.webp",
+    "width": 0.358,
+    "height": 0.213,
+    "anchor": {
+      "x": 0.206,
+      "y": 0.091
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.358,
+      "height": 0.213
+    }
+  },
+  "pebbles-1": {
+    "name": "Pebbles",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/pebbles-1.webp",
+    "width": 0.325,
+    "height": 0.217,
+    "anchor": {
+      "x": 0.136,
+      "y": 0.116
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.325,
+      "height": 0.217
+    }
+  },
+  "pebbles-2": {
+    "name": "Pebbles",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/pebbles-2.webp",
+    "width": 0.383,
+    "height": 0.225,
+    "anchor": {
+      "x": 0.192,
+      "y": 0.107
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.383,
+      "height": 0.221
+    }
+  },
+  "reeds-0": {
+    "name": "Reeds",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/reeds-0.webp",
+    "width": 0.608,
+    "height": 0.467,
+    "anchor": {
+      "x": 0.212,
+      "y": 0.357
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.421,
+      "height": 0.467
+    }
+  },
+  "reeds-1": {
+    "name": "Reeds",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/reeds-1.webp",
+    "width": 0.617,
+    "height": 0.571,
+    "anchor": {
+      "x": 0.204,
+      "y": 0.402
+    },
+    "body": {
+      "x": 0.004,
+      "y": 0,
+      "width": 0.458,
+      "height": 0.563
+    }
+  },
+  "reeds-2": {
+    "name": "Reeds",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/reeds-2.webp",
+    "width": 0.692,
+    "height": 0.533,
+    "anchor": {
+      "x": 0.269,
+      "y": 0.367
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 0.517,
+      "height": 0.529
+    }
+  },
+  "rock-0": {
+    "name": "Mossy rock",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/rock-0.webp",
+    "width": 0.379,
+    "height": 0.313,
+    "anchor": {
+      "x": 0.183,
+      "y": 0.187
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.354,
+      "height": 0.313
+    }
+  },
+  "rock-1": {
+    "name": "Rock",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/rock-1.webp",
+    "width": 0.463,
+    "height": 0.421,
+    "anchor": {
+      "x": 0.178,
+      "y": 0.257
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 0.404,
+      "height": 0.417
+    }
+  },
+  "rock-2": {
+    "name": "Boulder",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/rock-2.webp",
+    "width": 0.692,
+    "height": 0.458,
+    "anchor": {
+      "x": 0.326,
+      "y": 0.343
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.508,
+      "height": 0.458
+    }
+  },
+  "ruins-0": {
+    "name": "Ruins",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/ruins-0.webp",
+    "width": 2.729,
+    "height": 1.521,
+    "anchor": {
+      "x": 1.214,
+      "y": 1.055
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 2.45,
+      "height": 1.517
+    }
+  },
+  "ruins-1": {
+    "name": "Ruins",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/ruins-1.webp",
+    "width": 3.25,
+    "height": 2.183,
+    "anchor": {
+      "x": 1.138,
+      "y": 1.515
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.208,
+      "height": 2.171
+    }
+  },
+  "ruins-2": {
+    "name": "Ruins",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/ruins-2.webp",
+    "width": 2.471,
+    "height": 1.967,
+    "anchor": {
+      "x": 1.231,
+      "y": 1.354
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.263,
+      "height": 1.967
+    }
+  },
+  "stones-0": {
+    "name": "Standing stones",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/stones-0.webp",
+    "width": 3,
+    "height": 2.138,
+    "anchor": {
+      "x": 1.345,
+      "y": 1.313
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.596,
+      "height": 2.138
+    }
+  },
+  "stones-1": {
+    "name": "Standing stones",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/stones-1.webp",
+    "width": 2.938,
+    "height": 2.017,
+    "anchor": {
+      "x": 1.252,
+      "y": 1.22
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.563,
+      "height": 2.017
+    }
+  },
+  "stones-2": {
+    "name": "Standing stones",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/stones-2.webp",
+    "width": 3.042,
+    "height": 2.108,
+    "anchor": {
+      "x": 1.354,
+      "y": 1.235
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.629,
+      "height": 2.1
+    }
+  },
+  "tuft-0": {
+    "name": "Grass tuft",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/tuft-0.webp",
+    "width": 0.338,
+    "height": 0.213,
+    "anchor": {
+      "x": 0.136,
+      "y": 0.152
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.258,
+      "height": 0.208
+    }
+  },
+  "tuft-1": {
+    "name": "Grass tuft",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/tuft-1.webp",
+    "width": 0.442,
+    "height": 0.317,
+    "anchor": {
+      "x": 0.19,
+      "y": 0.205
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.375,
+      "height": 0.317
+    }
+  },
+  "tuft-2": {
+    "name": "Grass tuft",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/tuft-2.webp",
+    "width": 0.483,
+    "height": 0.283,
+    "anchor": {
+      "x": 0.204,
+      "y": 0.158
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 0.417,
+      "height": 0.283
+    }
+  },
+  "watchtower-0": {
+    "name": "Watchtower",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/watchtower-0.webp",
+    "width": 3.75,
+    "height": 3.221,
+    "anchor": {
+      "x": 0.996,
+      "y": 2.644
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 2.046,
+      "height": 3.213
+    }
+  },
+  "watchtower-1": {
+    "name": "Wooden lookout",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/watchtower-1.webp",
+    "width": 3.992,
+    "height": 3.313,
+    "anchor": {
+      "x": 0.805,
+      "y": 2.735
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 1.692,
+      "height": 3.3
+    }
+  },
+  "watchtower-2": {
+    "name": "Stone tower",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/watchtower-2.webp",
+    "width": 3.667,
+    "height": 3.1,
+    "anchor": {
+      "x": 1.086,
+      "y": 2.456
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 1.979,
+      "height": 3.1
+    }
+  },
+  "woods-highlands-0": {
+    "name": "Pine woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-highlands-0.webp",
+    "width": 4.004,
+    "height": 2.217,
+    "anchor": {
+      "x": 1.58,
+      "y": 1.525
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.379,
+      "height": 2.154
+    }
+  },
+  "woods-highlands-1": {
+    "name": "Pine woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-highlands-1.webp",
+    "width": 3.263,
+    "height": 1.979,
+    "anchor": {
+      "x": 1.461,
+      "y": 1.637
+    },
+    "body": {
+      "x": 0.004,
+      "y": 0,
+      "width": 2.517,
+      "height": 1.979
+    }
+  },
+  "woods-highlands-2": {
+    "name": "Pine woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-highlands-2.webp",
+    "width": 4.175,
+    "height": 2.45,
+    "anchor": {
+      "x": 1.62,
+      "y": 1.788
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.313,
+      "height": 2.45
+    }
+  },
+  "woods-marsh-0": {
+    "name": "Marsh trees",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-marsh-0.webp",
+    "width": 4.308,
+    "height": 1.85,
+    "anchor": {
+      "x": 1.81,
+      "y": 1.421
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.2,
+      "height": 1.85
+    }
+  },
+  "woods-marsh-1": {
+    "name": "Marsh trees",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-marsh-1.webp",
+    "width": 4.35,
+    "height": 2.096,
+    "anchor": {
+      "x": 1.616,
+      "y": 1.387
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.363,
+      "height": 2.092
+    }
+  },
+  "woods-marsh-2": {
+    "name": "Marsh trees",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-marsh-2.webp",
+    "width": 3.896,
+    "height": 2.021,
+    "anchor": {
+      "x": 1.252,
+      "y": 1.467
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 2.929,
+      "height": 2.017
+    }
+  },
+  "woods-meadow-0": {
+    "name": "Small woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-meadow-0.webp",
+    "width": 4.275,
+    "height": 2.529,
+    "anchor": {
+      "x": 1.91,
+      "y": 1.792
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.229,
+      "height": 2.529
+    }
+  },
+  "woods-meadow-1": {
+    "name": "Small woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-meadow-1.webp",
+    "width": 4,
+    "height": 2.338,
+    "anchor": {
+      "x": 1.408,
+      "y": 1.678
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.167,
+      "height": 2.338
+    }
+  },
+  "woods-meadow-2": {
+    "name": "Small woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-meadow-2.webp",
+    "width": 3.646,
+    "height": 2.442,
+    "anchor": {
+      "x": 1.287,
+      "y": 1.86
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 2.779,
+      "height": 2.442
+    }
+  },
+  "woods-woods-0": {
+    "name": "Autumn woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-woods-0.webp",
+    "width": 3.842,
+    "height": 2.258,
+    "anchor": {
+      "x": 1.404,
+      "y": 1.464
+    },
+    "body": {
+      "x": 0.004,
+      "y": 0.004,
+      "width": 3.029,
+      "height": 2.225
+    }
+  },
+  "woods-woods-1": {
+    "name": "Autumn woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-woods-1.webp",
+    "width": 3.888,
+    "height": 2.475,
+    "anchor": {
+      "x": 1.541,
+      "y": 1.6
+    },
+    "body": {
+      "x": 0,
+      "y": 0.004,
+      "width": 3.017,
+      "height": 2.471
+    }
+  },
+  "woods-woods-2": {
+    "name": "Autumn woods",
+    "kind": "terrain",
+    "radius": 60,
+    "image": "/terrain/woods-woods-2.webp",
+    "width": 4,
+    "height": 2.425,
+    "anchor": {
+      "x": 1.664,
+      "y": 1.945
+    },
+    "body": {
+      "x": 0,
+      "y": 0,
+      "width": 3.175,
+      "height": 2.396
+    }
+  }
+}

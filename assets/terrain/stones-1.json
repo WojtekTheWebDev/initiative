@@ -1,0 +1,69 @@
+{
+  "name": "Standing stones",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "stone_tallJ",
+      "x": 1.15,
+      "z": 0.006,
+      "rotate": 90,
+      "scale": 0.882
+    },
+    {
+      "model": "stone_tallC",
+      "x": 0.677,
+      "z": 0.93,
+      "rotate": 144,
+      "scale": 0.885
+    },
+    {
+      "model": "stone_tallG",
+      "x": -0.008,
+      "z": 1.15,
+      "rotate": 180,
+      "scale": 0.84
+    },
+    {
+      "model": "stone_tallC",
+      "x": -0.949,
+      "z": 0.65,
+      "rotate": 236,
+      "scale": 0.768
+    },
+    {
+      "model": "stone_tallD",
+      "x": -1.13,
+      "z": -0.212,
+      "rotate": 281,
+      "scale": 0.863
+    },
+    {
+      "model": "stone_tallD",
+      "x": -0.768,
+      "z": -0.856,
+      "rotate": 318,
+      "scale": 0.891
+    },
+    {
+      "model": "stone_tallI",
+      "x": 0.167,
+      "z": -1.138,
+      "rotate": 368,
+      "scale": 0.883
+    },
+    {
+      "model": "stone_tallC",
+      "x": 0.849,
+      "z": -0.776,
+      "rotate": 408,
+      "scale": 0.941
+    },
+    {
+      "model": "grass",
+      "x": 0.35,
+      "z": 0.3,
+      "scale": 0.6
+    }
+  ]
+}

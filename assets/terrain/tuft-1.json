@@ -1,0 +1,12 @@
+{
+  "name": "Grass tuft",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "grass_large",
+      "rotate": 40,
+      "scale": 0.8
+    }
+  ]
+}

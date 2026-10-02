@@ -1,0 +1,111 @@
+{
+  "name": "Autumn woods",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bushDetailed",
+      "x": -0.208,
+      "z": -1.16,
+      "rotate": 294,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#c8621c"
+      }
+    },
+    {
+      "model": "plant_bush",
+      "x": -0.476,
+      "z": -0.958,
+      "rotate": 217,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#a8341f"
+      }
+    },
+    {
+      "model": "log",
+      "x": -1.211,
+      "z": -0.748,
+      "rotate": 40,
+      "scale": 0.9
+    },
+    {
+      "model": "grass",
+      "x": 1.341,
+      "z": -0.665,
+      "rotate": 47,
+      "scale": 0.75
+    },
+    {
+      "model": "plant_bushDetailed",
+      "x": -0.028,
+      "z": 1.192,
+      "rotate": 255,
+      "scale": 0.75,
+      "colors": {
+        "grass": "#c8621c"
+      }
+    },
+    {
+      "model": "tree_oak_fall",
+      "x": -0.55,
+      "z": -0.623,
+      "rotate": 45,
+      "scale": 0.943,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    },
+    {
+      "model": "tree_fat_fall",
+      "x": 0.777,
+      "z": -0.447,
+      "rotate": 142,
+      "scale": 1.06,
+      "colors": {
+        "leafsFall": "#b84a1a"
+      }
+    },
+    {
+      "model": "tree_fat_fall",
+      "x": -1.071,
+      "z": -0.024,
+      "rotate": 14,
+      "scale": 1.038,
+      "colors": {
+        "leafsFall": "#a8341f"
+      }
+    },
+    {
+      "model": "tree_simple_fall",
+      "x": -0.426,
+      "z": 0.201,
+      "rotate": 336,
+      "scale": 1.096,
+      "colors": {
+        "leafsFall": "#c8621c"
+      }
+    },
+    {
+      "model": "tree_simple_fall",
+      "x": 1.341,
+      "z": 0.523,
+      "rotate": 298,
+      "scale": 1.103,
+      "colors": {
+        "leafsFall": "#d49a26"
+      }
+    },
+    {
+      "model": "tree_detailed_fall",
+      "x": -0.033,
+      "z": 0.691,
+      "rotate": 215,
+      "scale": 1.142,
+      "colors": {
+        "leafsFall": "#c8621c"
+      }
+    }
+  ]
+}

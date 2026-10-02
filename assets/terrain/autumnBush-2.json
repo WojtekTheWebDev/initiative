@@ -1,0 +1,24 @@
+{
+  "name": "Autumn bush",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "plant_bush",
+      "x": -0.06,
+      "scale": 1.05,
+      "colors": {
+        "grass": "#c9962a"
+      }
+    },
+    {
+      "model": "plant_bushSmall",
+      "x": 0.18,
+      "z": 0.1,
+      "scale": 0.8,
+      "colors": {
+        "grass": "#c9962a"
+      }
+    }
+  ]
+}

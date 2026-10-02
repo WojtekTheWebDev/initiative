@@ -1,0 +1,37 @@
+{
+  "name": "Reeds",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "crops_wheatStageB",
+      "x": -0.1,
+      "rotate": 20,
+      "scale": 0.65,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "crops_wheatStageB",
+      "x": 0.14,
+      "z": 0.08,
+      "rotate": -50,
+      "scale": 0.55,
+      "colors": {
+        "woodInner": "#5a7340",
+        "_defaultMat": "#5b3b22"
+      }
+    },
+    {
+      "model": "grass",
+      "x": 0.02,
+      "z": 0.16,
+      "scale": 0.6,
+      "colors": {
+        "grass": "#5a7748"
+      }
+    }
+  ]
+}

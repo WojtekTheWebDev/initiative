@@ -1,0 +1,18 @@
+{
+  "name": "Wooden lookout",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "guard-tower",
+      "scale": 0.9
+    },
+    {
+      "model": "log_stack",
+      "x": 0.75,
+      "z": 0.45,
+      "rotate": 70,
+      "scale": 0.8
+    }
+  ]
+}

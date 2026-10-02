@@ -1,0 +1,11 @@
+{
+  "name": "Mossy rock",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "rock_smallA",
+      "rotate": 20
+    }
+  ]
+}

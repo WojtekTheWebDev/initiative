@@ -1,0 +1,44 @@
+{
+  "name": "Ruins",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "ruins-floor-hole-corner",
+      "x": -0.2,
+      "z": 0.15,
+      "scale": 0.42
+    },
+    {
+      "model": "ruins-wall-archround-broken",
+      "z": -0.5,
+      "scale": 0.36
+    },
+    {
+      "model": "ruins-column-round",
+      "x": 1,
+      "z": 0.1,
+      "scale": 0.36
+    },
+    {
+      "model": "ruins-bricks",
+      "x": 0.6,
+      "z": 0.6,
+      "rotate": -40,
+      "scale": 0.42
+    },
+    {
+      "model": "ruins-brick",
+      "x": -0.85,
+      "z": 0.5,
+      "rotate": 20,
+      "scale": 0.42
+    },
+    {
+      "model": "plant_bushDetailed",
+      "x": -1.05,
+      "z": -0.2,
+      "scale": 0.7
+    }
+  ]
+}

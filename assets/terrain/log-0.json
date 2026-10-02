@@ -1,0 +1,11 @@
+{
+  "name": "Fallen log",
+  "kind": "terrain",
+  "radius": 60,
+  "parts": [
+    {
+      "model": "log",
+      "rotate": 78
+    }
+  ]
+}

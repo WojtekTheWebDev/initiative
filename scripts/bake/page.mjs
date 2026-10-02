@@ -17,6 +17,8 @@ const SOLID = 128;
 const BASE_HEIGHT = 0.16;
 const BASE_BLACK = "#1b1c1f";
 const FLOCK = "#4b6130";
+/** How dark terrain's shadow on the table is, 0 to 1. */
+const TABLE_SHADOW = 0.42;
 
 /** Small seeded PRNG, so the flock texture is the same on every run. */
 function mulberry32(seed) {
@@ -122,15 +124,20 @@ function paint(root, { colors, primer }) {
   });
 }
 
-function lights(scene) {
+/** Where the key light comes from: the upper left of the picture. */
+const KEY_LIGHT = new THREE.Vector3(-6, 10, 6);
+
+/** The light rig. `reach` is how far from the origin, in model units, shadows must be cast. */
+function lights(scene, reach) {
   scene.add(new THREE.HemisphereLight(0xfff1dc, 0x2e2a24, 1.1));
   // Key light from the upper left of the picture, so the shading matches the
   // contact shadows on the map, which fall down and to the right.
   const key = new THREE.DirectionalLight(0xfff4e6, 2.4);
-  key.position.set(-6, 10, 6);
+  const k = Math.max(1, reach / 4);
+  key.position.copy(KEY_LIGHT).multiplyScalar(k);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
-  Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: 0.5, far: 40 });
+  Object.assign(key.shadow.camera, { left: -4 * k, right: 4 * k, top: 4 * k, bottom: -4 * k, near: 0.5, far: 40 * k });
   key.shadow.bias = -0.0008;
   key.shadow.normalBias = 0.02;
   scene.add(key);
@@ -141,15 +148,23 @@ function lights(scene) {
 
 const loader = new GLTFLoader();
 
-/** Loads a model, poses it, and scales it onto the base. Returns the posed figure. */
-async function loadFigure(url, spec) {
-  const gltf = await loader.loadAsync(url);
-  const root = gltf.scene;
-  for (const name of spec.hide ?? []) {
+function hideNodes(root, names) {
+  for (const name of names ?? []) {
     root.traverse((o) => {
       if (o.name === name) o.visible = false;
     });
   }
+}
+
+/**
+ * Loads a model. A figure (hero or monster) is posed and scaled onto its base;
+ * terrain keeps the size it has in its source file, centred on its footprint.
+ */
+async function loadFigure(spec) {
+  if (spec.parts) return compose(spec);
+  const gltf = await loader.loadAsync(spec.url);
+  const root = gltf.scene;
+  hideNodes(root, spec.hide);
   const clips = gltf.animations ?? [];
   const wanted = spec.pose?.clip;
   const clip = wanted
@@ -169,12 +184,38 @@ async function loadFigure(url, spec) {
   const size = box.getSize(new THREE.Vector3());
   const footprint = Math.max(size.x, size.z);
   const height = spec.height ?? 2.2;
-  const scale = Math.min(height / size.y, (spec.footprint ?? 1.9) / footprint);
+  const scale =
+    spec.kind === "terrain" ? 1 : Math.min(height / size.y, (spec.footprint ?? 1.9) / footprint);
   const center = box.getCenter(new THREE.Vector3());
   const figure = new THREE.Group();
   root.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
   root.scale.setScalar(scale);
   figure.add(root);
+  return figure;
+}
+
+/**
+ * A piece put together from several models (`spec.parts`). Each part is
+ * turned by `rotate` degrees, scaled by `scale`, centred on (`x`, `z`) and
+ * stood with its lowest point at `y`, all in model units, with x to the right
+ * and z toward the viewer. The piece's footprint centre is the origin.
+ */
+async function compose(spec) {
+  const figure = new THREE.Group();
+  for (const part of spec.parts) {
+    const gltf = await loader.loadAsync(part.url);
+    const root = gltf.scene;
+    hideNodes(root, part.hide);
+    root.rotation.y = ((part.rotate ?? 0) * Math.PI) / 180;
+    root.scale.setScalar(part.scale ?? 1);
+    paint(root, { colors: { ...spec.colors, ...part.colors }, primer: part.primer ?? spec.primer });
+    const box = visibleBox(root);
+    const center = box.getCenter(new THREE.Vector3());
+    const holder = new THREE.Group();
+    holder.position.set((part.x ?? 0) - center.x, (part.y ?? 0) - box.min.y, (part.z ?? 0) - center.z);
+    holder.add(root);
+    figure.add(holder);
+  }
   return figure;
 }
 
@@ -208,21 +249,39 @@ function camera() {
   return cam;
 }
 
-/** Screen-plane bounds (camera space x and y) of every visible mesh in `group`. */
-function viewBounds(group, cam) {
-  const box = visibleBox(group);
-  const out = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
-  const inv = cam.matrixWorldInverse;
+function corners(box) {
+  const out = [];
   for (const x of [box.min.x, box.max.x])
     for (const y of [box.min.y, box.max.y])
-      for (const z of [box.min.z, box.max.z]) {
-        const p = new THREE.Vector3(x, y, z).applyMatrix4(inv);
-        out.minX = Math.min(out.minX, p.x);
-        out.maxX = Math.max(out.maxX, p.x);
-        out.minY = Math.min(out.minY, p.y);
-        out.maxY = Math.max(out.maxY, p.y);
-      }
+      for (const z of [box.min.z, box.max.z]) out.push(new THREE.Vector3(x, y, z));
   return out;
+}
+
+/** Where the key light casts each point onto the table (y = 0). */
+function castOnTable(points) {
+  return points.map((p) => p.clone().sub(KEY_LIGHT.clone().multiplyScalar(p.y / KEY_LIGHT.y)));
+}
+
+/** Screen-plane bounds (camera space x and y) of `points`. */
+function viewBounds(points, cam) {
+  const out = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+  const inv = cam.matrixWorldInverse;
+  for (const point of points) {
+    const p = point.clone().applyMatrix4(inv);
+    out.minX = Math.min(out.minX, p.x);
+    out.maxX = Math.max(out.maxX, p.x);
+    out.minY = Math.min(out.minY, p.y);
+    out.maxY = Math.max(out.maxY, p.y);
+  }
+  return out;
+}
+
+/** An invisible table top that only shows the shadows cast on it, for terrain, which stands on the felt itself. */
+function tableShadow() {
+  const plane = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.ShadowMaterial({ opacity: TABLE_SHADOW }));
+  plane.rotation.x = -Math.PI / 2;
+  plane.receiveShadow = true;
+  return plane;
 }
 
 let renderer = null;
@@ -280,16 +339,23 @@ function draw(scene, cam, w, h) {
  */
 window.bake = async function bake(spec) {
   const scene = new THREE.Scene();
-  lights(scene);
-  const withBase = spec.base !== false;
+  const withBase = spec.base ?? spec.kind !== "terrain";
   const base = withBase ? buildBase() : null;
   if (base) scene.add(base);
-  const figure = await loadFigure(spec.url, spec);
+  const figure = await loadFigure(spec);
   figure.position.y = withBase ? BASE_HEIGHT : 0;
   scene.add(figure);
 
+  // A figure is framed with its base. Terrain is framed with the shadow it casts on the table.
+  const box = visibleBox(scene);
+  const points = withBase ? corners(box) : [...corners(box), ...castOnTable(corners(box))];
+  const reach = Math.max(...points.map((p) => Math.max(Math.abs(p.x), Math.abs(p.z))));
+  lights(scene, reach);
+  const shadow = withBase ? null : tableShadow();
+  if (shadow) scene.add(shadow);
+
   const cam = camera();
-  const b = viewBounds(scene, cam);
+  const b = viewBounds(points, cam);
   const margin = 0.08;
   cam.left = b.minX - margin;
   cam.right = b.maxX + margin;
@@ -308,8 +374,9 @@ window.bake = async function bake(spec) {
   const full = draw(scene, cam, w, h);
   const crop = alphaBox(full.ctx, w, h, 1) ?? { x: 0, y: 0, width: 1, height: 1 };
 
-  // The body alone, for hit-testing: hide the base and measure the silhouette.
+  // The body alone, for hit-testing: hide the base (or the table shadow) and measure the silhouette.
   if (base) base.visible = false;
+  if (shadow) shadow.visible = false;
   const bodyPass = draw(scene, cam, w, h);
   const body = alphaBox(bodyPass.ctx, w, h, SOLID) ?? crop;
 
