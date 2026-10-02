@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
-import { layoutWorld, openingPoints, type WorldLayout } from "@/lib/map/layout";
+import { openingPoints, type WorldLayout } from "@/lib/map/layout";
 import { MapCanvas, type MapHandle } from "@/components/map/MapCanvas";
 import { FigureStyles, MonsterFigure } from "@/components/map/MonsterFigure";
 import { HeroFigure } from "@/components/map/HeroFigure";
 import { GhostMarker } from "@/components/map/GhostMarker";
+import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
+import { DragOverlay } from "@/components/map/DragOverlay";
 
 export type Selection = { kind: "monster" | "hero"; id: string } | null;
 
@@ -18,8 +20,9 @@ export function Board({ world }: { world: World }) {
   // Shared UI state. T6-T8 hook into these.
   const map = useRef<MapHandle>(null);
   const [selection, setSelection] = useState<Selection>(null);
-  // T6: apply live drag positions / optimistic updates to `world` before layout.
-  const layout = useMemo(() => layoutWorld(world), [world]);
+  // T6: drag/drop with optimistic updates; `drag.layout` includes the live drag.
+  const drag = useFigureDrag(world, map);
+  const layout = drag.layout;
 
   // Only the first call matters: MapCanvas computes the opening camera once.
   const initialCamera = (viewport: ViewportSize) =>
@@ -40,11 +43,16 @@ export function Board({ world }: { world: World }) {
           ref={map}
           initialCamera={initialCamera}
           onBackgroundClick={() => setSelection(null)}
-          // T7: overlay={(view) => <EdgeArrows ... />}
+          overlay={(view) => (
+            <>
+              {/* T7: <EdgeArrows ... /> */}
+              <DragOverlay drag={drag} view={view} />
+            </>
+          )}
         >
           {({ camera }) => (
             <Figures
-              layout={layout}
+              drag={drag}
               scale={camera.scale}
               selection={selection}
               onSelect={setSelection}
@@ -77,15 +85,24 @@ function selectionName(world: World, selection: Selection): string | null {
 
 /** World-space figures. Draw order: ghosts, heroes, monsters (so monster labels sit on top). */
 function Figures(props: {
-  layout: WorldLayout;
+  drag: FigureDrag;
   scale: number;
   selection: Selection;
   onSelect: (s: Selection) => void;
 }) {
-  const { layout, scale, selection, onSelect } = props;
+  const { drag, scale, selection, onSelect } = props;
+  const { layout, liftedHeroId } = drag;
   const isSelected = (kind: "monster" | "hero", id: string) =>
     selection?.kind === kind && selection.id === id;
-  // T6: pass onPointerDown drag handlers to the figures below.
+  const hero = (h: WorldLayout["heroes"][number]) => (
+    <HeroFigure
+      key={h.hero.id}
+      placed={h}
+      scale={scale}
+      selected={isSelected("hero", h.hero.id)}
+      {...drag.bindFigure("hero", h.hero.id, () => onSelect({ kind: "hero", id: h.hero.id }))}
+    />
+  );
   return (
     <>
       <g>
@@ -94,21 +111,12 @@ function Figures(props: {
             key={`${g.hero.id}:${g.monsterId}`}
             placed={g}
             scale={scale}
-            // T6: open GhostPopover instead.
-            onClick={() => onSelect({ kind: "hero", id: g.hero.id })}
+            {...drag.bindGhost(g.hero.id, g.monsterId)}
           />
         ))}
       </g>
       <g>
-        {layout.heroes.map((h) => (
-          <HeroFigure
-            key={h.hero.id}
-            placed={h}
-            scale={scale}
-            selected={isSelected("hero", h.hero.id)}
-            onClick={() => onSelect({ kind: "hero", id: h.hero.id })}
-          />
-        ))}
+        {layout.heroes.filter((h) => h.hero.id !== liftedHeroId).map(hero)}
       </g>
       <g>
         {layout.monsters.map((m) => (
@@ -117,10 +125,13 @@ function Figures(props: {
             placed={m}
             scale={scale}
             selected={isSelected("monster", m.monster.id)}
-            onClick={() => onSelect({ kind: "monster", id: m.monster.id })}
+            dropHint={drag.dropHint(m.monster.id)}
+            {...drag.bindFigure("monster", m.monster.id, () => onSelect({ kind: "monster", id: m.monster.id }))}
           />
         ))}
       </g>
+      {/* The hero being dragged goes on top of everything. */}
+      <g>{layout.heroes.filter((h) => h.hero.id === liftedHeroId).map(hero)}</g>
     </>
   );
 }
