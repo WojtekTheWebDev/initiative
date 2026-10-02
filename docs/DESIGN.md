@@ -60,7 +60,7 @@ Rules for writing:
 
 - **Canvas:** infinite, built by hand with an SVG `viewBox` and pointer events, with no pan/zoom library.
   - The wheel always zooms at the cursor, and so does a trackpad pinch. Two-finger scrolling zooms too; it does not pan.
-  - Dragging empty ground pans. A light grid scales with the zoom.
+  - Dragging empty ground pans. The ground is a felt wargame table (see Table).
   - Dragging a figure moves it (see Interactions).
   - When the layout changes after a drop, an edit or new data from the server, figures glide to their new places (about 350 ms, ease-out). During a drag they follow the layout directly, and with `prefers-reduced-motion` they jump.
 - **Opening view:** fits the bounding box of everything still alive.
@@ -68,6 +68,21 @@ Rules for writing:
   - Monsters by size: S 👺 goblin, M 👹 orc, L 🧌 troll, XL 🐉 dragon. The base grows with size.
   - Heroes by class: commander 👑, warrior ⚔️, archer 🏹, mage 🧙, rogue 🗡️, cleric ✨, paladin 🔱, ranger 🌲, druid 🌿, bard 🎻, monk 🥋, ninja 🥷, artificer 🔧, alchemist ⚗️, scout 🔭, necromancer 💀. Common synonyms map onto these (wizard → mage, knight → warrior, engineer → artificer, …). Any other class gets 🛡️. The table is in `lib/map/glyphs.ts`.
   - **Target arrows** run from each hero to each of its targets, below the figures. The main arrow is solid with a filled head, secondary arrows are thinner, dashed and fainter. Line widths and heads keep the same screen size at any zoom. Selecting a hero turns its arrows amber and fades the rest; selecting a monster does the same for the arrows pointing at it.
+
+## Table
+
+The map is drawn on a felt wargame table that someone took time to dress. It is a physical object, so it looks the same in light and dark mode; only the UI around it follows the theme.
+
+- **Felt:** two seamless tiles laid over the ground colour as SVG patterns that scale with the zoom: the nap of the cloth (fading out when zoomed far out, where it would only shimmer) and a much larger, soft dye mottle so the repeat never shows. The tiles are made by `npm run make:felt` (`scripts/make-felt.mjs`) and committed in `public/terrain/`.
+- **Grid:** a faint chalk grid (100 units, every fifth line stronger) so distances still read. It fades out between zoom 0.6 and 0.45.
+- **Terrain is decoration only.** It is worked out from the world coordinates by `terrainChunk(cx, cy)` in `lib/map/terrain.ts`, for 1200 × 1200 chunks, and is never stored. The same chunk always looks the same. It never affects the layout or hit-testing, and nothing on the table takes pointer events.
+- **Biomes:** meadow, autumn woods, rocky highlands and marsh, in regions a couple of chunks across that blend softly at their wandering edges. The region around the origin is meadow. Each biome has its own felt tint and scatter, and the ground colour is a small image per chunk that the browser smooths when it scales it up.
+- **Ground features:** hills (lighter patches with contour lines, most in the highlands, almost none in the marsh), dirt roads between jittered junctions, and rivers running north to south, one every six chunks or so, with the nearest passing just east of the origin. Roads and rivers are curves in world space, cut at chunk borders, so they run on without a break. A stone bridge stands wherever a road crosses a river.
+- **Scatter:** rocks, pebbles, grass tufts, flowers, fallen logs, bushes, leaf litter, puddles and reeds, picked by biome (reeds also line every riverbank). It keeps off roads, water and raised pieces.
+- **Raised pieces:** small woods (green, autumn, pine or marsh trees by biome), ruins, a watchtower, a camp with a fire, and a standing-stone circle. They are rare (zero to two per chunk) and at least 300 units apart. They are drawn in depth order with the figures: a piece that no figure or label overlaps sits under the figures at full strength; a piece that one overlaps fades to 35%, staying under the figures when they stand in front of it and going over them when it stands in front of one. So terrain never hides the game.
+- **Lamp:** a warm light pooled in the middle of the screen that falls off toward the edges, fixed to the viewport rather than the world, as if a lamp hung over the table.
+- **Art:** scatter, raised pieces and bridges are painted SVG symbols in the minis' three-quarter view (38° elevation, key light from the upper left, shadows to the lower right), defined once in `components/map/TableArt.tsx` and placed with `<use>`. `artSource(key)` there decides where each piece's art comes from, so a piece can be swapped for a baked image by adding its key to the `BAKED` table.
+- **Level of detail and speed:** only chunks in view (plus a small margin) are drawn, each layer of each chunk is memoised, and generated chunks are cached; the ring just outside the view is generated while the browser is idle, so nothing pops in while panning. Below zoom 0.4 the scatter is left out, and below 0.2 the contour lines too; ground features and raised pieces stay. No SVG filters are used; shadows and glows are pre-blurred gradients.
 
 ## Interactions
 
@@ -118,6 +133,7 @@ Use Vitest unit tests on the pure functions that change data:
 - assign, Shift-add, and promoting or removing a secondary target
 - the force solver and the layout: the user's example, separate clusters, homes, no overlaps, determinism and speed
 - target arrows from the layout
+- the terrain: the same chunk gives the same terrain, roads and rivers meet at chunk borders, raised pieces are rare and apart, every biome appears near the origin, a chunk is fast to generate, and how raised pieces fade among the figures
 - the home after a drag
 - slay and delete cleanup
 - comments kept on write

@@ -2,7 +2,6 @@
 
 import {
   useEffect,
-  useId,
   useImperativeHandle,
   useRef,
   useState,
@@ -21,7 +20,9 @@ import {
   type ViewBox,
   type ViewportSize,
 } from "@/lib/map/camera";
+import type { FigureFootprint } from "@/lib/map/terrain";
 import { useCamera, type InitialCamera } from "./useCamera";
+import { FELT_BASE, Lamp, TableDefs, TableGround, TablePieces } from "./Table";
 
 /** Imperative API exposed through `ref`. Getters always return the latest values. */
 export type MapHandle = {
@@ -53,12 +54,16 @@ type Props = {
   children?: Layer;
   /** Screen-space HTML layer above the map. Its container has `pointer-events: none`; opt in per element. */
   overlay?: Layer;
+  /** Where the figures and their labels stand, so raised terrain pieces never hide them. */
+  footprints?: FigureFootprint[];
   /** Click (no drag) on empty ground; receives the world point. */
   onBackgroundClick?: (world: Pos) => void;
   /** React 19 ref-as-prop. */
   ref?: Ref<MapHandle>;
   className?: string;
 };
+
+const NO_FOOTPRINTS: FigureFootprint[] = [];
 
 /** Pointer travel (screen px) below which a press on the ground counts as a click. */
 const CLICK_SLOP = 4;
@@ -68,13 +73,15 @@ const PINCH_SPEED = 0.01;
 
 /**
  * Infinite SVG map with hand-rolled pan (drag empty ground) and zoom (wheel at
- * the cursor, trackpad pinch). Elements inside a `[data-figure]` ancestor never
- * start a pan, so figures can handle their own drags.
+ * the cursor, trackpad pinch), drawn on the felt table (see Table.tsx). Elements
+ * inside a `[data-figure]` ancestor never start a pan, so figures can handle
+ * their own drags.
  */
 export function MapCanvas({
   initialCamera,
   children,
   overlay,
+  footprints = NO_FOOTPRINTS,
   onBackgroundClick,
   ref,
   className,
@@ -248,6 +255,7 @@ export function MapCanvas({
     <div
       ref={containerRef}
       className={`relative h-full w-full flex-1 overflow-hidden text-foreground ${className ?? ""}`}
+      style={{ background: FELT_BASE }}
     >
       <svg
         ref={svgRef}
@@ -261,67 +269,22 @@ export function MapCanvas({
         onPointerCancel={(e) => endDrag(e, true)}
         onLostPointerCapture={(e) => endDrag(e, true)}
       >
+        <TableDefs />
         {view && (
           <>
-            <Grid viewBox={view.viewBox} scale={view.camera.scale} />
+            <TableGround viewBox={view.viewBox} scale={view.camera.scale} />
+            <TablePieces viewBox={view.viewBox} footprints={footprints} front={false} />
             <g>{typeof children === "function" ? children(view) : children}</g>
+            <TablePieces viewBox={view.viewBox} footprints={footprints} front />
           </>
         )}
       </svg>
+      <Lamp />
       {view && overlay && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {typeof overlay === "function" ? overlay(view) : overlay}
         </div>
       )}
     </div>
-  );
-}
-
-/** Grid spacing (world units) that stays between ~24 and ~60 screen px at any zoom. */
-function gridStep(scale: number): number {
-  let step = 50;
-  while (step * scale < 24) step *= 2;
-  while (step * scale > 60) step /= 2;
-  return step;
-}
-
-function Grid({ viewBox: vb, scale }: { viewBox: ViewBox; scale: number }) {
-  const id = useId();
-  const minorId = `${id}-minor`;
-  const majorId = `${id}-major`;
-  const step = gridStep(scale);
-  const major = step * 5;
-  const px = 1 / scale;
-  return (
-    <g aria-hidden="true" style={{ pointerEvents: "none" }}>
-      <defs>
-        <pattern id={minorId} width={step} height={step} patternUnits="userSpaceOnUse">
-          <path
-            d={`M ${step} 0 L 0 0 0 ${step}`}
-            fill="none"
-            stroke="currentColor"
-            strokeOpacity={0.07}
-            strokeWidth={px}
-          />
-        </pattern>
-        <pattern id={majorId} width={major} height={major} patternUnits="userSpaceOnUse">
-          <rect width={major} height={major} fill={`url(#${minorId})`} />
-          <path
-            d={`M ${major} 0 L 0 0 0 ${major}`}
-            fill="none"
-            stroke="currentColor"
-            strokeOpacity={0.14}
-            strokeWidth={px}
-          />
-        </pattern>
-      </defs>
-      <rect
-        x={vb.x}
-        y={vb.y}
-        width={vb.width}
-        height={vb.height}
-        fill={`url(#${majorId})`}
-      />
-    </g>
   );
 }

@@ -6,3 +6,4 @@ export * from "./layout";
 export * from "./links";
 export * from "./arrows";
 export * from "./force";
+export * from "./terrain";

@@ -23,6 +23,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run build` then `npm start` | Production build and server |
 | `npm test` | Vitest unit tests (`npm run test:watch` to watch) |
 | `npm run lint` | ESLint |
+| `npm run make:felt` | Regenerates the felt textures in `public/terrain/` (the output is committed) |
 
 ## How to use
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Monster, Pos, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
 import { openingPoints, type WorldLayout } from "@/lib/map/layout";
+import { figureFootprints } from "@/lib/map/terrain";
 import { MapCanvas, type MapHandle } from "@/components/map/MapCanvas";
 import { FigureStyles, MonsterFigure } from "@/components/map/MonsterFigure";
 import { HeroFigure } from "@/components/map/HeroFigure";
@@ -34,6 +35,7 @@ export function Board({ world }: { world: World }) {
   // Counted from the optimistic world, so the alarm updates the moment you drop.
   const unfoughtMonsters = useMemo(() => unfought(drag.world), [drag.world]);
   const unfoughtPlaced = useMemo(() => layout.monsters.filter((m) => m.unfought), [layout]);
+  const footprints = useMemo(() => figureFootprints(layout), [layout]);
 
   // A figure to fly to once it shows up in the layout (see flyToFigure).
   const flyPending = useRef<{ kind: "monster" | "hero"; id: string; fallback: Pos } | null>(null);
@@ -70,6 +72,7 @@ export function Board({ world }: { world: World }) {
         <MapCanvas
           ref={map}
           initialCamera={initialCamera}
+          footprints={footprints}
           onBackgroundClick={() => setSelection(null)}
           overlay={(view) => (
             <>
