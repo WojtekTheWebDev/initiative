@@ -1,0 +1,98 @@
+import { describe, expect, it } from "vitest";
+import type { Pos, World } from "@/lib/types";
+import { layoutWorld, type WorldLayout } from "./layout";
+import { LINK_GAP, linksOf } from "./links";
+import { HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
+
+const dist = (a: Pos, b: Pos) => Math.hypot(a.x - b.x, a.y - b.y);
+
+function world(): World {
+  return {
+    monsters: [
+      { id: "m1", name: "One", size: "S", pos: { x: 0, y: 0 } },
+      { id: "m2", name: "Two", size: "L", pos: { x: 400, y: 0 } },
+      { id: "dead", name: "Dead", size: "M", pos: { x: 0, y: 400 }, slain: "2026-09-01" },
+    ],
+    heroes: [
+      { id: "cid", name: "Cid", class: "rogue", targets: ["m2"] },
+      { id: "ana", name: "Ana", class: "archer", targets: ["m1", "m2"] },
+      { id: "bob", name: "Bob", class: "mage", targets: [], pos: { x: 10, y: 20 } },
+    ],
+  };
+}
+
+/** Puts figures at exact spots, keeping everything else the layout worked out. */
+function placeAt(layout: WorldLayout, spots: Record<string, Pos>): WorldLayout {
+  return {
+    ...layout,
+    monsters: layout.monsters.map((m) => (spots[m.monster.id] ? { ...m, pos: spots[m.monster.id] } : m)),
+    heroes: layout.heroes.map((h) => (spots[h.hero.id] ? { ...h, pos: spots[h.hero.id] } : h)),
+  };
+}
+
+describe("linksOf", () => {
+  it("gives one link per hero and living target, by hero id then target order", () => {
+    const links = linksOf(layoutWorld(world()));
+    expect(links.map((l) => [l.heroId, l.monsterId, l.main])).toEqual([
+      ["ana", "m1", true],
+      ["ana", "m2", false],
+      ["cid", "m2", true],
+    ]);
+  });
+
+  it("does not depend on the order heroes appear in the layout", () => {
+    const layout = layoutWorld(world());
+    const flipped = { ...layout, heroes: [...layout.heroes].reverse() };
+    expect(linksOf(flipped)).toEqual(linksOf(layout));
+  });
+
+  it("trims each end to the figure's rim, minus a small gap", () => {
+    const layout = placeAt(layoutWorld(world()), { ana: { x: 0, y: -200 }, m1: { x: 0, y: 0 } });
+    const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m1")!;
+    expect(link.from.x).toBeCloseTo(0);
+    expect(link.from.y).toBeCloseTo(-200 + HERO_BASE_RADIUS + LINK_GAP);
+    expect(link.to.x).toBeCloseTo(0);
+    expect(link.to.y).toBeCloseTo(-(monsterBaseRadius("S") + LINK_GAP));
+  });
+
+  it("points along the line between the two centres", () => {
+    const layout = placeAt(layoutWorld(world()), { ana: { x: 100, y: 100 }, m2: { x: 400, y: 500 } });
+    const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m2")!;
+    const hero = { x: 100, y: 100 };
+    const monster = { x: 400, y: 500 };
+    expect(dist(link.from, hero)).toBeCloseTo(HERO_BASE_RADIUS + LINK_GAP);
+    expect(dist(link.to, monster)).toBeCloseTo(monsterBaseRadius("L") + LINK_GAP);
+    expect(dist(hero, link.from) + dist(link.from, link.to) + dist(link.to, monster)).toBeCloseTo(
+      dist(hero, monster),
+    );
+  });
+
+  it("skips links whose figures overlap or touch", () => {
+    const layout = placeAt(layoutWorld(world()), { ana: { x: 10, y: 0 }, cid: { x: 400, y: -70 } });
+    const links = linksOf(layout).map((l) => `${l.heroId}:${l.monsterId}`);
+    expect(links).not.toContain("ana:m1");
+    expect(links).not.toContain("cid:m2"); // 70 apart: closer than both rims plus their gaps
+    expect(links).toContain("ana:m2");
+  });
+
+  it("skips targets that are not in the layout", () => {
+    const layout = layoutWorld(world());
+    const withUnknown = {
+      ...layout,
+      heroes: layout.heroes.map((h) => (h.hero.id === "cid" ? { ...h, targets: ["nope", "m2"] } : h)),
+    };
+    const cid = linksOf(withUnknown).filter((l) => l.heroId === "cid");
+    expect(cid.map((l) => l.monsterId)).toEqual(["m2"]);
+  });
+
+  it("ignores slain targets (the layout drops them)", () => {
+    const w = world();
+    w.heroes.push({ id: "dan", name: "Dan", class: "monk", targets: ["dead", "m1"] });
+    const dan = linksOf(layoutWorld(w)).filter((l) => l.heroId === "dan");
+    expect(dan.map((l) => [l.monsterId, l.main])).toEqual([["m1", true]]);
+  });
+
+  it("gives idle heroes no links", () => {
+    expect(linksOf(layoutWorld(world())).some((l) => l.heroId === "bob")).toBe(false);
+  });
+});

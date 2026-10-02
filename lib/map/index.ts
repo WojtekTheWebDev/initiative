@@ -3,5 +3,6 @@ export * from "./rings";
 export * from "./edge";
 export * from "./glyphs";
 export * from "./layout";
+export * from "./links";
 export * from "./arrows";
 export * from "./force";

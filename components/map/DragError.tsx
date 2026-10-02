@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 /** How long the error stays before it hides itself. */
 const AUTO_HIDE_MS = 6000;
 
-/** A small self-contained toast for a failed drag or ghost action (the change has been reverted). */
+/** A small self-contained toast for a failed drag or target action (the change has been reverted). */
 export function DragError({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   const onDismissRef = useRef(onDismiss);
   useEffect(() => {

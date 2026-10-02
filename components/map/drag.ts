@@ -93,15 +93,15 @@ export type LiveDrag =
   | { kind: "monster"; id: string; pos: Pos }
   | { kind: "hero"; id: string; pos: Pos };
 
-/** Moves a dragged monster in the world before layout, so its heroes and ghosts follow it. */
+/** Moves a dragged monster in the world before layout, so its heroes and arrows follow it. */
 export function worldWithDrag(world: World, drag: LiveDrag | null): World {
   if (!drag || drag.kind !== "monster") return world;
   return applyOp(world, { kind: "moveMonster", id: drag.id, pos: drag.pos });
 }
 
 /**
- * Puts a dragged hero at the cursor after layout. Its targets (and so its ghosts and
- * the monster's unfought state) stay as they are until the drop.
+ * Puts a dragged hero at the cursor after layout, so its arrows follow it. Its targets
+ * (and so the monsters' unfought state) stay as they are until the drop.
  */
 export function layoutWithDrag(layout: WorldLayout, drag: LiveDrag | null): WorldLayout {
   if (!drag || drag.kind !== "hero") return layout;

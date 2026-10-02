@@ -12,8 +12,9 @@ It is a tool for one person (an engineering manager) to use in daily work. It is
 | --------- | ----------------------------------------------------------------------- |
 | Monster   | Something to deal with: an initiative, incident, tech debt, a hire, a people issue, a stakeholder ask |
 | Hero      | An engineer on the team, or you (e.g. class `commander`)                 |
-| Main target | The monster a hero's figure stands beside                             |
-| Ghost     | A faint marker for a hero's secondary targets                            |
+| Main target | The monster a hero's figure stands beside (`targets[0]`)            |
+| Secondary target | Any other monster in a hero's `targets`. The hero doesn't move for it |
+| Target arrow | An arrow from a hero to each of its targets: solid for the main target, dashed for secondary ones |
 | Unfought  | A living monster that no hero targets. It pulses red                     |
 | Slain     | Done. It leaves the map and goes into the trophies strip                 |
 
@@ -36,14 +37,15 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
 - id: ana
   name: Ana
   class: archer             # free label → token glyph (mapping table + fallback)
-  targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = ghosts
+  targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = secondary targets
   pos: { x: -600, y: 40 }   # stored only while idle (targets empty)
 ```
 
 Rules worked out from the data, not stored:
 - **Engaged or unfought** depends on whether any hero has the monster in `targets`. There is no `fighters` or `status` field.
 - **Creature type** comes from `size`. There is no `kind` field.
-- **Engaged hero position** is on an arc above the main target, fanned out from the top in hero-id order. A wedge at the bottom stays clear for the monster's name label; if the arc gets crowded, its radius grows. Ghosts stand on a second, outer arc (or the inner one if the monster has no main fighters). Everything follows the monster when it moves.
+- **Engaged hero position** is on an arc above the main target, fanned out from the top in hero-id order. A wedge at the bottom stays clear for the monster's name label; if the arc gets crowded, its radius grows. Secondary targets don't move a hero. Everything follows the monster when it moves.
+- **Target arrows** come from the layout: one per hero and living target, from the hero's rim to the monster's rim. They are never stored, so anything that moves a figure moves its arrows too.
 
 Rules for writing:
 - Use the [`yaml`](https://eemeli.org/yaml/) package's Document API, so hand-written comments are kept.
@@ -59,7 +61,7 @@ Rules for writing:
 - **Figures:** emoji glyphs on SVG circle bases, with name labels that never shrink below a readable size. Monster bases are a neutral stone colour, light or dark to match the theme. Real art can come later.
   - Monsters by size: S 👺 goblin, M 👹 orc, L 🧌 troll, XL 🐉 dragon. The base grows with size.
   - Heroes by class: commander 👑, warrior ⚔️, archer 🏹, mage 🧙, rogue 🗡️, cleric ✨, paladin 🔱, ranger 🌲, druid 🌿, bard 🎻, monk 🥋, ninja 🥷, artificer 🔧, alchemist ⚗️, scout 🔭, necromancer 💀. Common synonyms map onto these (wizard → mage, knight → warrior, engineer → artificer, …). Any other class gets 🛡️. The table is in `lib/map/glyphs.ts`.
-  - Ghosts are the hero glyph, faint, with a dashed outline.
+  - **Target arrows** run from each hero to each of its targets, below the figures. The main arrow is solid with a filled head, secondary arrows are thinner, dashed and fainter. Line widths and heads keep the same screen size at any zoom. Selecting a hero turns its arrows amber and fades the rest; selecting a monster does the same for the arrows pointing at it.
 
 ## Interactions
 
@@ -68,12 +70,12 @@ Rules for writing:
 - **Click** to open the side panel, which has notes, fighters, edit, slay and delete.
 
 **Heroes**
-- A **plain drop on a monster** sets `targets` to just that monster. A plain drop back on the current main target changes nothing, so the ghosts stay.
-- **Shift+drop on a monster** adds it to the end of `targets` as a ghost. The figure stays at its main fight. If the monster is already a target, nothing happens. An idle hero gets it as the main target.
+- A **plain drop on a monster** sets `targets` to just that monster. A plain drop back on the current main target changes nothing, so the secondary targets stay.
+- **Shift+drop on a monster** adds it to the end of `targets` as a secondary target. The figure stays at its main fight and gets a dashed arrow to it. If the monster is already a target, nothing happens. An idle hero gets it as the main target.
 - A **drop on empty ground** clears `targets` and saves `pos`.
 - A drop over the side panel, or off the map, does nothing and the hero snaps back.
 - While dragging, the monster under the cursor is highlighted: green for a plain drop, purple with Shift.
-- **Clicking a ghost** opens a popover with **Make main** and **Remove**. Esc or a click outside closes it.
+- **Clicking a target arrow** opens a popover at its midpoint, worded as "Ana → Search Rewrite", with **Make main** (only on a secondary arrow) and **Remove target**. Esc or a click outside closes it.
 - Changes show at once and are saved in the background. If saving fails, the change is undone and the error is shown.
 
 **Unfought alarm**
@@ -105,7 +107,8 @@ Rules for writing:
 ## Testing
 
 Use Vitest unit tests on the pure functions that change data:
-- assign, Shift-add, and promoting or removing a ghost
+- assign, Shift-add, and promoting or removing a secondary target
+- target arrows from the layout
 - slay and delete cleanup
 - comments kept on write
 - seeding from `data.example/`

@@ -42,7 +42,7 @@ describe("server actions (smoke)", () => {
     await actions.dropHero("bartek", { monsterId: "flaky-ci", shift: true });
     expect((await world()).heroes.find((h) => h.id === "bartek")?.targets).toEqual(["search-rewrite", "flaky-ci"]);
 
-    // plain drop on the current main target keeps ghosts
+    // plain drop on the current main target keeps secondary targets
     await actions.dropHero("bartek", { monsterId: "search-rewrite", shift: false });
     expect((await world()).heroes.find((h) => h.id === "bartek")?.targets).toEqual(["search-rewrite", "flaky-ci"]);
 

@@ -1,5 +1,5 @@
 # Heroes: engineers on the team, plus you.
-# targets: ordered list of monster ids; first = main fight, rest = ghosts.
+# targets: ordered list of monster ids; first = main fight, rest = secondary targets.
 # pos is stored only while a hero is idle (targets empty).
 
 - id: ana

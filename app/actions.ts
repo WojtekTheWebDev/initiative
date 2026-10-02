@@ -102,7 +102,7 @@ export async function dropHero(
       const shift = drop.shift;
       await updateWorld((w) => {
         if (shift) return domain.addGhost(w, hid, mid);
-        // A plain drop back on the current main target changes nothing (keeps ghosts).
+        // A plain drop back on the current main target changes nothing (keeps secondary targets).
         const hero = w.heroes.find((h) => h.id === hid);
         if (hero && hero.targets[0] === mid) return w;
         return domain.assign(w, hid, mid);

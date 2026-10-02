@@ -13,9 +13,9 @@ type Props = FigureHandlers & {
 };
 
 export function HeroFigure({ placed, scale, selected, onPointerDown, onClick }: Props) {
-  const { hero, pos, mainTarget } = placed;
+  const { hero, pos, targets } = placed;
   const px = 1 / scale;
-  const idle = mainTarget === null;
+  const idle = targets.length === 0;
   return (
     <g
       data-figure=""

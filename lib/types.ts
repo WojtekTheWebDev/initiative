@@ -15,7 +15,7 @@ export type Hero = {
   id: string;
   name: string;
   class: string;
-  targets: string[]; // ordered; [0] = main, rest = ghosts; [] = idle
+  targets: string[]; // ordered; [0] = main, rest = secondary targets; [] = idle
   pos?: Pos; // present only when targets is empty
 };
 

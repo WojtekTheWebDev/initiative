@@ -7,7 +7,7 @@ import { openingPoints, type WorldLayout } from "@/lib/map/layout";
 import { MapCanvas, type MapHandle } from "@/components/map/MapCanvas";
 import { FigureStyles, MonsterFigure } from "@/components/map/MonsterFigure";
 import { HeroFigure } from "@/components/map/HeroFigure";
-import { GhostMarker } from "@/components/map/GhostMarker";
+import { TargetArrows } from "@/components/map/TargetArrows";
 import { unfought } from "@/lib/domain";
 import { UnfoughtAlarm } from "@/components/UnfoughtAlarm";
 import { EdgeArrows } from "@/components/map/EdgeArrows";
@@ -79,7 +79,7 @@ export function Board({ world }: { world: World }) {
   );
 }
 
-/** World-space figures. Draw order: ghosts, heroes, monsters (so monster labels sit on top). */
+/** World-space figures. Draw order: target arrows, heroes, monsters (so monster labels sit on top). */
 function Figures(props: {
   drag: FigureDrag;
   scale: number;
@@ -101,16 +101,7 @@ function Figures(props: {
   );
   return (
     <>
-      <g>
-        {layout.ghosts.map((g) => (
-          <GhostMarker
-            key={`${g.hero.id}:${g.monsterId}`}
-            placed={g}
-            scale={scale}
-            {...drag.bindGhost(g.hero.id, g.monsterId)}
-          />
-        ))}
-      </g>
+      <TargetArrows layout={layout} scale={scale} focus={selection} bindLink={drag.bindLink} />
       <g>
         {layout.heroes.filter((h) => h.hero.id !== liftedHeroId).map(hero)}
       </g>

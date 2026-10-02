@@ -30,7 +30,7 @@ export function SidePanel({
   const isOpen = selection !== null || mode !== null;
 
   // Esc leaves an edit form first, then closes the panel. Other Esc handlers
-  // (a drag in progress, the ghost popover) claim the key with preventDefault();
+  // (a drag in progress, the target popover) claim the key with preventDefault();
   // they may run after this listener, so look at the event once dispatch is over.
   const onEscape = useRef<() => void>(() => {});
   useEffect(() => {

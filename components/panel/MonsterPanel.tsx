@@ -78,7 +78,7 @@ export function MonsterPanel({
             <FighterRow key={h.id} hero={h} onClick={() => onSelectHero(h.id)} />
           ))}
           {ghosts.map((h) => (
-            <FighterRow key={h.id} hero={h} ghost onClick={() => onSelectHero(h.id)} />
+            <FighterRow key={h.id} hero={h} secondary onClick={() => onSelectHero(h.id)} />
           ))}
         </ul>
       )}
@@ -117,17 +117,17 @@ export function MonsterPanel({
   );
 }
 
-function FighterRow({ hero, ghost, onClick }: { hero: Hero; ghost?: boolean; onClick: () => void }) {
+function FighterRow({ hero, secondary, onClick }: { hero: Hero; secondary?: boolean; onClick: () => void }) {
   return (
     <li>
       <button
         type="button"
-        className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-foreground/10 ${ghost ? "opacity-60" : ""}`}
+        className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-foreground/10 ${secondary ? "opacity-60" : ""}`}
         onClick={onClick}
       >
         <span aria-hidden="true">{heroGlyph(hero.class)}</span>
         <span className="flex-1 truncate">{hero.name}</span>
-        <span className="text-xs opacity-60">{ghost ? "ghost" : "main"}</span>
+        <span className="text-xs opacity-60">{secondary ? "secondary" : "main"}</span>
       </button>
     </li>
   );

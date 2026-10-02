@@ -21,5 +21,5 @@ A personal, local-only RPG-styled tracker: monsters (work) and heroes (people) o
 - **Write YAML with the `yaml` package's Document API** so hand-written comments are kept. Re-read the file before every write.
 - **Pages that read YAML need `export const dynamic = 'force-dynamic'`.** Keep `cacheComponents` off. After a write in a Server Action, call `refresh()` or `revalidatePath('/')`.
 - **Pan and zoom are hand-rolled** with an SVG viewBox and pointer events. Don't add a canvas or zoom library (d3-zoom, React Flow, etc.).
-- **Unit-test the pure data functions with Vitest** (assign, Shift-add, ghosts, slay/delete cleanup). The canvas is checked by hand.
+- **Unit-test the pure data functions with Vitest** (assign, Shift-add, secondary targets, target arrows, slay/delete cleanup). The canvas is checked by hand.
 - **Out of scope unless the user asks:** Jira sync, a database, multiple users or auth, XP or scoring of people, capacity or burndown, auto-commit, file watching.

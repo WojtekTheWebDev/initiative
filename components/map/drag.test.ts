@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { World } from "@/lib/types";
 import { layoutWorld } from "@/lib/map/layout";
+import { LINK_GAP, linksOf } from "@/lib/map/links";
+import { HERO_BASE_RADIUS } from "@/lib/map/rings";
 import { makeWorld } from "@/lib/domain/test-fixtures";
 import {
   applyOp,
@@ -70,11 +72,11 @@ describe("resolveHeroDrop", () => {
     expect(resolveHeroDrop(w, monsters, "ana", onM1, stand, false)).toBeNull();
   });
 
-  it("Shift+drop on a new monster adds a ghost", () => {
+  it("Shift+drop on a new monster adds a secondary target", () => {
     expect(resolveHeroDrop(w, monsters, "bob", onM2, stand, true)).toEqual({ monsterId: "m2", shift: true });
   });
 
-  it("Shift+drop on an existing target (main or ghost) is a no-op", () => {
+  it("Shift+drop on an existing target (main or secondary) is a no-op", () => {
     expect(resolveHeroDrop(w, monsters, "ana", onM1, stand, true)).toBeNull();
     expect(resolveHeroDrop(w, monsters, "ana", onM2, stand, true)).toBeNull();
   });
@@ -104,13 +106,13 @@ describe("applyOp mirrors the Server Actions", () => {
     expect(hero(w, "ana").targets).toEqual(["m3"]);
   });
 
-  it("plain drop on the current main keeps ghosts", () => {
+  it("plain drop on the current main keeps secondary targets", () => {
     const before = makeWorld();
     const w = applyOp(before, { kind: "dropHero", heroId: "ana", drop: { monsterId: "m1", shift: false } });
     expect(w).toBe(before);
   });
 
-  it("Shift+drop appends a ghost", () => {
+  it("Shift+drop appends a secondary target", () => {
     const w = applyOp(makeWorld(), { kind: "dropHero", heroId: "bob", drop: { monsterId: "m3", shift: true } });
     expect(hero(w, "bob").targets).toEqual(["m1", "m3"]);
   });
@@ -150,12 +152,24 @@ describe("live drag overrides", () => {
     expect(bobAfter.x - bobBefore.x).toBeCloseTo(500);
   });
 
-  it("a dragged hero stands at the cursor; nothing else moves", () => {
+  it("a dragged hero stands at the cursor and keeps its targets; nothing else moves", () => {
     const layout = layoutWorld(makeWorld());
     const out = layoutWithDrag(layout, { kind: "hero", id: "ana", pos: { x: 7, y: 8 } });
-    expect(out.heroes.find((h) => h.hero.id === "ana")!.pos).toEqual({ x: 7, y: 8 });
+    const ana = out.heroes.find((h) => h.hero.id === "ana")!;
+    expect(ana.pos).toEqual({ x: 7, y: 8 });
+    expect(ana.targets).toEqual(["m1", "m2"]);
     expect(out.heroes.find((h) => h.hero.id === "bob")).toEqual(layout.heroes.find((h) => h.hero.id === "bob"));
-    expect(out.ghosts).toBe(layout.ghosts);
+    expect(out.monsters).toBe(layout.monsters);
+  });
+
+  it("a dragged hero's arrows start from the cursor", () => {
+    const layout = layoutWorld(makeWorld());
+    const out = layoutWithDrag(layout, { kind: "hero", id: "ana", pos: { x: -150, y: -300 } });
+    const ana = linksOf(out).filter((l) => l.heroId === "ana");
+    expect(ana.map((l) => l.monsterId)).toEqual(["m1", "m2"]);
+    for (const l of ana) {
+      expect(Math.hypot(l.from.x + 150, l.from.y + 300)).toBeCloseTo(HERO_BASE_RADIUS + LINK_GAP);
+    }
   });
 
   it("no drag leaves world and layout untouched", () => {

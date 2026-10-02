@@ -31,7 +31,8 @@ import {
 /** How a monster is highlighted while a hero is dragged over it. */
 export type DropHint = "assign" | "ghost";
 
-export type GhostRef = { heroId: string; monsterId: string };
+/** A target arrow: a hero and one of its targets. */
+export type TargetRef = { heroId: string; monsterId: string };
 
 type Live = {
   drag: LiveDrag;
@@ -64,12 +65,14 @@ type Session = {
 export type FigureDrag = ReturnType<typeof useFigureDrag>;
 
 /**
- * Drag, drop and ghost interactions for the Board (T6).
+ * Drag, drop and target-arrow interactions for the Board.
  *
  * - Press a monster or hero and move more than DRAG_THRESHOLD px to drag it;
  *   a shorter press is a click (selection). Clicks after a drag are swallowed.
  * - While dragging, the figure follows the pointer: a monster moves in the world
- *   before layout (its heroes and ghosts follow), a hero is drawn at the cursor.
+ *   before layout (its heroes follow), a hero is drawn at the cursor. Arrows
+ *   come from the layout, so they follow either way.
+ * - Clicking an arrow opens its popover (`link`).
  * - On drop, the change is applied optimistically with the same lib/domain rule
  *   the server uses, then the Server Action runs. The optimistic world stays
  *   until the refreshed server data arrives (no snap-back); on failure it reverts
@@ -78,7 +81,7 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
 export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const [optimisticWorld, addOp] = useOptimistic(world, applyOp);
   const [live, setLive] = useState<Live | null>(null);
-  const [ghost, setGhost] = useState<GhostRef | null>(null);
+  const [link, setLink] = useState<TargetRef | null>(null);
   const [error, setError] = useState<string | null>(null);
   const session = useRef<Session | null>(null);
   const suppressClick = useRef(false);
@@ -172,7 +175,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       if (!s.moved) {
         if (!pastThreshold(s.startClient, { x: ev.clientX, y: ev.clientY })) return;
         s.moved = true;
-        setGhost(null);
+        setLink(null);
       }
       s.shift = ev.shiftKey;
       track(s, ev.clientX, ev.clientY);
@@ -248,15 +251,15 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     };
   }
 
-  /** Handlers for a ghost marker: a click opens its popover. */
-  function bindGhost(heroId: string, monsterId: string): FigureHandlers {
+  /** Handlers for a target arrow: a click opens its popover. */
+  function bindLink(heroId: string, monsterId: string): FigureHandlers {
     return {
       onPointerDown: (e) => {
         e.stopPropagation();
         suppressClick.current = false;
       },
       onClick: (e) => {
-        if (guardClick(e)) setGhost({ heroId, monsterId });
+        if (guardClick(e)) setLink({ heroId, monsterId });
       },
     };
   }
@@ -267,21 +270,22 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     /** Layout to draw: optimistic changes plus the figure being dragged. */
     layout,
     bindFigure,
-    bindGhost,
+    bindLink,
     /** Highlight for a monster while a hero is dragged over it. */
     dropHint: (monsterId: string): DropHint | null =>
       live?.hint?.monsterId === monsterId ? live.hint.kind : null,
     /** The hero being dragged, to draw on top of everything. */
     liftedHeroId: drag?.kind === "hero" ? drag.id : null,
-    ghost,
-    closeGhost: () => setGhost(null),
-    makeMain: (g: GhostRef) => {
-      setGhost(null);
-      run({ kind: "makeMain", heroId: g.heroId, monsterId: g.monsterId });
+    /** The arrow whose popover is open. */
+    link,
+    closeLink: () => setLink(null),
+    makeMain: (t: TargetRef) => {
+      setLink(null);
+      run({ kind: "makeMain", heroId: t.heroId, monsterId: t.monsterId });
     },
-    removeTarget: (g: GhostRef) => {
-      setGhost(null);
-      run({ kind: "removeTarget", heroId: g.heroId, monsterId: g.monsterId });
+    removeTarget: (t: TargetRef) => {
+      setLink(null);
+      run({ kind: "removeTarget", heroId: t.heroId, monsterId: t.monsterId });
     },
     error,
     dismissError: () => setError(null),

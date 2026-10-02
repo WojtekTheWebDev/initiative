@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Hero, Pos, World } from "@/lib/types";
-import { GHOST_RADIUS, LABEL_WEDGE, arcPositions, layoutWorld, openingPoints } from "./layout";
+import { LABEL_WEDGE, arcPositions, layoutWorld, openingPoints } from "./layout";
 import { HERO_BASE_RADIUS, monsterBaseRadius } from "./rings";
 
 function world(): World {
@@ -23,12 +23,12 @@ const dist = (a: Pos, b: Pos) => Math.hypot(a.x - b.x, a.y - b.y);
 /** Angle of `p` around `c` measured from straight down, in [0, π]. */
 const fromBottom = (c: Pos, p: Pos) => Math.abs(Math.atan2(p.x - c.x, p.y - c.y));
 
-function crowd(main: number, ghosts: number): World {
+function crowd(main: number, secondary: number): World {
   const heroes: Hero[] = [];
   for (let i = 0; i < main; i++) {
     heroes.push({ id: `h${String(i).padStart(2, "0")}`, name: "H", class: "mage", targets: ["m"] });
   }
-  for (let i = 0; i < ghosts; i++) {
+  for (let i = 0; i < secondary; i++) {
     heroes.push({ id: `g${String(i).padStart(2, "0")}`, name: "G", class: "rogue", targets: ["other", "m"] });
   }
   return {
@@ -63,7 +63,7 @@ describe("layoutWorld", () => {
     expect(ids).toEqual(["m1", "m2", "m3"]);
   });
 
-  it("flags unfought monsters (ghost targets count as fought)", () => {
+  it("flags unfought monsters (secondary targets count as fought)", () => {
     const flags = Object.fromEntries(
       layoutWorld(world()).monsters.map((m) => [m.monster.id, m.unfought]),
     );
@@ -78,15 +78,15 @@ describe("layoutWorld", () => {
   it("keeps idle heroes at their pos", () => {
     const bob = layoutWorld(world()).heroes.find((h) => h.hero.id === "bob")!;
     expect(bob.pos).toEqual({ x: 10, y: 20 });
-    expect(bob.mainTarget).toBeNull();
+    expect(bob.targets).toEqual([]);
   });
 
   it("rings engaged heroes around their main target in hero-id order, left to right", () => {
     const { heroes } = layoutWorld(world());
     const ana = heroes.find((h) => h.hero.id === "ana")!;
     const cid = heroes.find((h) => h.hero.id === "cid")!;
-    expect(ana.mainTarget).toBe("m1");
-    expect(cid.mainTarget).toBe("m1");
+    expect(ana.targets).toEqual(["m1", "m2"]);
+    expect(cid.targets).toEqual(["m1"]);
     const c = { x: -400, y: 100 };
     expect(dist(ana.pos, c)).toBeCloseTo(dist(cid.pos, c));
     expect(ana.pos.x).toBeLessThan(cid.pos.x);
@@ -112,15 +112,19 @@ describe("layoutWorld", () => {
     expect(b.y - a.y).toBeCloseTo(50);
   });
 
-  it("places a ghost near each secondary target", () => {
-    const { ghosts } = layoutWorld(world());
-    expect(ghosts).toHaveLength(1);
-    expect(ghosts[0].hero.id).toBe("ana");
-    expect(ghosts[0].monsterId).toBe("m2");
-    const m2 = { x: -100, y: -100 };
-    const d = dist(ghosts[0].pos, m2);
-    expect(d).toBeGreaterThan(monsterBaseRadius("M") + GHOST_RADIUS);
-    expect(d).toBeLessThan(monsterBaseRadius("M") + 60);
+  it("keeps a hero at its main target, whatever its secondary targets", () => {
+    const w = world();
+    const before = layoutWorld(w).heroes.find((h) => h.hero.id === "ana")!.pos;
+    w.heroes[1] = { ...w.heroes[1], targets: ["m1"] };
+    const after = layoutWorld(w).heroes.find((h) => h.hero.id === "ana")!.pos;
+    expect(after).toEqual(before);
+  });
+
+  it("lists living targets once each, in order", () => {
+    const w = world();
+    w.heroes.push({ id: "fay", name: "Fay", class: "bard", targets: ["m2", "m3", "m2", "m1", "m3"] });
+    const fay = layoutWorld(w).heroes.find((h) => h.hero.id === "fay")!;
+    expect(fay.targets).toEqual(["m2", "m3", "m1"]);
   });
 
   it("skips targets that point at slain or missing monsters", () => {
@@ -128,9 +132,8 @@ describe("layoutWorld", () => {
     w.heroes.push({ id: "dan", name: "Dan", class: "monk", targets: ["dead", "nope", "m3"] });
     w.heroes.push({ id: "eve", name: "Eve", class: "monk", targets: ["dead"] });
     const l = layoutWorld(w);
-    expect(l.heroes.find((h) => h.hero.id === "dan")!.mainTarget).toBe("m3");
-    expect(l.heroes.find((h) => h.hero.id === "eve")!.mainTarget).toBeNull();
-    expect(l.ghosts.every((g) => g.monsterId !== "dead")).toBe(true);
+    expect(l.heroes.find((h) => h.hero.id === "dan")!.targets).toEqual(["m3"]);
+    expect(l.heroes.find((h) => h.hero.id === "eve")!.targets).toEqual([]);
     expect(l.monsters.find((m) => m.monster.id === "m3")!.unfought).toBe(false);
   });
 
@@ -140,28 +143,24 @@ describe("layoutWorld", () => {
     [5, 3],
     [12, 9],
     [0, 4],
-  ])("with %i fighters and %i ghosts nothing overlaps and the label wedge stays clear", (main, ghostCount) => {
-    const l = layoutWorld(crowd(main, ghostCount));
+  ])("with %i fighters and %i secondary fighters nothing overlaps and the label wedge stays clear", (main, secondary) => {
+    const l = layoutWorld(crowd(main, secondary));
     const c = { x: 50, y: 50 };
     const base = monsterBaseRadius("S");
-    const ring = l.heroes.filter((h) => h.mainTarget === "m").map((h) => h.pos);
-    const ghosts = l.ghosts.filter((g) => g.monsterId === "m").map((g) => g.pos);
+    const ring = l.heroes.filter((h) => h.targets[0] === "m").map((h) => h.pos);
     expect(ring).toHaveLength(main);
-    expect(ghosts).toHaveLength(ghostCount);
 
-    const figures = [
-      ...ring.map((p) => ({ p, r: HERO_BASE_RADIUS })),
-      ...ghosts.map((p) => ({ p, r: GHOST_RADIUS })),
-    ];
-    for (let i = 0; i < figures.length; i++) {
-      const a = figures[i];
-      expect(dist(a.p, c)).toBeGreaterThan(base + a.r);
-      expect(fromBottom(c, a.p)).toBeGreaterThanOrEqual(LABEL_WEDGE / 2 - 1e-9);
-      for (let j = i + 1; j < figures.length; j++) {
-        const b = figures[j];
-        expect(dist(a.p, b.p)).toBeGreaterThanOrEqual(a.r + b.r - 1e-9);
+    for (let i = 0; i < ring.length; i++) {
+      expect(dist(ring[i], c)).toBeGreaterThan(base + HERO_BASE_RADIUS);
+      expect(fromBottom(c, ring[i])).toBeGreaterThanOrEqual(LABEL_WEDGE / 2 - 1e-9);
+      for (let j = i + 1; j < ring.length; j++) {
+        expect(dist(ring[i], ring[j])).toBeGreaterThanOrEqual(2 * HERO_BASE_RADIUS - 1e-9);
       }
     }
+    // Secondary fighters stand at their own main target, far away.
+    const far = l.heroes.filter((h) => h.targets[0] === "other").map((h) => h.pos);
+    expect(far).toHaveLength(secondary);
+    far.forEach((p) => expect(dist(p, c)).toBeGreaterThan(1000));
   });
 });
 

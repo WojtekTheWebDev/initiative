@@ -51,7 +51,7 @@ export function HeroPanel({
               >
                 <span aria-hidden="true">{monsterGlyph(m.size)}</span>
                 <span className="flex-1 truncate">{m.name}</span>
-                <span className="text-xs opacity-60">{i === 0 ? "main" : "ghost"}</span>
+                <span className="text-xs opacity-60">{i === 0 ? "main" : "secondary"}</span>
               </button>
             </li>
           ))}
