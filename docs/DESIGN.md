@@ -119,7 +119,7 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - **Icons** are one inline SVG set (`components/ui/icons.tsx`), drawn with `currentColor`. No emoji in the UI.
 - **Layout:**
   - Top left: the wordmark, with the muster tokens hanging below it (see Unfought alarm).
-  - Top right: **+ Monster** and **+ Hero**.
+  - Top right: **+ Monster** and **+ Hero**, with the party roster hanging below them.
   - Bottom left: the trophy shelf.
   - Bottom right: the map controls.
   - Toasts appear at the bottom centre.
@@ -134,13 +134,14 @@ Everything drawn over the table is the HUD. The table fills the whole window and
   - **Monster dialog** ("Summon a monster" or "Edit monster"): a large preview of the mini above a size slider with four stops, S spider, M orc, L mushroom king and XL dragon, the preview swapping as the slider moves (arrow keys work); then name and notes, and **Summon** or **Save**.
   - **Hero dialog** ("Recruit a hero" or "Edit hero"), laid out like a game's character screen: the chosen mini large on the left with arrows to flip through the roster (Neutral first, arrow keys work, a count such as "4 of 8"), and name and class on the right. Under the class field, the classes other heroes already have are offered as chips; class stays free text. A pick that isn't in the roster shows as missing, with Neutral shown, so you can choose again.
   - A save sends only the fields that changed, so untouched YAML keeps its formatting.
+- **Party roster:** the gold twin of the muster tokens, answering who fights what without a click. Under the create buttons, a gold count ("5 heroes · 1 idle") and one token per hero: portrait, name, their main target's portrait and name with a crown, and "+N" for secondary targets. An idle hero's token is faded and says "Idle". Engaged heroes come first, then idle ones, each by name. Targets that aren't living monsters are skipped. Past six, the rest fold into "+N more", which opens the full list. A token selects its hero: the figure card opens and the view flies there. The selected hero's token is lit gold. With no heroes there is no roster.
 - **Trophy shelf:** a small glass button in the bottom-left corner with a trophy icon and the trophy count ("3 trophies", or "No trophies yet"). It shows no minis. A click opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).
 - **Trophy hall:** a full-screen glass overlay, every slain monster as a plaque, grouped by month of `slain`, newest first. A plaque shows the bronzed portrait, the name, the slain date, the first line of the notes, who fought it ("by Ana, Bartek", from `slainBy`) and **Revive**, which brings the monster back to the table (see Slay, undo and delete). Esc or the close button returns to the table.
 - **Map controls:** a small vertical cluster: zoom in and zoom out (around the middle of the screen, gliding like a fly-to), fit everything (the opening view), and **?** for the shortcuts sheet.
 - **Shortcuts sheet:** a glass card listing every gesture and key: drag, Shift+drop, wheel or pinch to zoom, Tab and Enter, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet. Keys are ignored while typing in a field.
 - **Toasts:** one at a time, bottom centre, under the HUD clusters and over the table. A failed save says what failed and that the change was undone, and hides after 6 seconds. A slay says "Search Rewrite slain" with **Undo** for 8 seconds.
-- Portraits (card, muster tokens, dialogs, hall) are the baked minis on a disc of felt; trophies are tinted bronze. A portrait frames a square centred over the base, from the top of the model's body box (from the minis' manifest) to just past the base centre, so the model fills the disc at every size and wide monsters (the dragon's wings, the spider's legs) run off its edge.
-- **Keyboard:** every control works without a mouse. Tab reaches the HUD clusters first, then the target arrows and the figures on the table, each a button named after its figure or pair. Enter or Space on a figure opens its card and moves the focus into it; on an arrow it opens the arrow buttons. Esc closes what is open, in this order: a drag, the arrow buttons, the card's menu or the muster list, a dialog, then the card. Closing the card or the arrow buttons with Esc hands the focus back to the figure or arrow.
+- Portraits (card, muster tokens, party roster, dialogs, hall) are the baked minis on a disc of felt; trophies are tinted bronze. A portrait frames a square centred over the base, from the top of the model's body box (from the minis' manifest) to just past the base centre, so the model fills the disc at every size and wide monsters (the dragon's wings, the spider's legs) run off its edge.
+- **Keyboard:** every control works without a mouse. Tab reaches the HUD clusters first, then the target arrows and the figures on the table, each a button named after its figure or pair. Enter or Space on a figure opens its card and moves the focus into it; on an arrow it opens the arrow buttons. Esc closes what is open, in this order: a drag, the arrow buttons, the card's menu, the muster list or the party list, a dialog, then the card. Closing the card or the arrow buttons with Esc hands the focus back to the figure or arrow.
 
 ## Interactions
 
@@ -202,6 +203,7 @@ Use Vitest unit tests on the pure functions that change data:
 - assign, Shift-add, and promoting or removing a secondary target
 - the force solver and the layout: the user's example, separate clusters, homes, no overlapping minis or tags, sideways pushes, determinism and speed; figure shapes, which tags show when zoomed out, and the opening view
 - target arrows from the layout, trimmed to the base ellipses
+- the party roster's order and fold, and idle heroes counted from living targets
 - the mini lookup (every size and roster entry is baked, missing and unknown ids give the neutral mini), mini hit areas and draw order
 - the terrain: the same chunk gives the same terrain, roads and rivers meet at chunk borders, raised pieces are rare and apart, every biome appears near the origin, a chunk is fast to generate, and how raised pieces fade among the figures
 - the home after a drag, and a monster drag laid out frame by frame from the frame before

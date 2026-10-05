@@ -19,7 +19,7 @@ export function Hud({
 }: {
   /** The wordmark, with the muster tokens hanging below it. */
   topLeft?: ReactNode;
-  /** The create buttons. */
+  /** The create buttons, with the party roster hanging below them. */
   topRight?: ReactNode;
   /** The trophy shelf. */
   bottomLeft?: ReactNode;
@@ -30,7 +30,7 @@ export function Hud({
     <div className="pointer-events-none fixed inset-0 z-30" style={{ padding: EDGE }}>
       <div className="relative h-full w-full">
         {topLeft && <Slot className="top-0 left-0 flex-col items-start">{topLeft}</Slot>}
-        {topRight && <Slot className="top-0 right-0 items-start justify-end">{topRight}</Slot>}
+        {topRight && <Slot className="top-0 right-0 flex-col items-end">{topRight}</Slot>}
         {bottomLeft && <Slot className="bottom-0 left-0 items-end">{bottomLeft}</Slot>}
         {bottomRight && <Slot className="right-0 bottom-0 flex-col items-end">{bottomRight}</Slot>}
       </div>

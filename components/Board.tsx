@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import type { Monster, Pos, World } from "@/lib/types";
+import type { Hero, Monster, Pos, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
 import { openingPoints, shownTags, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
 import { depthOrder } from "@/lib/map/minis";
@@ -14,6 +14,7 @@ import { HeroFigure, HeroLabel } from "@/components/map/HeroFigure";
 import { TargetArrows } from "@/components/map/TargetArrows";
 import { unfought } from "@/lib/domain";
 import { MusterTokens } from "@/components/MusterTokens";
+import { PartyRoster } from "@/components/PartyRoster";
 import { EdgeArrows } from "@/components/map/EdgeArrows";
 import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
@@ -61,6 +62,11 @@ export function Board({ world }: { world: World }) {
     map.current?.flyTo(pos ?? fallback);
   };
   const flyTo = (m: Monster) => flyToFigure("monster", m.id, m.pos);
+  // A party token selects its hero and flies there; every hero is in the layout, so the fallback is never used.
+  const pickHero = (h: Hero) => {
+    select({ kind: "hero", id: h.id });
+    flyToFigure("hero", h.id, h.pos ?? { x: 0, y: 0 });
+  };
   // The monster and hero dialogs: `dialogs.openCreate(kind)` and `dialogs.openEdit(kind, id)`.
   const dialogs = useDialogs();
 
@@ -79,7 +85,16 @@ export function Board({ world }: { world: World }) {
             <MusterTokens monsters={unfoughtMonsters} onPick={flyTo} />
           </>
         }
-        topRight={<CreateButtons onCreate={dialogs.openCreate} />}
+        topRight={
+          <>
+            <CreateButtons onCreate={dialogs.openCreate} />
+            <PartyRoster
+              world={drag.world}
+              selectedId={selection?.kind === "hero" ? selection.id : null}
+              onPick={pickHero}
+            />
+          </>
+        }
         bottomLeft={(
           <TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} onRevive={drag.revive} />
         )}

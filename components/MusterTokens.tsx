@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useMemo } from "react";
 import type { Monster } from "@/lib/types";
 import { monsterMini } from "@/lib/map/minis";
 import { Portrait } from "@/components/ui/Portrait";
 import { Glass } from "@/components/ui/Glass";
 import { Icon } from "@/components/ui/icons";
+import { FoldedList } from "@/components/ui/FoldedList";
 import { muster } from "./muster";
 
 type Props = {
@@ -63,111 +64,27 @@ export function MusterTokens({ monsters, onPick }: Props) {
         ))}
         {folded.length > 0 && (
           <li>
-            <FoldedList monsters={folded} onPick={onPick} />
+            <FoldedList
+              items={folded}
+              itemKey={(m) => m.id}
+              renderItem={(m) => ({
+                label: `Fly to unfought monster ${m.name}`,
+                title: m.name,
+                content: (
+                  <>
+                    <Portrait mini={monsterMini(m.size)} size={24} ring="red" />
+                    <span className="min-w-0 flex-1 truncate">{m.name}</span>
+                  </>
+                ),
+              })}
+              onPick={onPick}
+              toggleLabel={`${folded.length} more unfought monsters`}
+              listLabel="More unfought monsters"
+              toggleClassName={`${TOKEN} px-3 font-semibold text-[#ff9a9d]`}
+            />
           </li>
         )}
       </ul>
     </section>
-  );
-}
-
-/** "+N more" and the glass list of the folded tokens it opens. Arrow keys move through the list; Esc or a press outside closes it. */
-function FoldedList({ monsters, onPick }: Props) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const toggleRef = useRef<HTMLButtonElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
-  const listId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault(); // this Esc closes the list, not the figure card
-        setOpen(false);
-        toggleRef.current?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
-
-  const items = () => Array.from(listRef.current?.querySelectorAll("button") ?? []);
-  const focusItem = (index: number) => {
-    const all = items();
-    all[(index + all.length) % all.length]?.focus();
-  };
-
-  const onToggleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setOpen(true);
-      requestAnimationFrame(() => focusItem(0));
-    }
-  };
-
-  const onListKeyDown = (e: KeyboardEvent<HTMLUListElement>) => {
-    const index = items().indexOf(document.activeElement as HTMLButtonElement);
-    if (e.key === "ArrowDown") focusItem(index + 1);
-    else if (e.key === "ArrowUp") focusItem(index - 1);
-    else if (e.key === "Home") focusItem(0);
-    else if (e.key === "End") focusItem(-1);
-    else if (e.key === "Tab") setOpen(false);
-    else return;
-    if (e.key !== "Tab") e.preventDefault();
-  };
-
-  const pick = (m: Monster) => {
-    setOpen(false);
-    onPick(m);
-  };
-
-  return (
-    <div ref={rootRef} className="relative">
-      <button
-        ref={toggleRef}
-        type="button"
-        aria-expanded={open}
-        aria-controls={listId}
-        aria-label={`${monsters.length} more unfought monsters`}
-        className={`${TOKEN} px-3 font-semibold text-[#ff9a9d]`}
-        onClick={() => setOpen((o) => !o)}
-        onKeyDown={onToggleKeyDown}
-      >
-        +{monsters.length} more
-      </button>
-      {open && (
-        <Glass
-          as="ul"
-          ref={listRef}
-          id={listId}
-          aria-label="More unfought monsters"
-          className="absolute top-full left-0 z-20 mt-1.5 max-h-80 w-64 animate-hud-pop overflow-y-auto py-1"
-          onKeyDown={onListKeyDown}
-        >
-          {monsters.map((m) => (
-            <li key={m.id}>
-              <button
-                type="button"
-                aria-label={`Fly to unfought monster ${m.name}`}
-                title={m.name}
-                className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none"
-                onClick={() => pick(m)}
-              >
-                <Portrait mini={monsterMini(m.size)} size={24} ring="red" />
-                <span className="min-w-0 flex-1 truncate">{m.name}</span>
-              </button>
-            </li>
-          ))}
-        </Glass>
-      )}
-    </div>
   );
 }
