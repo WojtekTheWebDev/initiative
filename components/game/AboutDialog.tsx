@@ -35,6 +35,10 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
           Everything stays in this browser. Nothing about your table reaches a server, so save it to a file now and
           then.
         </p>
+        <p>
+          The site counts page views with Vercel Web Analytics: the page visited and the kind of browser, without
+          cookies and never anything from your table.
+        </p>
       </div>
       <p className="mt-5 border-t border-hud-line pt-4 text-sm text-hud-muted">
         Made by{" "}
