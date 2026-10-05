@@ -205,6 +205,7 @@ Use Vitest unit tests on the pure functions that change data:
 - the home after a drag, and a monster drag laid out frame by frame from the frame before
 - target arrows that stop before name tags and minis, and the bridge picked for a road
 - slay and delete cleanup, `slainBy` on slay, and revive (restoring only the heroes left unchanged since the slay)
+- where the figure card goes: beside the base, flipped near the right edge, kept on screen
 - comments kept on write
 - seeding from `data.example/`
 

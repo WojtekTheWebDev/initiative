@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { Monster, Pos, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
 import { openingPoints, shownTags, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
@@ -18,13 +18,16 @@ import { EdgeArrows } from "@/components/map/EdgeArrows";
 import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
 import { DragOverlay } from "@/components/map/DragOverlay";
-import { SidePanel, type FlyToFigure } from "@/components/panel/SidePanel";
 import { CreateButtons } from "@/components/panel/CreateButtons";
 import { usePanel } from "@/components/panel/usePanel";
+import { CreatePanel } from "@/components/panel/CreatePanel";
+import { FigureCard } from "@/components/card/FigureCard";
+import { useSelection, type Selection } from "@/components/card/useSelection";
 import { Trophies } from "@/components/Trophies";
 import { Hud, Wordmark } from "@/components/Hud";
 
-export type Selection = { kind: "monster" | "hero"; id: string } | null;
+/** Flies the view to where a figure is drawn. `fallback` is used until the figure is on the map (e.g. just created). */
+type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void;
 
 /** Screen px kept around the opening view, outside the figures and their name tags, so the HUD clusters don't cover them. */
 const OPENING_PADDING = 88;
@@ -32,9 +35,10 @@ const OPENING_PADDING = 88;
 export function Board({ world }: { world: World }) {
   // Shared UI state. T6-T8 hook into these.
   const map = useRef<MapHandle>(null);
-  const [selection, setSelection] = useState<Selection>(null);
   // T6: drag/drop with optimistic updates; `drag.layout` includes the live drag.
   const drag = useFigureDrag(world, map);
+  // The figure whose card is open; `null` once it is slain or deleted.
+  const { selection, select } = useSelection(drag.world);
   const layout = drag.layout;
   // Counted from the optimistic world, so the alarm updates the moment you drop.
   const unfoughtMonsters = useMemo(() => unfought(drag.world), [drag.world]);
@@ -57,8 +61,7 @@ export function Board({ world }: { world: World }) {
     map.current?.flyTo(pos ?? fallback);
   };
   const flyTo = (m: Monster) => flyToFigure("monster", m.id, m.pos);
-  // T8: side panel / forms state; `panel.selection` is null once the item is slain or deleted.
-  const panel = usePanel(drag.world, selection, setSelection);
+  const panel = usePanel();
 
   // Only the first call matters: MapCanvas computes the opening camera once.
   const initialCamera = (viewport: ViewportSize) =>
@@ -71,16 +74,17 @@ export function Board({ world }: { world: World }) {
         ref={map}
         initialCamera={initialCamera}
         footprints={footprints}
-        onBackgroundClick={() => setSelection(null)}
+        onBackgroundClick={() => select(null)}
         overlay={(view) => (
           <>
             <EdgeArrows view={view} monsters={unfoughtPlaced} onPick={flyTo} />
+            <FigureCard view={view} drag={drag} selection={selection} onSelect={select} onFlyTo={flyTo} />
             <DragOverlay drag={drag} view={view} />
           </>
         )}
       >
         {({ camera }) => (
-          <Figures drag={drag} scale={camera.scale} selection={panel.selection} onSelect={setSelection} />
+          <Figures drag={drag} scale={camera.scale} selection={selection} onSelect={select} />
         )}
       </MapCanvas>
 
@@ -93,11 +97,18 @@ export function Board({ world }: { world: World }) {
         }
         topRight={<CreateButtons panel={panel} />}
         bottomCenter={
-          <Trophies monsters={drag.world.monsters} openId={panel.trophyId} onOpen={panel.openTrophy} />
+          <Trophies monsters={drag.world.monsters} openId={null} onOpen={() => {}} />
         }
       />
 
-      <SidePanel panel={panel} world={drag.world} map={map} flyTo={flyToFigure} />
+      <CreatePanel
+        panel={panel}
+        map={map}
+        onCreated={(kind, id, pos) => {
+          select({ kind, id });
+          flyToFigure(kind, id, pos);
+        }}
+      />
     </div>
   );
 }
