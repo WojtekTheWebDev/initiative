@@ -35,7 +35,7 @@
     }
   },
   "hooded-rogue": {
-    "name": "Hooded Rogue",
+    "name": "Ranger",
     "kind": "hero",
     "image": "/minis/hooded-rogue.webp",
     "width": 2,
