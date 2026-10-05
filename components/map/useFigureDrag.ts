@@ -16,6 +16,7 @@ import type { Pos, World } from "@/lib/types";
 import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import * as actions from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
+import { useToast } from "@/components/ui/Toast";
 import type { MapHandle } from "./MapCanvas";
 import type { FigureHandlers } from "./MiniFigure";
 import {
@@ -83,13 +84,13 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
  *   offset (see homeAfterDrag). The change is applied optimistically with the
  *   same lib/domain rule the server uses, then the Server Action runs. The
  *   optimistic world stays until the refreshed server data arrives (no
- *   snap-back); on failure it reverts and `error` is set.
+ *   snap-back); on failure it reverts and an error toast says so.
  */
 export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const [optimisticWorld, addOp] = useOptimistic(world, applyOp);
   const [live, setLive] = useState<Live | null>(null);
   const [link, setLink] = useState<TargetRef | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
   const session = useRef<Session | null>(null);
   const suppressClick = useRef(false);
 
@@ -102,17 +103,17 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
 
   const run = useCallback(
     (op: WorldOp) => {
-      setError(null);
       startTransition(async () => {
         addOp(op);
         try {
           await callServer(op);
         } catch (err) {
-          setError(err instanceof Error && err.message ? err.message : "Could not save the change");
+          const reason = err instanceof Error && err.message ? err.message : "the server didn't answer";
+          toast.show({ tone: "error", message: `Couldn't save: ${reason}. The change was undone.` });
         }
       });
     },
-    [addOp],
+    [addOp, toast],
   );
 
   function showLive(s: Session) {
@@ -300,8 +301,6 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       setLink(null);
       run({ kind: "removeTarget", heroId: t.heroId, monsterId: t.monsterId });
     },
-    error,
-    dismissError: () => setError(null),
   };
 }
 

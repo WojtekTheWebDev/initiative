@@ -1,18 +1,16 @@
 import type { Metadata } from "next";
-import { Cinzel, Geist, Geist_Mono } from "next/font/google";
+import { Barlow, Cinzel } from "next/font/google";
+import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/** Body text of the HUD. */
+const barlow = Barlow({
+  variable: "--font-barlow",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-/** Small capitals for the name tags on the table. */
+/** Gold small capitals: the name tags on the table, the wordmark and HUD headings. */
 const cinzel = Cinzel({
   variable: "--font-cinzel",
   subsets: ["latin"],
@@ -26,11 +24,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-dvh overflow-hidden antialiased`}
-    >
-      <body className="flex h-dvh flex-col overflow-hidden">{children}</body>
+    <html lang="en" className={`${barlow.variable} ${cinzel.variable} h-dvh overflow-hidden antialiased`}>
+      <body className="h-dvh overflow-hidden">
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }

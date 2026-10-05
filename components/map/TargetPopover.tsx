@@ -5,6 +5,7 @@ import type { Pos } from "@/lib/types";
 import { worldToScreen, type Camera } from "@/lib/map/camera";
 import { linksOf } from "@/lib/map/links";
 import type { FigureDrag } from "./useFigureDrag";
+import { Button } from "@/components/ui/Button";
 
 /** The popover for the arrow the user clicked (`drag.link`), placed at the arrow's midpoint. */
 export function OpenTargetPopover({ drag, camera }: { drag: FigureDrag; camera: Camera }) {
@@ -80,33 +81,23 @@ export function TargetPopover({ anchor, heroName, monsterName, main, onMakeMain,
       role="dialog"
       aria-label={`${heroName} → ${monsterName}`}
       data-target-popover=""
-      className="pointer-events-auto absolute z-10 w-max -translate-x-1/2 rounded-md border border-foreground/15 bg-background p-2 text-sm shadow-lg"
+      className="hud-glass pointer-events-auto absolute z-10 w-max -translate-x-1/2 p-2 text-sm"
       style={{ left: anchor.x, top: anchor.y + OFFSET }}
     >
-      <p className="mb-2 max-w-56 px-1 text-xs opacity-70">
-        <span className="font-medium opacity-100">{heroName}</span> →{" "}
-        <span className="font-medium opacity-100">{monsterName}</span>
+      <p className="mb-2 max-w-56 px-1 text-xs text-hud-muted">
+        <span className="font-medium text-hud-fg">{heroName}</span> →{" "}
+        <span className="font-medium text-hud-fg">{monsterName}</span>
         {main ? " (main target)" : " (secondary target)"}
       </p>
       <div className="flex gap-1.5">
         {!main && (
-          <button
-            type="button"
-            autoFocus
-            className="rounded bg-foreground px-2.5 py-1 font-medium text-background hover:opacity-90"
-            onClick={onMakeMain}
-          >
+          <Button tone="primary" icon="crown" autoFocus className="h-8" onClick={onMakeMain}>
             Make main
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
-          autoFocus={main}
-          className="rounded border border-foreground/20 px-2.5 py-1 hover:bg-foreground/10"
-          onClick={onRemove}
-        >
+        <Button tone="danger" icon="shears" autoFocus={main} className="h-8" onClick={onRemove}>
           Remove target
-        </button>
+        </Button>
       </div>
     </div>
   );

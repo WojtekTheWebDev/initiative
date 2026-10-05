@@ -3,19 +3,20 @@
 import type { Hero, Monster, World } from "@/lib/types";
 import { creatureOf, fightersOf } from "@/lib/domain";
 import { heroMini, monsterMini } from "@/lib/map/minis";
-import { MiniPortrait } from "@/components/MiniPortrait";
+import { Portrait } from "@/components/ui/Portrait";
 import { deleteMonster, slayMonster } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
-import { Button, ConfirmButton, ErrorNote, SectionLabel, useAction } from "./ui";
+import { Button, ConfirmButton } from "@/components/ui/Button";
+import { ErrorNote, SectionLabel, useAction } from "./ui";
 
 /** Read-only facts about a monster, shared with the trophy view. */
 export function MonsterFacts({ monster }: { monster: Monster }) {
   return (
     <>
       <div className="flex items-center gap-3 pr-8">
-        <MiniPortrait mini={monsterMini(monster.size)} size={56} />
+        <Portrait mini={monsterMini(monster.size)} size={56} />
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold break-words">{monster.name}</h2>
+          <h2 className="font-display text-lg break-words text-hud-gold">{monster.name}</h2>
           <p className="text-sm opacity-70">
             {monster.size} · {creatureOf(monster.size)}
           </p>
@@ -70,7 +71,7 @@ export function MonsterPanel({
 
       <SectionLabel>Fighters</SectionLabel>
       {main.length + ghosts.length === 0 ? (
-        <p className="text-sm text-red-600 dark:text-red-400">Nobody is fighting this monster.</p>
+        <p className="text-sm text-[#ff9a9d]">Nobody is fighting this monster.</p>
       ) : (
         <ul className="space-y-0.5 text-sm">
           {main.map((h) => (
@@ -88,6 +89,7 @@ export function MonsterPanel({
         </Button>
         <Button
           tone="primary"
+          icon="swords"
           disabled={pending}
           onClick={() =>
             run(async () => {
@@ -96,7 +98,7 @@ export function MonsterPanel({
             })
           }
         >
-          ⚔️ Slay
+          Slay
         </Button>
         <ConfirmButton
           disabled={pending}
@@ -121,10 +123,10 @@ function FighterRow({ hero, secondary, onClick }: { hero: Hero; secondary?: bool
     <li>
       <button
         type="button"
-        className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-foreground/10 ${secondary ? "opacity-60" : ""}`}
+        className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-white/10 ${secondary ? "opacity-60" : ""}`}
         onClick={onClick}
       >
-        <MiniPortrait mini={heroMini(hero.mini)} size={24} />
+        <Portrait mini={heroMini(hero.mini)} size={24} />
         <span className="flex-1 truncate">{hero.name}</span>
         <span className="text-xs opacity-60">{secondary ? "secondary" : "main"}</span>
       </button>

@@ -32,7 +32,7 @@ export type MapHandle = {
   screenToWorld(screen: Pos): Pos;
   /** Converts `clientX`/`clientY` from a pointer event to world coordinates. */
   clientToWorld(clientX: number, clientY: number): Pos;
-  /** The client point shows the map: inside the canvas and not under something drawn over it (e.g. the side panel). */
+  /** The client point shows the map: inside the canvas and not under something drawn over it (a HUD surface). */
   isOnMap(clientX: number, clientY: number): boolean;
   /** Animates (about 300ms) to center `point` at a readable zoom. */
   flyTo(point: Pos): void;
@@ -254,7 +254,7 @@ export function MapCanvas({
   return (
     <div
       ref={containerRef}
-      className={`relative h-full w-full flex-1 overflow-hidden text-foreground ${className ?? ""}`}
+      className={`relative h-full w-full flex-1 overflow-hidden ${className ?? ""}`}
       style={{ background: FELT_BASE }}
     >
       <svg

@@ -3,13 +3,15 @@
 import { useState } from "react";
 import type { Monster } from "@/lib/types";
 import { monsterMini } from "@/lib/map/minis";
-import { MiniPortrait } from "@/components/MiniPortrait";
+import { Portrait } from "@/components/ui/Portrait";
 import { trophiesOf } from "@/components/panel/helpers";
+import { Glass } from "@/components/ui/Glass";
+import { Icon } from "@/components/ui/icons";
 
 /** Above this many trophies the strip collapses to one scrollable line. */
 const COLLAPSE_AT = 6;
 
-/** Slain monsters below the map, newest first. Clicking one shows it read-only. */
+/** Slain monsters in a glass strip at the bottom of the HUD, newest first. Clicking one shows it read-only. */
 export function Trophies({
   monsters,
   openId,
@@ -25,13 +27,13 @@ export function Trophies({
   const wrap = !many || expanded;
 
   return (
-    // Left padding keeps the content clear of the Next.js dev indicator.
-    <footer className="flex shrink-0 items-start gap-3 border-t border-foreground/10 py-1.5 pr-4 pl-14 text-sm">
-      <span className="shrink-0 py-1 font-medium opacity-70" title="Slain monsters">
-        🏆 {trophies.length}
+    <Glass as="footer" className="flex min-w-0 items-start gap-3 px-3 py-1.5 text-sm">
+      <span className="flex shrink-0 items-center gap-1.5 py-1 font-medium text-hud-gold" title="Slain monsters">
+        <Icon.trophy className="size-4" />
+        {trophies.length}
       </span>
       {trophies.length === 0 ? (
-        <span className="py-1 opacity-50">No trophies yet. Slay a monster.</span>
+        <span className="py-1 text-hud-muted">No trophies yet. Slay a monster.</span>
       ) : (
         <ul
           className={`flex min-w-0 flex-1 gap-1.5 ${
@@ -43,14 +45,14 @@ export function Trophies({
               <button
                 type="button"
                 title={`${m.name}, slain ${m.slain}`}
-                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 hover:bg-foreground/10 ${
-                  openId === m.id ? "border-amber-500 bg-amber-500/15" : "border-foreground/15"
+                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 hover:bg-white/10 ${
+                  openId === m.id ? "border-hud-gold bg-hud-gold/15" : "border-hud-line"
                 }`}
                 onClick={() => onOpen(m.id)}
               >
-                <MiniPortrait mini={monsterMini(m.size)} size={20} />
+                <Portrait mini={monsterMini(m.size)} size={20} bronze />
                 <span className="max-w-48 truncate">{m.name}</span>
-                <span className="text-xs opacity-60">{m.slain}</span>
+                <span className="text-xs text-hud-muted">{m.slain}</span>
               </button>
             </li>
           ))}
@@ -59,12 +61,12 @@ export function Trophies({
       {many && (
         <button
           type="button"
-          className="shrink-0 rounded px-2 py-1 text-xs opacity-70 hover:bg-foreground/10 hover:opacity-100"
+          className="shrink-0 rounded px-2 py-1 text-xs text-hud-muted hover:bg-white/10 hover:text-hud-fg"
           onClick={() => setExpanded((e) => !e)}
         >
           {expanded ? "Collapse" : "Show all"}
         </button>
       )}
-    </footer>
+    </Glass>
   );
 }
