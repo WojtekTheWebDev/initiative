@@ -17,7 +17,7 @@ It is a tool for one person (an engineering manager) to use in daily work. It is
 | Home      | A stored `pos`: where a monster or an idle hero is held, loosely. The figure is drawn near it, not always on it |
 | Target arrow | An arrow from a hero to each of its targets: solid for the main target, dashed for secondary ones |
 | Unfought  | A living monster that no hero targets. It pulses red                     |
-| Slain     | Done. It leaves the map and becomes a trophy: a bronzed mini on the trophy shelf and a plaque in the trophy hall |
+| Slain     | Done. It leaves the map and becomes a trophy: a plaque in the trophy hall, counted on the trophy shelf |
 | HUD       | Everything drawn over the table: floating clusters, the figure card, dialogs, toasts. Dark glass in every theme |
 
 ## Data model
@@ -120,12 +120,12 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - **Layout:**
   - Top left: the wordmark, with the muster tokens hanging below it (see Unfought alarm).
   - Top right: **+ Monster** and **+ Hero**.
-  - Bottom centre: the trophy shelf.
+  - Bottom left: the trophy shelf.
   - Bottom right: the map controls.
-  - Toasts appear at the bottom centre, just above the trophy shelf.
+  - Toasts appear at the bottom centre.
   - The figure card floats next to the selected figure. Dialogs sit in the middle of the screen over a dimmed table.
   - Any drop of a dragged figure onto a HUD surface does nothing, except a monster dropped on the trophy shelf.
-  - Stacking, from the bottom: the table (with the figure card and arrow buttons in its screen-space overlay), the toast, the HUD clusters (so a trophy shelf tooltip shows over the toast), then dialogs over their dim.
+  - Stacking, from the bottom: the table (with the figure card and arrow buttons in its screen-space overlay), the toast, the HUD clusters, then dialogs over their dim.
 - **Figure card:** clicking a figure opens a compact card beside it, on the right of its base with a small pointer, flipped to the left near the right edge of the screen and kept inside the screen. It lives in the canvas' screen-space overlay, so it follows the figure while you pan, zoom or while figures glide. It hides while a figure is dragged and while the figure's base is out of view.
   - **Monster:** portrait, name, size and creature, key, notes clipped to three lines with **more** to expand them in place, fighters as overlapping portraits (a click selects that hero), then **Edit**, **Slay** and a **⋯** menu with **Delete**.
   - **Hero:** portrait, name, class and mini, targets in order with main marked by a crown (a click flies to that monster), then **Edit** and a **⋯** menu with **Delete**.
@@ -134,12 +134,12 @@ Everything drawn over the table is the HUD. The table fills the whole window and
   - **Monster dialog** ("Summon a monster" or "Edit monster"): a large preview of the mini above a size slider with four stops, S spider, M orc, L mushroom king and XL dragon, the preview swapping as the slider moves (arrow keys work); then name and notes, and **Summon** or **Save**.
   - **Hero dialog** ("Recruit a hero" or "Edit hero"), laid out like a game's character screen: the chosen mini large on the left with arrows to flip through the roster (Neutral first, arrow keys work, a count such as "4 of 8"), and name and class on the right. Under the class field, the classes other heroes already have are offered as chips; class stays free text. A pick that isn't in the roster shows as missing, with Neutral shown, so you can choose again.
   - A save sends only the fields that changed, so untouched YAML keeps its formatting.
-- **Trophy shelf:** a small glass shelf where the latest slain monsters stand as bronzed minis, newest on the left, with the trophy count; hovering a mini shows its name and slain date, and the rest shows as "+N". A click on the shelf opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).
+- **Trophy shelf:** a small glass button in the bottom-left corner with a trophy icon and the trophy count ("3 trophies", or "No trophies yet"). It shows no minis. A click opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).
 - **Trophy hall:** a full-screen glass overlay, every slain monster as a plaque, grouped by month of `slain`, newest first. A plaque shows the bronzed portrait, the name, the slain date, the first line of the notes and who fought it ("by Ana, Bartek", from `slainBy`). Esc or the close button returns to the table.
 - **Map controls:** a small vertical cluster: zoom in and zoom out (around the middle of the screen, gliding like a fly-to), fit everything (the opening view), and **?** for the shortcuts sheet.
 - **Shortcuts sheet:** a glass card listing every gesture and key: drag, Shift+drop, wheel or pinch to zoom, Tab and Enter, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet. Keys are ignored while typing in a field.
 - **Toasts:** one at a time, bottom centre, under the HUD clusters and over the table. A failed save says what failed and that the change was undone, and hides after 6 seconds. A slay says "Search Rewrite slain" with **Undo** for 8 seconds.
-- Portraits (card, muster tokens, dialogs, shelf, hall) are the baked minis on a disc of felt; trophies are tinted bronze. A portrait frames a square centred over the base, from the top of the model's body box (from the minis' manifest) to just past the base centre, so the model fills the disc at every size and wide monsters (the dragon's wings, the spider's legs) run off its edge.
+- Portraits (card, muster tokens, dialogs, hall) are the baked minis on a disc of felt; trophies are tinted bronze. A portrait frames a square centred over the base, from the top of the model's body box (from the minis' manifest) to just past the base centre, so the model fills the disc at every size and wide monsters (the dragon's wings, the spider's legs) run off its edge.
 - **Keyboard:** every control works without a mouse. Tab reaches the HUD clusters first, then the target arrows and the figures on the table, each a button named after its figure or pair. Enter or Space on a figure opens its card and moves the focus into it; on an arrow it opens the arrow buttons. Esc closes what is open, in this order: a drag, the arrow buttons, the card's menu or the muster list, a dialog, then the card. Closing the card or the arrow buttons with Esc hands the focus back to the figure or arrow.
 
 ## Interactions
@@ -165,7 +165,7 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - Off-screen unfought monsters also show as red arrows pinned to the edge of the view.
 
 **Slay, undo and delete**
-- A monster is slain by dropping it on the trophy shelf, or with **Slay** on its figure card. Both set `slain: <today>` (local date) and `slainBy`, and the monster leaves the table for the shelf and the hall. Slaying a monster that is already slain changes nothing.
+- A monster is slain by dropping it on the trophy shelf, or with **Slay** on its figure card. Both set `slain: <today>` (local date) and `slainBy`, and the monster leaves the table for the trophy hall. Slaying a monster that is already slain changes nothing.
 - Slay and delete clean up the same way. The monster is removed from every hero's `targets`.
   - If it was a hero's main target, the next target becomes main.
   - If the hero has no targets left, they go idle at the monster's home, and `pos` is saved. The figure walks there.

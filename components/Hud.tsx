@@ -14,7 +14,7 @@ const EDGE = "16px";
 export function Hud({
   topLeft,
   topRight,
-  bottomCenter,
+  bottomLeft,
   bottomRight,
 }: {
   /** The wordmark, with the muster tokens hanging below it. */
@@ -22,7 +22,7 @@ export function Hud({
   /** The create buttons. */
   topRight?: ReactNode;
   /** The trophy shelf. */
-  bottomCenter?: ReactNode;
+  bottomLeft?: ReactNode;
   /** The map controls. */
   bottomRight?: ReactNode;
 }) {
@@ -31,11 +31,7 @@ export function Hud({
       <div className="relative h-full w-full">
         {topLeft && <Slot className="top-0 left-0 flex-col items-start">{topLeft}</Slot>}
         {topRight && <Slot className="top-0 right-0 items-start justify-end">{topRight}</Slot>}
-        {bottomCenter && (
-          <Slot className="bottom-0 left-1/2 max-w-[calc(100%-8rem)] -translate-x-1/2 justify-center">
-            {bottomCenter}
-          </Slot>
-        )}
+        {bottomLeft && <Slot className="bottom-0 left-0 items-end">{bottomLeft}</Slot>}
         {bottomRight && <Slot className="right-0 bottom-0 flex-col items-end">{bottomRight}</Slot>}
       </div>
     </div>
