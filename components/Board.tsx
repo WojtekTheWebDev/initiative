@@ -19,11 +19,11 @@ import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
 import { DragOverlay } from "@/components/map/DragOverlay";
 import { MapControls } from "@/components/map/MapControls";
-import { CreateButtons } from "@/components/panel/CreateButtons";
-import { usePanel } from "@/components/panel/usePanel";
-import { CreatePanel } from "@/components/panel/CreatePanel";
+import { CreateButtons } from "@/components/CreateButtons";
 import { FigureCard } from "@/components/card/FigureCard";
 import { useSelection, type Selection } from "@/components/card/useSelection";
+import { useDialogs } from "@/components/dialogs/useDialogs";
+import { FigureDialogs } from "@/components/dialogs/FigureDialogs";
 import { Trophies } from "@/components/Trophies";
 import { Hud, Wordmark } from "@/components/Hud";
 
@@ -34,9 +34,8 @@ type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void
 const OPENING_PADDING = 88;
 
 export function Board({ world }: { world: World }) {
-  // Shared UI state. T6-T8 hook into these.
   const map = useRef<MapHandle>(null);
-  // T6: drag/drop with optimistic updates; `drag.layout` includes the live drag.
+  // Drag and drop with optimistic updates; `drag.layout` includes the live drag.
   const drag = useFigureDrag(world, map);
   // The figure whose card is open; `null` once it is slain or deleted.
   const { selection, select } = useSelection(drag.world);
@@ -62,7 +61,8 @@ export function Board({ world }: { world: World }) {
     map.current?.flyTo(pos ?? fallback);
   };
   const flyTo = (m: Monster) => flyToFigure("monster", m.id, m.pos);
-  const panel = usePanel();
+  // The monster and hero dialogs: `dialogs.openCreate(kind)` and `dialogs.openEdit(kind, id)`.
+  const dialogs = useDialogs();
 
   // The opening view, worked out from the figures; "fit everything" returns to it.
   const initialCamera = (viewport: ViewportSize) =>
@@ -79,7 +79,14 @@ export function Board({ world }: { world: World }) {
         overlay={(view) => (
           <>
             <EdgeArrows view={view} monsters={unfoughtPlaced} onPick={flyTo} />
-            <FigureCard view={view} drag={drag} selection={selection} onSelect={select} onFlyTo={flyTo} />
+            <FigureCard
+              view={view}
+              drag={drag}
+              selection={selection}
+              onSelect={select}
+              onFlyTo={flyTo}
+              onEdit={(s) => dialogs.openEdit(s.kind, s.id)}
+            />
             <DragOverlay drag={drag} view={view} />
           </>
         )}
@@ -96,21 +103,22 @@ export function Board({ world }: { world: World }) {
             <MusterTokens monsters={unfoughtMonsters} onPick={flyTo} />
           </>
         }
-        topRight={<CreateButtons panel={panel} />}
+        topRight={<CreateButtons onCreate={dialogs.openCreate} />}
         bottomCenter={
           <Trophies monsters={drag.world.monsters} openId={null} onOpen={() => {}} />
         }
         bottomRight={
           <MapControls
             map={map}
-            newMonster={() => panel.openCreate("monster")}
-            newHero={() => panel.openCreate("hero")}
+            newMonster={() => dialogs.openCreate("monster")}
+            newHero={() => dialogs.openCreate("hero")}
           />
         }
       />
 
-      <CreatePanel
-        panel={panel}
+      <FigureDialogs
+        dialogs={dialogs}
+        world={drag.world}
         map={map}
         onCreated={(kind, id, pos) => {
           select({ kind, id });

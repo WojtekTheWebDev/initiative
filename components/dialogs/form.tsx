@@ -2,7 +2,6 @@
 
 import { useState, useTransition, type ReactNode } from "react";
 import { IconButton } from "@/components/ui/Button";
-import { errorMessage } from "./helpers";
 
 /**
  * Runs a Server Action in a transition. A thrown Error becomes `error`
@@ -59,3 +58,10 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 
 export const inputClass =
   "w-full rounded-[10px] border border-hud-line bg-black/30 px-2.5 py-1.5 text-sm text-hud-fg placeholder:text-hud-muted focus:border-hud-gold focus-visible:outline-none";
+
+/** Readable text from anything an action threw. */
+function errorMessage(e: unknown): string {
+  if (e instanceof Error && e.message) return e.message;
+  if (typeof e === "string" && e) return e;
+  return "Something went wrong";
+}
