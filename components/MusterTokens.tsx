@@ -21,7 +21,7 @@ const TOKEN =
 /**
  * The muster under the wordmark: a red "N unfought" count and one red-ringed
  * token per unfought monster, largest first, then by name (see `muster`).
- * Past six, the rest fold into "+N", which opens a glass list of them. A
+ * Past six, the rest fold into "+N more", which opens a glass list of them. A
  * token flies the camera to its monster. With none unfought, a small gold
  * "All engaged" seal.
  */
@@ -71,7 +71,7 @@ export function MusterTokens({ monsters, onPick }: Props) {
   );
 }
 
-/** "+N" and the glass list of the folded tokens it opens. Arrow keys move through the list; Esc or a press outside closes it. */
+/** "+N more" and the glass list of the folded tokens it opens. Arrow keys move through the list; Esc or a press outside closes it. */
 function FoldedList({ monsters, onPick }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -141,7 +141,7 @@ function FoldedList({ monsters, onPick }: Props) {
         onClick={() => setOpen((o) => !o)}
         onKeyDown={onToggleKeyDown}
       >
-        +{monsters.length}
+        +{monsters.length} more
       </button>
       {open && (
         <Glass

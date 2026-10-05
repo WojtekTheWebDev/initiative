@@ -1,6 +1,6 @@
 import type { Monster, Size } from "@/lib/types";
 
-/** How many muster tokens show before the rest fold into "+N". */
+/** How many muster tokens show before the rest fold into "+N more". */
 export const MUSTER_SHOWN = 6;
 
 const SIZE_RANK: Record<Size, number> = { XL: 0, L: 1, M: 2, S: 3 };
@@ -9,7 +9,7 @@ const SIZE_RANK: Record<Size, number> = { XL: 0, L: 1, M: 2, S: 3 };
 export type Muster = {
   /** Tokens shown in full under the wordmark. */
   shown: Monster[];
-  /** The rest, listed behind "+N". */
+  /** The rest, listed behind "+N more". */
   folded: Monster[];
 };
 

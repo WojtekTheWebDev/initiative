@@ -161,7 +161,7 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 
 **Unfought alarm**
 - The monster pulses red on the table.
-- **Muster tokens** hang down the left edge of the screen below the wordmark: a red count ("2 unfought") and one red-ringed portrait per unfought monster with its name beside it, largest first, then by name. Clicking one pans and zooms to it. Past six, the rest fold into "+N", which opens the full list. When every monster is engaged, a small "All engaged" seal sits under the wordmark instead.
+- **Muster tokens** hang down the left edge of the screen below the wordmark: a red count ("2 unfought") and one red-ringed portrait per unfought monster with its name beside it, largest first, then by name. Clicking one pans and zooms to it. Past six, the rest fold into "+N more", which opens the full list. When every monster is engaged, a small "All engaged" seal sits under the wordmark instead.
 - Off-screen unfought monsters also show as red arrows pinned to the edge of the view.
 
 **Slay, undo and delete**
