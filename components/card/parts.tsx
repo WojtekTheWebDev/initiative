@@ -1,27 +1,21 @@
 "use client";
 
-import { startTransition, useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { World } from "@/lib/types";
 import { Button, ConfirmButton, IconButton } from "@/components/ui/Button";
 import { Glass } from "@/components/ui/Glass";
-import { useToast } from "@/components/ui/Toast";
+import { useGameUpdate } from "@/components/game/GameProvider";
 
 /**
- * Runs a card's Server Action in the background. The card closes at once
- * (`onStart`), since the figure is leaving the table; a failure shows an error
+ * Runs a card's change to the table. The card closes first (`onStart`), since
+ * the figure is leaving the table; a change the rules refuse shows an error
  * toast saying what failed.
  */
 export function useCardAction() {
-  const toast = useToast();
-  return (what: string, action: () => Promise<unknown>, onStart: () => void) => {
+  const update = useGameUpdate();
+  return (what: string, change: (world: World) => World, onStart: () => void) => {
     onStart();
-    startTransition(async () => {
-      try {
-        await action();
-      } catch (err) {
-        const reason = err instanceof Error && err.message ? err.message : "the server didn't answer";
-        toast.show({ tone: "error", message: `Couldn't ${what}: ${reason}.` });
-      }
-    });
+    update(what, change);
   };
 }
 

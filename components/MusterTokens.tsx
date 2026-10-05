@@ -10,7 +10,7 @@ import { FoldedList } from "@/components/ui/FoldedList";
 import { muster } from "./muster";
 
 type Props = {
-  /** Living monsters no hero is fighting, from the optimistic world. */
+  /** Living monsters no hero is fighting. */
   monsters: Monster[];
   /** Called when a token is picked (the Board flies the camera to the monster). */
   onPick: (monster: Monster) => void;

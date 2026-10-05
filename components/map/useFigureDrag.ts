@@ -1,11 +1,9 @@
 "use client";
 
 import {
-  startTransition,
   useCallback,
   useEffect,
   useMemo,
-  useOptimistic,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -14,11 +12,11 @@ import {
   type RefObject,
 } from "react";
 import type { Pos, World } from "@/lib/types";
-import { localToday, type HeroBefore } from "@/lib/domain";
+import * as domain from "@/lib/domain";
+import type { HeroBefore } from "@/lib/domain";
 import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
-import * as actions from "@/app/actions";
-import { unwrap } from "@/lib/action-result";
 import { useToast } from "@/components/ui/Toast";
+import { useGame, useGameUpdate } from "@/components/game/GameProvider";
 import type { MapHandle } from "./MapCanvas";
 import type { FigureHandlers } from "./MiniFigure";
 import {
@@ -94,13 +92,13 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
  * - On drop, a dragged monster's home, or an idle hero's, moves by the drag
  *   offset (see homeAfterDrag). A monster dropped on the trophy shelf
  *   (`shelfRef`) is slain instead (see dropAction and `slay`). The change is
- *   applied optimistically with the same lib/domain rule the server uses,
- *   then the Server Action runs. The optimistic world stays until the
- *   refreshed server data arrives (no snap-back); on failure it reverts and
- *   an error toast says so.
+ *   applied to the game in this browser with a lib/domain rule (see
+ *   applyOp); a change the rules refuse leaves the table as it was and an
+ *   error toast says so.
  */
-export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
-  const [optimisticWorld, addOp] = useOptimistic(world, applyOp);
+export function useFigureDrag(map: RefObject<MapHandle | null>) {
+  const world = useGame().game.world;
+  const update = useGameUpdate();
   const [live, setLive] = useState<Live | null>(null);
   const [link, setLink] = useState<TargetRef | null>(null);
   const toast = useToast();
@@ -111,29 +109,16 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const suppressClick = useRef(false);
 
   const drag = live?.drag ?? null;
-  const baseLayout = useMemo(() => layoutWorld(optimisticWorld), [optimisticWorld]);
+  const baseLayout = useMemo(() => layoutWorld(world), [world]);
   const layout = live?.layout ?? baseLayout;
 
   // Stop listening if the Board unmounts mid-drag.
   useEffect(() => () => session.current?.end(), []);
 
-  const run = useCallback(
-    (op: WorldOp) => {
-      startTransition(async () => {
-        addOp(op);
-        try {
-          await callServer(op);
-        } catch (err) {
-          const reason = err instanceof Error && err.message ? err.message : "the server didn't answer";
-          toast.show({ tone: "error", message: `Couldn't save: ${reason}. The change was undone.` });
-        }
-      });
-    },
-    [addOp, toast],
-  );
+  const run = useCallback((op: WorldOp) => update(OP_WHAT[op.kind], (w) => applyOp(w, op)), [update]);
 
   /**
-   * Revives a slain monster optimistically. If it was slain in this session,
+   * Revives a slain monster. If it was slain since the page was loaded,
    * its fighters get their targets back (see `revive` in lib/domain); otherwise
    * only the monster returns.
    */
@@ -147,28 +132,27 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   );
 
   /**
-   * Slays a monster optimistically, then shows the slay toast with Undo, which
-   * revives it (optimistically too) with what the server says the slay changed.
+   * Slays a monster, then shows the slay toast with Undo, which revives it
+   * with what the slay changed for each hero.
    */
   const slay = useCallback(
     (id: string) => {
-      const name = optimisticWorld.monsters.find((m) => m.id === id)?.name ?? "Monster";
-      startTransition(async () => {
-        addOp({ kind: "slay", id, today: localToday() });
-        try {
-          slainBefore.current.set(id, await unwrap(actions.slayMonster(id)));
-          toast.show({
-            tone: "slain",
-            message: `${name} slain`,
-            action: { label: "Undo", icon: "undo", run: () => revive(id) },
-          });
-        } catch (err) {
-          const reason = err instanceof Error && err.message ? err.message : "the server didn't answer";
-          toast.show({ tone: "error", message: `Couldn't slay ${name}: ${reason}. The change was undone.` });
-        }
+      const name = world.monsters.find((m) => m.id === id)?.name ?? "Monster";
+      let before: HeroBefore[] = [];
+      const next = update(`slay ${name}`, (w) => {
+        const slain = domain.slay(w, id, domain.localToday());
+        before = domain.heroesChanged(w, slain);
+        return slain;
+      });
+      if (!next) return;
+      slainBefore.current.set(id, before);
+      toast.show({
+        tone: "slain",
+        message: `${name} slain`,
+        action: { label: "Undo", icon: "undo", run: () => revive(id) },
       });
     },
-    [optimisticWorld, addOp, toast, revive],
+    [world, update, toast, revive],
   );
 
   const shelfRect = (): ScreenRect | null => shelfRef.current?.getBoundingClientRect() ?? null;
@@ -283,7 +267,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       startClient: { x: e.clientX, y: e.clientY },
       startWorld,
       origin,
-      world: optimisticWorld,
+      world,
       layout,
       moved: false,
       shift: e.shiftKey,
@@ -354,9 +338,9 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   }
 
   return {
-    /** The world with pending (optimistic) changes, without the live drag. */
-    world: optimisticWorld,
-    /** Layout to draw: optimistic changes plus the figure being dragged. */
+    /** The world in the game, without the live drag. */
+    world,
+    /** Layout to draw: the world plus the figure being dragged. */
     layout,
     bindFigure,
     bindLink,
@@ -391,19 +375,12 @@ function round(p: Pos): Pos {
   return { x: Math.round(p.x), y: Math.round(p.y) };
 }
 
-function callServer(op: WorldOp): Promise<void> {
-  switch (op.kind) {
-    case "moveMonster":
-      return unwrap(actions.moveMonster(op.id, op.pos));
-    case "dropHero":
-      return unwrap(actions.dropHero(op.heroId, op.drop));
-    case "makeMain":
-      return unwrap(actions.makeMain(op.heroId, op.monsterId));
-    case "removeTarget":
-      return unwrap(actions.removeTarget(op.heroId, op.monsterId));
-    case "slay":
-      return unwrap(actions.slayMonster(op.id)).then(() => {});
-    case "revive":
-      return unwrap(actions.reviveMonster(op.id, op.before));
-  }
-}
+/** What each op does, for "Couldn't <what>: <reason>." when the rules refuse it. */
+const OP_WHAT: Record<WorldOp["kind"], string> = {
+  moveMonster: "move the monster",
+  dropHero: "move the hero",
+  makeMain: "make it the main target",
+  removeTarget: "remove the target",
+  slay: "slay the monster",
+  revive: "revive the monster",
+};

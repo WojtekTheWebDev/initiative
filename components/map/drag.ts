@@ -15,10 +15,10 @@ export function pastThreshold(start: Pos, now: Pos, threshold = DRAG_THRESHOLD):
   return Math.hypot(now.x - start.x, now.y - start.y) >= threshold;
 }
 
-/** What a hero drop does; mirrors the second argument of the `dropHero` Server Action. */
+/** What a hero drop does: a monster to target (added as secondary with Shift), or ground to stand idle on. */
 export type HeroDrop = { monsterId: string; shift: boolean } | { pos: Pos };
 
-/** One change to the world that the client applies optimistically and sends to the server. */
+/** One change to the world made on the table: a drop, an arrow button, a slay or a revive. */
 export type WorldOp =
   | { kind: "moveMonster"; id: string; pos: Pos }
   | { kind: "dropHero"; heroId: string; drop: HeroDrop }
@@ -28,34 +28,30 @@ export type WorldOp =
   | { kind: "revive"; id: string; before: HeroBefore[] };
 
 /**
- * Applies an op with the same lib/domain rules the server uses (see app/actions.ts).
- * Never throws: an op that no longer fits the world (e.g. the server data changed
- * underneath) leaves it unchanged, and the server reports the real error.
+ * Applies an op with its lib/domain rule. A plain drop back on the current
+ * main target changes nothing, so the secondary targets stay. Throws what the
+ * rule throws for an op that doesn't fit the world (e.g. an id that is gone).
  */
 export function applyOp(world: World, op: WorldOp): World {
-  try {
-    switch (op.kind) {
-      case "moveMonster":
-        return domain.moveMonster(world, op.id, op.pos);
-      case "makeMain":
-        return domain.makeMain(world, op.heroId, op.monsterId);
-      case "removeTarget":
-        return domain.removeTarget(world, op.heroId, op.monsterId);
-      case "slay":
-        return domain.slay(world, op.id, op.today);
-      case "revive":
-        return domain.revive(world, op.id, op.before);
-      case "dropHero": {
-        const { heroId, drop } = op;
-        if ("pos" in drop) return domain.setIdle(world, heroId, drop.pos);
-        if (drop.shift) return domain.addSecondary(world, heroId, drop.monsterId);
-        const hero = world.heroes.find((h) => h.id === heroId);
-        if (hero && hero.targets[0] === drop.monsterId) return world;
-        return domain.assign(world, heroId, drop.monsterId);
-      }
+  switch (op.kind) {
+    case "moveMonster":
+      return domain.moveMonster(world, op.id, op.pos);
+    case "makeMain":
+      return domain.makeMain(world, op.heroId, op.monsterId);
+    case "removeTarget":
+      return domain.removeTarget(world, op.heroId, op.monsterId);
+    case "slay":
+      return domain.slay(world, op.id, op.today);
+    case "revive":
+      return domain.revive(world, op.id, op.before);
+    case "dropHero": {
+      const { heroId, drop } = op;
+      if ("pos" in drop) return domain.setIdle(world, heroId, drop.pos);
+      if (drop.shift) return domain.addSecondary(world, heroId, drop.monsterId);
+      const hero = world.heroes.find((h) => h.id === heroId);
+      if (hero && hero.targets[0] === drop.monsterId) return world;
+      return domain.assign(world, heroId, drop.monsterId);
     }
-  } catch {
-    return world;
   }
 }
 

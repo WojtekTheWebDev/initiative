@@ -22,6 +22,8 @@
   --hud-muted: rgba(236, 230, 214, 0.62);
   --hud-gold: #d9b45f;
   --hud-danger: #e5484d;
+  /* Amber for a nudge: unsaved changes, a file with problems. */
+  --hud-warn: #f0a43a;
   --hud-radius: 12px;
   --hud-blur: 10px;
 }
@@ -42,6 +44,7 @@
   --color-hud-muted: var(--hud-muted);
   --color-hud-gold: var(--hud-gold);
   --color-hud-danger: var(--hud-danger);
+  --color-hud-warn: var(--hud-warn);
   --radius-hud: var(--hud-radius);
   --font-sans: var(--font-barlow), system-ui, sans-serif;
   --font-display: var(--font-cinzel), Georgia, serif;

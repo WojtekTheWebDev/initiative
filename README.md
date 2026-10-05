@@ -4,7 +4,7 @@
 
 A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** (bigger scope means a bigger creature) and the people dealing with them are **heroes**. You plan by dragging heroes onto monsters on an infinite map. Monsters nobody is fighting pulse red, so gaps are easy to spot.
 
-It runs only on your machine, for one user. The data is plain YAML that you or an agent can edit by hand.
+It is for one user and keeps everything in your browser. It is a static page, so it runs on your machine or on any static host such as Vercel. Save files are plain YAML that you or an agent can edit by hand.
 
 > Status: implemented. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full spec.
 
@@ -37,16 +37,16 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Unfought monsters** pulse red. The red counter under the wordmark lists them, and red arrows at the edge of the view point to the ones off-screen. Click either to fly there.
 - **Slay** a monster by dropping it on the trophy shelf in the bottom-left corner, or with **Slay** on its card. Heroes fighting it move on to their next target, or stand idle where it was. The toast offers **Undo** for 8 seconds. Click the shelf to open the trophy hall, with a plaque for every slain monster and who fought it; **Revive** on a plaque brings the monster back. **Delete** does the same cleanup but removes the monster for good, so it asks you to click twice.
 - **+ Monster** and **+ Hero** in the top-right corner open the summon and recruit dialogs; **Edit** on a card opens the same dialog filled in.
+- **Game menu:** click the **Initiative** wordmark for **Save game to file** (`⌘S`), **Load game from file** (`⌘O`) and **New game**. You can also drop a save file anywhere on the window to load it. Loading shows what is on your table beside what is in the file, and nothing changes until you click **Replace table**.
 - **Map controls** in the bottom-right corner zoom and fit everything; **?** lists the keyboard shortcuts (`N`, `H`, `F`, `+`, `-`).
 - **Keyboard:** Tab reaches every control, figure and arrow, Enter opens it and Esc closes it.
 
 ## Data
 
-- Your data lives in `data/heroes.yaml` and `data/monsters.yaml`.
-- `data/` is **gitignored**. It holds real names and people topics, and it has no history or backup.
-- On first run, `data/` is seeded from the committed `data.example/`.
-- You can edit the YAML by hand at any time. Reload the page to see your changes. The app keeps your comments when it writes the files. There is no file watcher.
-- To start over from the example data, stop the app and delete `data/`.
+- Your table lives in the browser's local storage, separately for each browser and site address. Every change is stored as you make it.
+- The browser copy has no history and can be cleared with the site data, so **Save game to file** now and then. After a week of unsaved changes, an amber dot on the wordmark reminds you.
+- A save file is one YAML file, `initiative-<date>.yaml`. You can edit it by hand and load it back with **Load game**. Save files hold real names and people topics: keep them out of git (`/data/` and `initiative-*.yaml` are gitignored for that).
+- A first visit starts on the example table, `data.example/initiative.yaml`. **New game** in the menu starts over with an empty table or the example.
 - The format is described in [`docs/DESIGN.md`](docs/DESIGN.md#data-model). Anything that can be worked out (who fights what, the creature type) is not stored.
 
 ## Minis
@@ -85,4 +85,4 @@ The scatter, raised pieces and bridges on the table are baked the same way, from
 
 ## Stack
 
-Next.js 16 (App Router, Server Actions), React 19, Tailwind 4, the `yaml` package, and Vitest. The minis are baked with three.js and Playwright (dev only).
+Next.js 16 (App Router, a static page), React 19, Tailwind 4, the `yaml` package for save files, and Vitest. The minis are baked with three.js and Playwright (dev only).

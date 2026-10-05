@@ -1,10 +1,11 @@
-import { Board } from "@/components/Board";
-import { readWorld } from "@/lib/store";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { Game } from "@/components/game/Game";
+import { parseSave } from "@/lib/save/file";
 
-// The world is read from YAML on every request, never prerendered.
-export const dynamic = "force-dynamic";
+// The example table, read when the page is built. Your own table lives in the browser.
+const example = parseSave(readFileSync(path.join(process.cwd(), "data.example", "initiative.yaml"), "utf8")).world;
 
-export default async function Home() {
-  const world = await readWorld();
-  return <Board world={world} />;
+export default function Home() {
+  return <Game example={example} />;
 }

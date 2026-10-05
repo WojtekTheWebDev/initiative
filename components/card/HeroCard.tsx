@@ -2,8 +2,7 @@
 
 import type { Hero, Monster, World } from "@/lib/types";
 import { heroMini, monsterMini } from "@/lib/map/minis";
-import { deleteHero } from "@/app/actions";
-import { unwrap } from "@/lib/action-result";
+import { deleteHero } from "@/lib/domain";
 import { Portrait } from "@/components/ui/Portrait";
 import { Icon } from "@/components/ui/icons";
 import { CardHeader, CardLabel, CardMenu, EditButton, useCardAction } from "./parts";
@@ -37,7 +36,7 @@ export function HeroCard({
   return (
     <>
       <div className="absolute top-2 right-2">
-        <CardMenu name={hero.name} onDelete={() => act("delete the hero", () => unwrap(deleteHero(hero.id)), onClose)} />
+        <CardMenu name={hero.name} onDelete={() => act("delete the hero", (w) => deleteHero(w, hero.id), onClose)} />
       </div>
       <CardHeader
         portrait={<Portrait mini={mini} size={52} />}

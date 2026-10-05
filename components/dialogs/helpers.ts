@@ -13,7 +13,7 @@ export function monsterFields(monster: Monster | undefined): MonsterFields {
   return { name: monster?.name ?? "", size: monster?.size ?? "M", notes: monster?.notes ?? "" };
 }
 
-/** Only the fields that changed, so untouched YAML keeps its formatting. */
+/** Only the fields that changed. */
 export function monsterPatch(monster: Monster, fields: MonsterFields): MonsterPatch {
   const patch: MonsterPatch = {};
   const name = fields.name.trim();

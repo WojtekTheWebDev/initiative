@@ -2,9 +2,9 @@
 
 *Initiative - a planning playing game.*
 
-A personal, local-only progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** and the people fighting them are **heroes**. You plan your day by moving figures around a map. The question the map answers at a glance is **who fights what**, and above all **which monsters nobody is fighting**.
+A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** and the people fighting them are **heroes**. You plan your day by moving figures around a map. The question the map answers at a glance is **who fights what**, and above all **which monsters nobody is fighting**.
 
-It is a tool for one person (an engineering manager) to use in daily work. It is not a team tool and does not replace Jira.
+It is a tool for one person (an engineering manager) to use in daily work. It is not a team tool and does not replace Jira. It is a static page (it can be hosted on Vercel) and keeps everything in the browser: nothing about your table ever reaches a server.
 
 ## Concepts
 
@@ -22,27 +22,33 @@ It is a tool for one person (an engineering manager) to use in daily work. It is
 
 ## Data model
 
-Plain YAML files in `data/`. The folder is **gitignored**, so it has no history and no backup by design. If `data/` is missing on startup, it is seeded from the committed `data.example/`. You or an agent can edit the files by hand. Reload the page to see the changes, since there is no file watcher.
+The table lives in the browser's **local storage**, and every change is stored there the moment it is made. That copy has no history, and the browser may clear it, so a **save file** is the backup and the way to move a table to another browser: **Save game** writes the whole table to one YAML file and **Load game** replaces the table with one. You or an agent can edit a save file by hand and load it back.
+
+A first visit, with nothing stored, starts on the example table, `data.example/initiative.yaml`, which is itself a save file read when the page is built.
 
 ```yaml
-# data/monsters.yaml
-- id: search-rewrite        # slug from name; unique suffix on clash
-  name: Search Rewrite
-  size: XL                  # S | M | L | XL → spider | orc | mushroom king | dragon
-  pos: { x: -420, y: 180 }  # home: the figure is held near it; always present
-  notes: |                  # optional, free text
-    Next step: spike on Meilisearch
-  slain: 2026-10-14         # optional; absent = alive
-  slainBy: [ana, bartek]    # optional; the heroes targeting it when it was slain
-  externalKey: SRCH-12      # optional; reserved for a future Jira import
+# initiative-2026-10-05.yaml
+initiative: 1                 # file format version
+savedAt: 2026-10-05T09:12:44.000Z
 
-# data/heroes.yaml
-- id: ana
-  name: Ana
-  class: archer             # free-text label, shown as text only
-  mini: hooded-rogue        # optional; a hero mini id (public/minis/manifest.json); absent or unknown = neutral adventurer
-  targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = secondary targets
-  pos: { x: -600, y: 40 }   # home while idle; stored only while idle (targets empty)
+monsters:
+  - id: search-rewrite        # slug from name; unique suffix on clash
+    name: Search Rewrite
+    size: XL                  # S | M | L | XL → spider | orc | mushroom king | dragon
+    pos: { x: -420, y: 180 }  # home: the figure is held near it; always present
+    notes: |                  # optional, free text
+      Next step: spike on Meilisearch
+    slain: 2026-10-14         # optional; absent = alive
+    slainBy: [ana, bartek]    # optional; the heroes targeting it when it was slain
+    externalKey: SRCH-12      # optional; reserved for a future Jira import
+
+heroes:
+  - id: ana
+    name: Ana
+    class: archer             # free-text label, shown as text only
+    mini: hooded-rogue        # optional; a hero mini id (public/minis/manifest.json); absent or unknown = neutral adventurer
+    targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = secondary targets
+    pos: { x: -600, y: 40 }   # home while idle; stored only while idle (targets empty)
 ```
 
 Rules worked out from the data, not stored:
@@ -53,15 +59,17 @@ Rules worked out from the data, not stored:
   - A stored `pos` is a **home**. Every monster and every idle hero is held to its home by the same weak spring, so it stays near it but can be nudged aside, and drifts back when there is room.
   - An engaged hero has no home. A spring to each of its targets pulls it toward them and pulls them toward it, so heroes and monsters that target each other gather into a cluster: a monster that shares a hero with another is drawn between its home and theirs. The main target pulls harder and holds the hero closer than secondary targets.
   - Clusters push other figures aside, so no mini or name tag covers another one (see Force layout).
-  - The layout is pure and deterministic: the same files always give the same picture, in whatever order they list things. The tuning constants are exported from `lib/map/layout.ts`.
+  - The layout is pure and deterministic: the same table always gives the same picture, in whatever order they list things. The tuning constants are exported from `lib/map/layout.ts`.
 - **Target arrows** come from the layout: one per hero and living target, from the edge of the hero's base ellipse toward the monster's. They are never stored, so anything that moves a figure moves its arrows too.
 
 What is stored because it can't be worked out later:
 - **`slainBy`** records who fought a monster. Slaying removes the monster from every hero's `targets`, so afterwards nothing else says who fought it. It lists the heroes that had the monster in `targets` at that moment, those with it as their main target first, then the others, each group by id. It is left out when nobody fought it. It keeps ids, not names, so a rename shows up in the trophy hall; an id whose hero was deleted is skipped when shown.
 
-Rules for writing:
-- Use the [`yaml`](https://eemeli.org/yaml/) package's Document API, so hand-written comments are kept.
-- Every write re-reads the file first. Never overwrite the file with stale in-memory state.
+How the game is kept (`lib/save/`):
+- **In the browser** (`lib/save/game.ts`): one local-storage key, `initiative.game`, holds the world as JSON with three facts about it: whether it is the untouched example (`example`), when it was last written to or read from a save file (`fileSavedAt`), and the time of the first change since then (`unsavedSince`, absent when the table matches its last file). A stored value that can't be read is moved to `initiative.game.unreadable` before anything else is stored, so it is never overwritten.
+- **Other tabs** take in each change through the browser's `storage` event, and their figures glide to it. The last write wins.
+- **When storage refuses** a read or a write (some private windows, a full quota), the game carries on in memory and says so (see HUD).
+- **Save files** (`lib/save/file.ts`): written with the [`yaml`](https://eemeli.org/yaml/) package, items in their order, fields in a fixed order, `pos` and id lists on one line, multi-line notes as block literals, so the file reads like one written by hand. Comments in a loaded file are not kept; the next save writes its own header. A file without `initiative: 1` at the top is refused, and so is one that isn't YAML, with the line of the first error. Smaller problems that `validateWorld` finds (a target that isn't in the file, a missing `pos`) don't stop a load; the load dialog lists them.
 
 ## Force layout
 
@@ -82,7 +90,7 @@ Rules for writing:
   - The wheel always zooms at the cursor, and so does a trackpad pinch. Two-finger scrolling zooms too; it does not pan.
   - Dragging empty ground pans. The ground is a felt wargame table (see Table).
   - Dragging a figure moves it (see Interactions).
-  - When the layout changes after a drop, an edit or new data from the server, figures glide to their new places (about 350 ms, ease-out). During a drag the dragged figure follows the cursor exactly and the others ease after their places (see Force layout). With `prefers-reduced-motion` they jump.
+  - When the layout changes after a drop, an edit or a change from another tab, figures glide to their new places (about 350 ms, ease-out). During a drag the dragged figure follows the cursor exactly and the others ease after their places (see Force layout). With `prefers-reduced-motion` they jump.
 - **Opening view:** fits every living figure with its mini and name tag.
 - **Figures:** painted miniatures standing on the table, seen from a three-quarter angle (38° up, 18° around). Each is one baked image (see Art), never live 3D.
   - Every figure is a soft contact shadow on the felt, the baked mini anchored on the centre of its round base, and a name tag. The base radius is the mini's unit, so a mini scales with its base: 22 units for a hero, and 31, 40, 52 and 68 for monsters from S to XL, so the minis, not their tags, catch the eye.
@@ -118,7 +126,8 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - **One look in every theme.** Like the table, the HUD looks the same in light and dark mode.
 - **Icons** are one inline SVG set (`components/ui/icons.tsx`), drawn with `currentColor`. No emoji in the UI.
 - **Layout:**
-  - Top left: the wordmark, with the muster tokens hanging below it (see Unfought alarm).
+  - Top left: the wordmark, which opens the game menu, with the muster tokens hanging below it (see Unfought alarm).
+  - Top centre: the first-visit banner, while the example table is untouched.
   - Top right: **+ Monster** and **+ Hero**, with the party roster hanging below them.
   - Bottom left: the trophy shelf.
   - Bottom right: the map controls.
@@ -133,15 +142,22 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - **Dialogs:** create and edit open centred dialogs over the dimmed table. They trap focus, Esc closes them (after the arrow buttons or a drag claim Esc first) and a click on the dim closes them when nothing has been typed.
   - **Monster dialog** ("Summon a monster" or "Edit monster"): a large preview of the mini above a size slider with four stops, S spider, M orc, L mushroom king and XL dragon, the preview swapping as the slider moves (arrow keys work); then name and notes, and **Summon** or **Save**.
   - **Hero dialog** ("Recruit a hero" or "Edit hero"), laid out like a game's character screen: the chosen mini large on the left with arrows to flip through the roster (Neutral first, arrow keys work, a count such as "2 of 6"), and name and class on the right. Class is a free-text field. A pick that isn't in the roster shows as missing, with Neutral shown, so you can choose again.
-  - A save sends only the fields that changed, so untouched YAML keeps its formatting.
+  - **Save** in a dialog changes only the fields that were edited.
 - **Party roster:** the gold twin of the muster tokens, answering who fights what without a click. Under the create buttons, a gold count ("5 heroes · 1 idle") and one token per hero: portrait, name, their main target's portrait and name with a crown, and "+N" for secondary targets. An idle hero's token is faded and says "Idle". Engaged heroes come first, then idle ones, each by name. Targets that aren't living monsters are skipped. Past six, the rest fold into "+N more", which opens the full list. A token selects its hero: the figure card opens and the view flies there. The selected hero's token is lit gold. With no heroes there is no roster.
 - **Trophy shelf:** a small glass button in the bottom-left corner with a trophy icon and the trophy count ("3 trophies", or "No trophies yet"). It shows no minis. A click opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).
 - **Trophy hall:** a full-screen glass overlay, every slain monster as a plaque, grouped by month of `slain`, newest first. A plaque shows the bronzed portrait, the name, the slain date, the first line of the notes, who fought it ("by Ana, Bartek", from `slainBy`) and **Revive**, which brings the monster back to the table (see Slay, undo and delete). Esc or the close button returns to the table.
 - **Map controls:** a small vertical cluster: zoom in and zoom out (around the middle of the screen, gliding like a fly-to), fit everything (the opening view), and **?** for the shortcuts sheet.
-- **Shortcuts sheet:** a glass card listing every gesture and key: drag, Shift+drop, wheel or pinch to zoom, Tab and Enter, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet. Keys are ignored while typing in a field.
-- **Toasts:** one at a time, bottom centre, under the HUD clusters and over the table. A failed save says what failed and that the change was undone, and hides after 6 seconds. A slay says "Search Rewrite slain" with **Undo** for 8 seconds.
+- **Shortcuts sheet:** a glass card listing every gesture and key: drag, Shift+drop, wheel or pinch to zoom, Tab and Enter, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet, `⌘S` save game, `⌘O` load game. Letter keys are ignored while typing in a field.
+- **Game menu:** a click on the wordmark (it has a small chevron) opens a glass menu below it, over the muster tokens: **Save game to file** (`⌘S`, Ctrl+S elsewhere), **Load game from file** (`⌘O`) and **New game…**, over a footer saying "Your table is kept in this browser." and when it was last saved to a file ("Last saved to a file 9 days ago", or "Never saved to a file"). These two keys replace the browser's own save and open while no dialog is open. Esc or a click outside closes the menu.
+  - **Save game to file** downloads the whole table, trophies included, as `initiative-<local date>.yaml`, and a toast names the file.
+  - **Load game from file** opens the file picker. A file can also be dropped anywhere on the window: while it is dragged over, the table dims inside a gold dashed frame that says "Drop to load".
+  - **Load dialog:** "On your table now" beside "In the file" (its name and when it was saved), each counting monsters, heroes and trophies, so a wrong file is obvious. Problems found in the file are listed in amber; it still loads. When the table has changes that no save file holds, an amber warning says loading replaces them, with **Save current first**. Nothing changes until **Replace table**, which fits the view to the new table and shows "Loaded <file>". A file that can't be read says why, with **Choose another file**.
+  - **New game…** opens a dialog that clears the table for an **Empty table** or the **Example table**, with the same warning and **Save current first** when there are unsaved changes.
+  - **Backup reminder:** after 7 days of changes without a save to a file, an amber dot sits on the wordmark and the menu footer says, in amber, how many days of changes aren't in a file. Nothing pops up.
+- **First-visit banner:** while the example table is untouched, a glass banner at the top centre says "This is an example table. Your own stays in this browser." with **Start empty**, **Load game** and a close button that keeps the example. The first change to the table hides it too.
+- **Toasts:** one at a time, bottom centre, under the HUD clusters and over the table. A change the rules refuse (a figure that is gone, say) says what failed, leaves the table as it was, and hides after 6 seconds; so do "Saved <file>" and "Loaded <file>". A slay says "Search Rewrite slain" with **Undo** for 8 seconds. When the browser won't store the table, a red toast says changes last only until the tab is closed, with **Save game**, and stays until it is dismissed.
 - Portraits (card, muster tokens, party roster, dialogs, hall) are the baked minis on a disc of felt; trophies are tinted bronze. A portrait frames a square centred over the base, from the top of the model's body box (from the minis' manifest) to just past the base centre, so the model fills the disc at every size and wide monsters (the dragon's wings, the spider's legs) run off its edge.
-- **Keyboard:** every control works without a mouse. Tab reaches the HUD clusters first, then the target arrows and the figures on the table, each a button named after its figure or pair. Enter or Space on a figure opens its card and moves the focus into it; on an arrow it opens the arrow buttons. Esc closes what is open, in this order: a drag, the arrow buttons, the card's menu, the muster list or the party list, a dialog, then the card. Closing the card or the arrow buttons with Esc hands the focus back to the figure or arrow.
+- **Keyboard:** every control works without a mouse. Tab reaches the HUD clusters first, then the target arrows and the figures on the table, each a button named after its figure or pair. Enter or Space on a figure opens its card and moves the focus into it; on an arrow it opens the arrow buttons. Esc closes what is open, in this order: a drag, the arrow buttons, the card's menu or the game menu, the muster list or the party list, a dialog, then the card. Closing the card or the arrow buttons with Esc hands the focus back to the figure or arrow.
 
 ## Interactions
 
@@ -158,7 +174,7 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - A drop on a HUD surface, or off the map, does nothing and the hero snaps back.
 - While dragging, the monster under the cursor is highlighted: green for a plain drop, purple with Shift.
 - **Clicking a target arrow** pops two round glass buttons out at its midpoint, with a small label above naming the pair ("Ana → Search Rewrite"): a gold crown, **Make main** (only on a secondary arrow), and red shears, **Remove target**. Each has its name as a tooltip and accessible label. Esc or a click outside closes them.
-- Changes show at once and are saved in the background. If saving fails, the change is undone and a toast says so.
+- Every change shows at once and is stored in the browser as it is made (see Data model).
 
 **Unfought alarm**
 - The monster pulses red on the table.
@@ -171,11 +187,11 @@ Everything drawn over the table is the HUD. The table fills the whole window and
   - If it was a hero's main target, the next target becomes main.
   - If the hero has no targets left, they go idle at the monster's home, and `pos` is saved. The figure walks there.
 - **Undo** on the slay toast revives the monster: `slain` and `slainBy` are removed and each hero the slay changed gets back the `targets` (and the idle `pos`) it had, unless that hero was changed again since, in which case it is left alone. **Revive** on the monster's plaque in the trophy hall does the same. For a monster slain since the page was loaded, its heroes get their targets back the same way; for one slain earlier, what the slay changed is not stored, so only the monster returns to its home, unfought, and the heroes stay as they are.
-- **Delete** sits in the figure card's ⋯ menu and needs a second click on a button that says it can't be undone. That is the only safeguard, since there is no backup. Deleting a hero works the same way.
+- **Delete** sits in the figure card's ⋯ menu and needs a second click on a button that says it can't be undone. That is the only safeguard, apart from your save files. Deleting a hero works the same way.
 
 **Create and edit**
 - **+ Monster** (or `N`) opens the monster dialog. A new monster spawns at the centre of the view.
-- **+ Hero** (or `H`) opens the hero dialog. A new hero spawns idle at the centre of the view. Changing only the mini writes only `mini` to the YAML.
+- **+ Hero** (or `H`) opens the hero dialog. A new hero spawns idle at the centre of the view.
 - **Edit** on a figure card opens the same dialog, filled in.
 - A new monster or hero is selected, its card opens and the view flies to it. A rename never changes the id.
 
@@ -191,9 +207,9 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 
 ## Technical notes (Next.js 16)
 
-- Keep `cacheComponents` **off**. Add `export const dynamic = 'force-dynamic'` to the page that reads YAML. Without it, `next start` serves a snapshot from build time.
-- Writes go through Server Actions (`'use server'`), followed by `refresh()` (new in 16) or `revalidatePath('/')`.
-- In production, Next.js hides the message of an error thrown from a Server Action. So actions return `{ ok: false, error }` instead of throwing, and the client turns it back into an `Error` (`lib/action-result.ts`).
+- The page is static: `app/page.tsx` reads the example table at build time and hands it to the client. There are no Server Actions or route handlers, so it runs on any static host, Vercel included.
+- The server has no game, so it renders a plain felt ground; the browser reads local storage once it hydrates (`useSyncExternalStore` with a `null` server snapshot in `components/game/GameProvider.tsx`). A loaded or new game remounts the board, so it opens on the fitted view with nothing selected.
+- Keep `cacheComponents` **off**.
 - Avoid deprecated APIs: the one-argument `revalidateTag`, and `middleware`, which is now `proxy`.
 - Read `node_modules/next/dist/docs/` before relying on Next APIs.
 
@@ -210,16 +226,16 @@ Use Vitest unit tests on the pure functions that change data:
 - target arrows that stop before name tags and minis, and the bridge picked for a road
 - slay and delete cleanup, `slainBy` on slay, and revive (restoring only the heroes left unchanged since the slay)
 - where the figure card goes: beside the base, flipped near the right edge, kept on screen
-- comments kept on write
-- seeding from `data.example/`
+- save files: the round trip, the file's layout, refused files and listed problems, and the example table
+- the game in local storage: the example on a first visit, every change stored, a stored game that can't be read kept aside, failed storage, other tabs, and when a backup is due
 
 The canvas is checked by hand, with no end-to-end tests for now.
 
 ## Out of scope (decided, not forgotten)
 
 - Jira sync or OAuth. The only hook kept for it is `externalKey`.
-- A database. The data stays in YAML files.
-- Multiple users or logins. It runs on your machine only.
+- A database or a server. The data stays in the browser and in save files.
+- Multiple users, logins or sync between browsers. Each browser holds its own table.
 - XP, levels or scoring of people.
 - Capacity, stamina or HP tracking, and burndown.
 - Auto-committing data, a file watcher, or an archive file.

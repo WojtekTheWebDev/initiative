@@ -25,7 +25,7 @@ export function PartyRoster({
   selectedId,
   onPick,
 }: {
-  /** The optimistic world, so the roster updates the moment you drop. */
+  /** The world in the game. */
   world: World;
   /** The selected hero, if any. */
   selectedId: string | null;

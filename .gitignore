@@ -40,8 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Initiative personal data
+# Initiative save files: real names and people topics
 /data/
+initiative-*.yaml
 
 # Agent worktrees
 /.claude/worktrees/

@@ -129,7 +129,7 @@ describe("resolveHeroDrop", () => {
   });
 });
 
-describe("applyOp mirrors the Server Actions", () => {
+describe("applyOp", () => {
   it("moveMonster", () => {
     const w = applyOp(makeWorld(), { kind: "moveMonster", id: "m1", pos: { x: 50, y: 60 } });
     expect(monster(w, "m1").pos).toEqual({ x: 50, y: 60 });
@@ -163,7 +163,7 @@ describe("applyOp mirrors the Server Actions", () => {
     expect(hero(w, "ana").targets).toEqual(["m2"]);
   });
 
-  it("is idempotent, so re-applying on fresh server data is safe", () => {
+  it("is idempotent", () => {
     const op = { kind: "dropHero", heroId: "bob", drop: { monsterId: "m3", shift: true } } as const;
     const once = applyOp(makeWorld(), op);
     expect(applyOp(once, op)).toEqual(once);
@@ -190,10 +190,10 @@ describe("applyOp mirrors the Server Actions", () => {
     expect(applyOp(revived, op)).toBe(revived);
   });
 
-  it("leaves the world unchanged instead of throwing when the op no longer fits", () => {
+  it("throws when the op no longer fits the world", () => {
     const before = makeWorld();
-    expect(applyOp(before, { kind: "makeMain", heroId: "bob", monsterId: "m3" })).toBe(before);
-    expect(applyOp(before, { kind: "moveMonster", id: "gone", pos: { x: 0, y: 0 } })).toBe(before);
+    expect(() => applyOp(before, { kind: "makeMain", heroId: "bob", monsterId: "m3" })).toThrow();
+    expect(() => applyOp(before, { kind: "moveMonster", id: "gone", pos: { x: 0, y: 0 } })).toThrow();
   });
 });
 

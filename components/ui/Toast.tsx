@@ -5,13 +5,16 @@ import { Glass } from "./Glass";
 import { Button, IconButton } from "./Button";
 import { Icon, type IconName } from "./icons";
 
-export type ToastTone = "error" | "slain";
+/** `error` for a failure, `slain` for a slay (with Undo), `done` for a finished file save or load. */
+export type ToastTone = "error" | "slain" | "done";
 
 export type ToastOptions = {
   message: string;
   tone: ToastTone;
   /** A button on the toast, e.g. Undo with the `undo` icon. The toast closes once it has run. */
   action?: { label: string; run: () => void; icon?: IconName };
+  /** Stays until it is dismissed or replaced, instead of hiding itself. */
+  stay?: boolean;
 };
 
 export type ToastApi = {
@@ -22,7 +25,7 @@ export type ToastApi = {
 };
 
 /** How long each kind of toast stays before it hides itself. */
-const DURATION_MS: Record<ToastTone, number> = { error: 6000, slain: 8000 };
+const DURATION_MS: Record<ToastTone, number> = { error: 6000, slain: 8000, done: 6000 };
 
 const ToastContext = createContext<ToastApi | null>(null);
 
@@ -61,9 +64,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 function ToastView({ toast, onDismiss }: { toast: Shown; onDismiss: () => void }) {
   useEffect(() => {
+    if (toast.stay) return;
     const t = setTimeout(onDismiss, DURATION_MS[toast.tone]);
     return () => clearTimeout(t);
-  }, [toast.tone, onDismiss]);
+  }, [toast.tone, toast.stay, onDismiss]);
 
   const error = toast.tone === "error";
   const { action } = toast;
@@ -77,6 +81,8 @@ function ToastView({ toast, onDismiss }: { toast: Shown; onDismiss: () => void }
       >
         {error ? (
           <Icon.warn className="size-5 shrink-0 text-hud-danger" />
+        ) : toast.tone === "done" ? (
+          <Icon.check className="size-5 shrink-0 text-hud-gold" />
         ) : (
           <Icon.trophy className="size-5 shrink-0 text-hud-gold" />
         )}

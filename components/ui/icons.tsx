@@ -17,7 +17,13 @@ export type IconName =
   | "chevronLeft"
   | "chevronRight"
   | "undo"
-  | "search";
+  | "search"
+  | "chevronDown"
+  | "check"
+  | "save"
+  | "load"
+  | "newGame"
+  | "file";
 
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
@@ -144,6 +150,18 @@ export const Icon: Record<IconName, IconComponent> = {
     <>
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-4-4" />
+    </>,
+  ),
+  chevronDown: icon("chevronDown", <path d="m6 9 6 6 6-6" />),
+  check: icon("check", <path d="m5 12 5 5 9-10" />),
+  save: icon("save", <path d="M12 3v12M7 10l5 5 5-5M4 20h16" />),
+  load: icon("load", <path d="M12 15V3M7 8l5-5 5 5M4 20h16" />),
+  newGame: icon("newGame", <path d="M12 3l2.2 5.6 5.8.7-4.5 3.9 1.4 5.8L12 16l-4.9 3 1.4-5.8L4 9.3l5.8-.7L12 3Z" />),
+  file: icon(
+    "file",
+    <>
+      <path d="M6 3h8l4 4v14H6V3Z" />
+      <path d="M14 3v4h4M9 13h6M9 17h6" />
     </>,
   ),
 };

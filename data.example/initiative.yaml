@@ -1,0 +1,92 @@
+# The example table: what a new game starts with. It is a save file, the same
+# format Save game writes and Load game reads.
+initiative: 1
+
+monsters:
+  # Monsters: anything to deal with. pos is its home: the figure is drawn near it,
+  # pulled toward the monsters that share its heroes.
+  # size: S | M | L | XL  ->  spider | orc | mushroom king | dragon
+  # slain: the date it was slain; absent = alive. slainBy: the heroes that were
+  # targeting it then, main fighters first; left out when nobody fought it.
+
+  - id: search-rewrite
+    name: Search Rewrite
+    size: XL
+    pos: { x: -420, y: 180 }
+    notes: |
+      Next step: spike on Meilisearch.
+      Owner of the decision: product.
+    externalKey: SRCH-12
+
+  - id: flaky-ci # fails about once a day
+    name: Flaky CI
+    size: M
+    pos: { x: -180, y: -120 }
+
+  - id: payments-incident
+    name: Payments Incident
+    size: L
+    pos: { x: -620, y: -260 }
+
+  # Nobody is on this one yet, so it should pulse red.
+  - id: legacy-api-sunset
+    name: Legacy API Sunset
+    size: L
+    pos: { x: -300, y: 420 }
+
+  - id: hire-backend-engineer
+    name: Hire Backend Engineer
+    size: M
+    pos: { x: 260, y: -80 }
+    notes: Two onsites scheduled this week.
+
+  - id: quarterly-roadmap
+    name: Quarterly Roadmap Ask
+    size: S
+    pos: { x: 420, y: 200 }
+
+  - id: onboarding-docs
+    name: Onboarding Docs
+    size: S
+    pos: { x: -80, y: 300 }
+    slain: 2026-09-28
+    slainBy: [dmitri, ana]
+
+heroes:
+  # Heroes: engineers on the team, plus you.
+  # class: a free-text label. mini: which painted miniature stands for the hero
+  # (see public/minis/manifest.json); leave it out for the neutral adventurer.
+  # targets: ordered list of monster ids; first = main fight, rest = secondary targets.
+  # pos is an idle hero's home, stored only while it is idle (targets empty).
+  # An engaged hero is drawn between its targets.
+
+  - id: ana
+    name: Ana
+    class: archer
+    mini: hooded-rogue
+    targets: [search-rewrite, flaky-ci]
+
+  - id: bartek
+    name: Bartek
+    class: warrior
+    mini: knight
+    targets: [search-rewrite]
+
+  - id: celine
+    name: Celine
+    class: mage
+    mini: mage
+    targets: [payments-incident]
+
+  # Between assignments.
+  - id: dmitri
+    name: Dmitri
+    class: rogue
+    mini: rogue
+    targets: []
+    pos: { x: -600, y: 40 }
+
+  - id: me
+    name: Me
+    class: commander
+    targets: [hire-backend-engineer, quarterly-roadmap]

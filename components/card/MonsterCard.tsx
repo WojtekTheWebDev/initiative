@@ -2,10 +2,8 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Hero, Monster, World } from "@/lib/types";
-import { creatureOf, fightersOf } from "@/lib/domain";
+import { creatureOf, deleteMonster, fightersOf } from "@/lib/domain";
 import { heroMini, monsterMini } from "@/lib/map/minis";
-import { deleteMonster } from "@/app/actions";
-import { unwrap } from "@/lib/action-result";
 import { Portrait } from "@/components/ui/Portrait";
 import { Button } from "@/components/ui/Button";
 import { CardHeader, CardLabel, CardMenu, EditButton, useCardAction } from "./parts";
@@ -45,7 +43,7 @@ export function MonsterCard({
       <div className="absolute top-2 right-2">
         <CardMenu
           name={monster.name}
-          onDelete={() => act("delete the monster", () => unwrap(deleteMonster(monster.id)), onClose)}
+          onDelete={() => act("delete the monster", (w) => deleteMonster(w, monster.id), onClose)}
         />
       </div>
       <CardHeader

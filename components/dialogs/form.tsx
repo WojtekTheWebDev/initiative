@@ -1,26 +1,23 @@
 "use client";
 
-import { useState, useTransition, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { IconButton } from "@/components/ui/Button";
 
 /**
- * Runs a Server Action in a transition. A thrown Error becomes `error`
- * (shown with <ErrorNote>) instead of crashing the page.
+ * Runs a dialog's change to the table. A thrown Error (a rule in lib/domain
+ * refusing it) becomes `error`, shown with <ErrorNote>, and the dialog stays open.
  */
 export function useAction() {
-  const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const run = (fn: () => Promise<void>) => {
+  const run = (fn: () => void) => {
     setError(null);
-    startTransition(async () => {
-      try {
-        await fn();
-      } catch (e) {
-        setError(errorMessage(e));
-      }
-    });
+    try {
+      fn();
+    } catch (e) {
+      setError(errorMessage(e));
+    }
   };
-  return { pending, error, run, clearError: () => setError(null) };
+  return { error, run, clearError: () => setError(null) };
 }
 
 export function ErrorNote({ error, onDismiss }: { error: string | null; onDismiss?: () => void }) {

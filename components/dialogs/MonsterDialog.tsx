@@ -2,8 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import type { Monster, Pos } from "@/lib/types";
-import { createMonster, updateMonster } from "@/app/actions";
-import { unwrap } from "@/lib/action-result";
+import { createMonster, updateMonster } from "@/lib/domain";
+import { useGameStore } from "@/components/game/GameProvider";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { ErrorNote, Field, inputClass, useAction } from "./form";
@@ -31,23 +31,32 @@ export function MonsterDialog({
   const [start] = useState(() => monsterFields(monster));
   const [fields, setFields] = useState(start);
   const set = (patch: Partial<MonsterFields>) => setFields((f) => ({ ...f, ...patch }));
-  const { pending, error, run, clearError } = useAction();
+  const { store } = useGameStore();
+  const { error, run, clearError } = useAction();
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (monster) {
       const patch = monsterPatch(monster, fields);
-      run(async () => {
-        if (Object.keys(patch).length > 0) await unwrap(updateMonster(monster.id, patch));
+      run(() => {
+        if (Object.keys(patch).length > 0) store.update((w) => updateMonster(w, monster.id, patch));
         onClose();
       });
       return;
     }
     const pos = spawnAt();
-    run(async () => {
-      const id = await unwrap(
-        createMonster({ name: fields.name, size: fields.size, notes: fields.notes || undefined, pos }),
-      );
+    run(() => {
+      let id = "";
+      store.update((w) => {
+        const created = createMonster(w, {
+          name: fields.name.trim(),
+          size: fields.size,
+          notes: fields.notes || undefined,
+          pos,
+        });
+        id = created.id;
+        return created.world;
+      });
       onClose();
       onCreated(id, pos);
     });
@@ -84,10 +93,8 @@ export function MonsterDialog({
         </Field>
 
         <div className="mt-5 flex justify-end gap-2">
-          <Button onClick={onClose} disabled={pending}>
-            Cancel
-          </Button>
-          <Button type="submit" tone="primary" disabled={pending || fields.name.trim() === ""}>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button type="submit" tone="primary" disabled={fields.name.trim() === ""}>
             {monster ? "Save" : "Summon"}
           </Button>
         </div>

@@ -1,6 +1,4 @@
 import type { ReactNode } from "react";
-import { Glass } from "@/components/ui/Glass";
-import { Icon } from "@/components/ui/icons";
 
 /** Space between a HUD cluster and the window edge. */
 const EDGE = "16px";
@@ -12,12 +10,15 @@ const EDGE = "16px";
  * container, so a figure dropped on a cluster isn't dropped on the map.
  */
 export function Hud({
+  top,
   topLeft,
   topRight,
   bottomLeft,
   bottomRight,
 }: {
-  /** The wordmark, with the muster tokens hanging below it. */
+  /** The first-visit banner, centred along the top edge. */
+  top?: ReactNode;
+  /** The wordmark and its game menu, with the muster tokens hanging below it. */
   topLeft?: ReactNode;
   /** The create buttons, with the party roster hanging below them. */
   topRight?: ReactNode;
@@ -29,6 +30,7 @@ export function Hud({
   return (
     <div className="pointer-events-none fixed inset-0 z-30" style={{ padding: EDGE }}>
       <div className="relative h-full w-full">
+        {top && <Slot className="top-0 left-1/2 -translate-x-1/2 justify-center">{top}</Slot>}
         {topLeft && <Slot className="top-0 left-0 flex-col items-start">{topLeft}</Slot>}
         {topRight && <Slot className="top-0 right-0 flex-col items-end">{topRight}</Slot>}
         {bottomLeft && <Slot className="bottom-0 left-0 items-end">{bottomLeft}</Slot>}
@@ -40,14 +42,4 @@ export function Hud({
 
 function Slot({ className, children }: { className: string; children: ReactNode }) {
   return <div className={`absolute flex gap-3 *:pointer-events-auto ${className}`}>{children}</div>;
-}
-
-/** The game's name in the top-left corner: crossed swords and "Initiative" in gold Cinzel capitals. */
-export function Wordmark() {
-  return (
-    <Glass className="flex items-center gap-2.5 px-3.5 py-2 text-hud-gold">
-      <Icon.swords className="size-5" />
-      <h1 className="font-display text-base leading-none tracking-[0.14em] uppercase">Initiative</h1>
-    </Glass>
-  );
 }

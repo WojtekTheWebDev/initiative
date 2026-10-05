@@ -8,7 +8,7 @@ export type Selection = { kind: "monster" | "hero"; id: string } | null;
 
 /**
  * The selection if it still points at a living monster or an existing hero,
- * otherwise `null` (the item was slain or deleted, maybe by hand in the YAML).
+ * otherwise `null` (the item was slain or deleted, maybe in another tab).
  */
 export function liveSelection(world: World, selection: Selection): Selection {
   if (!selection) return null;

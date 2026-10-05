@@ -21,6 +21,8 @@ const KEYS: Row[] = [
   { keys: <Kbd>F</Kbd>, does: "Fit everything" },
   { keys: <><Kbd>+</Kbd> <Kbd>-</Kbd></>, does: "Zoom in and out" },
   { keys: <Kbd>?</Kbd>, does: "This sheet" },
+  { keys: <><Kbd>⌘</Kbd> <Kbd>S</Kbd></>, does: "Save game to a file" },
+  { keys: <><Kbd>⌘</Kbd> <Kbd>O</Kbd></>, does: "Load game from a file" },
 ];
 
 /** The glass card listing every gesture and key on the table. */
@@ -29,7 +31,9 @@ export function ShortcutsSheet({ open, onClose }: { open: boolean; onClose: () =
     <Dialog title="Shortcuts" open={open} onClose={onClose} className="max-w-md">
       <Section title="Gestures" rows={GESTURES} />
       <Section title="Keys" rows={KEYS} />
-      <p className="mt-4 text-xs text-hud-muted">Keys are ignored while typing in a field.</p>
+      <p className="mt-4 text-xs text-hud-muted">
+        Letter keys are ignored while typing in a field. Use Ctrl in place of ⌘ on Windows and Linux.
+      </p>
     </Dialog>
   );
 }

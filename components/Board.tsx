@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import type { Hero, Monster, Pos, World } from "@/lib/types";
+import type { Hero, Monster, Pos } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
 import { openingPoints, shownTags, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
 import { depthOrder } from "@/lib/map/minis";
@@ -26,7 +26,10 @@ import { useSelection, type Selection } from "@/components/card/useSelection";
 import { useDialogs } from "@/components/dialogs/useDialogs";
 import { FigureDialogs } from "@/components/dialogs/FigureDialogs";
 import { TrophyShelf } from "@/components/trophies/TrophyShelf";
-import { Hud, Wordmark } from "@/components/Hud";
+import { Hud } from "@/components/Hud";
+import { GameMenu } from "@/components/game/GameMenu";
+import { ExampleBanner } from "@/components/game/ExampleBanner";
+import type { GameFiles } from "@/components/game/useGameFiles";
 
 /** Flies the view to where a figure is drawn. `fallback` is used until the figure is on the map (e.g. just created). */
 type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void;
@@ -34,14 +37,14 @@ type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void
 /** Screen px kept around the opening view, outside the figures and their name tags, so the HUD clusters don't cover them. */
 const OPENING_PADDING = 88;
 
-export function Board({ world }: { world: World }) {
+/** The table and its HUD, drawn from the game in this browser. `files` backs the game menu and the first-visit banner. */
+export function Board({ files }: { files: GameFiles }) {
   const map = useRef<MapHandle>(null);
-  // Drag and drop with optimistic updates; `drag.layout` includes the live drag.
-  const drag = useFigureDrag(world, map);
+  // Drag and drop; `drag.layout` includes the live drag.
+  const drag = useFigureDrag(map);
   // The figure whose card is open; `null` once it is slain or deleted.
   const { selection, select } = useSelection(drag.world);
   const layout = drag.layout;
-  // Counted from the optimistic world, so the alarm updates the moment you drop.
   const unfoughtMonsters = useMemo(() => unfought(drag.world), [drag.world]);
   const unfoughtPlaced = useMemo(() => layout.monsters.filter((m) => m.unfought), [layout]);
   const footprints = useMemo(() => figureFootprints(layout), [layout]);
@@ -79,9 +82,10 @@ export function Board({ world }: { world: World }) {
       <FigureStyles />
       {/* Before the map in the DOM, so Tab reaches the HUD before the figures on the table. */}
       <Hud
+        top={<ExampleBanner files={files} />}
         topLeft={
           <>
-            <Wordmark />
+            <GameMenu files={files} />
             <MusterTokens monsters={unfoughtMonsters} onPick={flyTo} />
           </>
         }

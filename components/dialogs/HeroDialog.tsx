@@ -2,8 +2,8 @@
 
 import { useState, type FormEvent } from "react";
 import type { Hero, Pos } from "@/lib/types";
-import { createHero, updateHero } from "@/app/actions";
-import { unwrap } from "@/lib/action-result";
+import { createHero, updateHero } from "@/lib/domain";
+import { useGameStore } from "@/components/game/GameProvider";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { ErrorNote, Field, inputClass, useAction } from "./form";
@@ -31,23 +31,32 @@ export function HeroDialog({
   const [start] = useState(() => heroFields(hero));
   const [fields, setFields] = useState(start);
   const set = (patch: Partial<HeroFields>) => setFields((f) => ({ ...f, ...patch }));
-  const { pending, error, run, clearError } = useAction();
+  const { store } = useGameStore();
+  const { error, run, clearError } = useAction();
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (hero) {
       const patch = heroPatch(hero, fields);
-      run(async () => {
-        if (Object.keys(patch).length > 0) await unwrap(updateHero(hero.id, patch));
+      run(() => {
+        if (Object.keys(patch).length > 0) store.update((w) => updateHero(w, hero.id, patch));
         onClose();
       });
       return;
     }
     const pos = spawnAt();
-    run(async () => {
-      const id = await unwrap(
-        createHero({ name: fields.name, class: fields.class, mini: fields.mini || undefined, pos }),
-      );
+    run(() => {
+      let id = "";
+      store.update((w) => {
+        const created = createHero(w, {
+          name: fields.name.trim(),
+          class: fields.class.trim(),
+          mini: fields.mini || undefined,
+          pos,
+        });
+        id = created.id;
+        return created.world;
+      });
       onClose();
       onCreated(id, pos);
     });
@@ -86,14 +95,8 @@ export function HeroDialog({
             />
           </Field>
           <div className="mt-auto flex justify-end gap-2 pt-5">
-            <Button onClick={onClose} disabled={pending}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              tone="primary"
-              disabled={pending || fields.name.trim() === "" || fields.class.trim() === ""}
-            >
+            <Button onClick={onClose}>Cancel</Button>
+            <Button type="submit" tone="primary" disabled={fields.name.trim() === "" || fields.class.trim() === ""}>
               {hero ? "Save" : "Recruit"}
             </Button>
           </div>

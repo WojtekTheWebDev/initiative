@@ -30,8 +30,8 @@ type Glide = {
 type Follow = { at: Map<string, Pos>; to: WorldLayout; lifted: string };
 
 /**
- * The layout to draw. When `layout` changes (a drop, an optimistic update,
- * server data arriving), every figure glides from where it is drawn to its new
+ * The layout to draw. When `layout` changes (a drop, an edit, a change from
+ * another tab), every figure glides from where it is drawn to its new
  * place over GLIDE_MS with ease-out. While a figure is `lifted` (dragged), it
  * is drawn exactly where `layout` puts it and every other figure follows its
  * place with FOLLOW_MS of easing. With `prefers-reduced-motion`, `layout` is
