@@ -84,14 +84,16 @@ function PlaqueView({
       <span className="block h-fit shrink-0 rounded-full ring-1 ring-[#a7804a]/70">
         <Portrait mini={monsterMini(monster.size)} size={56} bronze />
       </span>
-      <div className="min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
         <h4 className="font-display text-sm leading-tight break-words text-hud-gold">{monster.name}</h4>
         <p className="mt-0.5 text-xs text-hud-muted">Slain {dayLabel(monster.slain)}</p>
         {note && <p className="mt-1.5 truncate text-sm" title={note}>{note}</p>}
         {by.length > 0 && <p className="mt-1 text-xs text-hud-muted">by {by.join(", ")}</p>}
-        <Button icon="undo" className="mt-2.5" data-revive aria-label={`Revive ${monster.name}`} onClick={onRevive}>
-          Revive
-        </Button>
+        <div className="mt-auto flex justify-end pt-2.5">
+          <Button icon="undo" data-revive aria-label={`Revive ${monster.name}`} onClick={onRevive}>
+            Revive
+          </Button>
+        </div>
       </div>
     </article>
   );
