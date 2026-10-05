@@ -1,4 +1,4 @@
-import type { MouseEvent, PointerEvent } from "react";
+import type { KeyboardEvent, MouseEvent, PointerEvent } from "react";
 import type { Pos } from "@/lib/types";
 import { miniBodyRect, miniImageRect, type Mini } from "@/lib/map/minis";
 import { BASE_SQUASH } from "@/lib/map/rings";
@@ -8,7 +8,7 @@ import { tagFont, tagRect } from "@/lib/map/tags";
  * The pieces every figure on the table is drawn from: a contact shadow on the
  * felt, rings around the base, the baked mini anchored on its base centre, and
  * a name tag under the base. The table looks the same in light and dark mode
- * (D11), so these colours are fixed rather than themed.
+ * like the HUD, so these colours are fixed rather than themed.
  */
 
 export const SELECTED = "#f59e0b";
@@ -23,10 +23,14 @@ const LABEL_FONT = "var(--font-cinzel), Georgia, serif";
 
 const SHADOW_ID = "initiative-contact-shadow";
 
-/** Handlers every figure accepts, so drag and selection can attach. */
+/**
+ * Handlers every figure and target arrow accepts, so drag and selection can
+ * attach. `onKeyDown` lets Enter or Space do what a click does.
+ */
 export type FigureHandlers = {
   onPointerDown?: (e: PointerEvent<SVGGElement>) => void;
   onClick?: (e: MouseEvent<SVGGElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<SVGGElement>) => void;
 };
 
 export type BaseRing = "unfought" | "selected" | "assign" | "secondary";
@@ -46,7 +50,8 @@ export function ContactShadow({ pos, radius }: { pos: Pos; radius: number }) {
 
 /**
  * One mini standing at `pos` on a base of `radius`. It is hit on its base
- * ellipse and on its body, never on the empty corners of its image.
+ * ellipse and on its body, never on the empty corners of its image. It is a
+ * button in the Tab order, named by `title`.
  */
 export function MiniFigure(
   props: FigureHandlers & {
@@ -62,11 +67,21 @@ export function MiniFigure(
     data: Record<`data-${string}`, string>;
   },
 ) {
-  const { mini, pos, radius, scale, rings, faded, title, data, onPointerDown, onClick } = props;
+  const { mini, pos, radius, scale, rings, faded, title, data, onPointerDown, onClick, onKeyDown } = props;
   const image = miniImageRect(mini, pos, radius);
   const body = miniBodyRect(mini, pos, radius);
   return (
-    <g data-figure="" {...data} style={{ cursor: "pointer" }} onPointerDown={onPointerDown} onClick={onClick}>
+    <g
+      data-figure=""
+      {...data}
+      role="button"
+      tabIndex={0}
+      aria-label={title}
+      style={{ cursor: "pointer" }}
+      onPointerDown={onPointerDown}
+      onClick={onClick}
+      onKeyDown={onKeyDown}
+    >
       <title>{title}</title>
       {rings.map((ring) => (
         <Ring key={ring} kind={ring} pos={pos} radius={radius} scale={scale} />

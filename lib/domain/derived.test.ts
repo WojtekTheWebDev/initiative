@@ -13,7 +13,7 @@ describe("unfought", () => {
     expect(unfought(makeWorld()).map((m) => m.id)).toEqual(["m3"]);
   });
 
-  it("counts ghost targets as fought", () => {
+  it("counts secondary targets as fought", () => {
     const w = makeWorld();
     w.heroes = [{ id: "x", name: "X", class: "c", targets: ["m3", "m2"] }];
     expect(unfought(w).map((m) => m.id)).toEqual(["m1"]);
@@ -25,20 +25,20 @@ describe("unfought", () => {
 });
 
 describe("fightersOf", () => {
-  it("splits main and ghosts, sorted by hero id", () => {
+  it("splits main and secondary, sorted by hero id", () => {
     const w = makeWorld();
     w.heroes.unshift({ id: "zed", name: "Zed", class: "c", targets: ["m1"] });
     w.heroes.push({ id: "abe", name: "Abe", class: "c", targets: ["m3", "m2"] });
     const m1 = fightersOf(w, "m1");
     expect(m1.main.map((h) => h.id)).toEqual(["ana", "bob", "zed"]);
-    expect(m1.ghosts).toEqual([]);
+    expect(m1.secondary).toEqual([]);
     const m2 = fightersOf(w, "m2");
     expect(m2.main).toEqual([]);
-    expect(m2.ghosts.map((h) => h.id)).toEqual(["abe", "ana"]);
+    expect(m2.secondary.map((h) => h.id)).toEqual(["abe", "ana"]);
   });
 
   it("returns empty lists for an unknown monster", () => {
-    expect(fightersOf(makeWorld(), "nope")).toEqual({ main: [], ghosts: [] });
+    expect(fightersOf(makeWorld(), "nope")).toEqual({ main: [], secondary: [] });
   });
 });
 

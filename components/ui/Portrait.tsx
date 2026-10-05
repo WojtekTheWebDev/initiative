@@ -8,6 +8,11 @@ const BRONZE_DISC = "#4a3520";
 /** Turns the painted mini into a cast bronze figure. */
 const BRONZE_FILTER = "sepia(1) saturate(1.5) hue-rotate(-12deg) brightness(0.82) contrast(1.1)";
 
+/** How far below the base centre the framing reaches, in base radii: the front of the base stays in view. */
+const BELOW_BASE = 0.3;
+/** The share of the disc the framed square fills; the rest is felt around the mini. */
+const FILL = 0.95;
+
 const RINGS = {
   red: "ring-2 ring-hud-danger",
   gold: "ring-2 ring-hud-gold",
@@ -19,6 +24,12 @@ const RINGS = {
  * the same as on the table. `bronze` tints it as a trophy; `ring` puts a red
  * (unfought) or gold (selected) ring around the disc. Decorative: name the
  * figure in the text or control around it.
+ *
+ * The framing is a square centred over the base: from the top of the model's
+ * body (the body box in the minis' manifest) down to just past the base
+ * centre. So the model, not its base, fills the disc at every size, and wide
+ * monsters (the dragon's wings, the spider's legs) run off its edge rather
+ * than shrinking the whole figure.
  */
 export function Portrait({
   mini,
@@ -33,23 +44,29 @@ export function Portrait({
   ring?: keyof typeof RINGS;
   className?: string;
 }) {
-  // Fit the whole image (base included) inside the disc, keeping its shape.
-  const fit = (size * 0.92) / Math.max(mini.width, mini.height);
+  const side = mini.anchor.y + BELOW_BASE - mini.body.y;
+  const scale = (size * FILL) / side;
   return (
     <span
       aria-hidden="true"
-      className={`inline-flex shrink-0 items-end justify-center overflow-hidden rounded-full shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] ${ring ? RINGS[ring] : ""} ${className}`}
+      className={`relative inline-block shrink-0 overflow-hidden rounded-full shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] ${ring ? RINGS[ring] : ""} ${className}`}
       style={{ width: size, height: size, background: bronze ? BRONZE_DISC : FELT }}
     >
       <Image
         src={mini.image}
         alt=""
-        width={Math.round(mini.width * fit)}
-        height={Math.round(mini.height * fit)}
+        width={Math.round(mini.width * scale)}
+        height={Math.round(mini.height * scale)}
         unoptimized
         draggable={false}
-        className="pointer-events-none mb-[4%] select-none"
-        style={bronze ? { filter: BRONZE_FILTER } : undefined}
+        className="pointer-events-none absolute max-w-none select-none"
+        style={{
+          left: size / 2 - mini.anchor.x * scale,
+          top: size / 2 - (mini.body.y + side / 2) * scale,
+          width: mini.width * scale,
+          height: mini.height * scale,
+          filter: bronze ? BRONZE_FILTER : undefined,
+        }}
       />
     </span>
   );

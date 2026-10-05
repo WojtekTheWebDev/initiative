@@ -4,8 +4,8 @@ import { onBase } from "./rings";
 
 /*
  * The painted miniatures, baked by `npm run bake:minis` into public/minis/
- * (images plus manifest.json). A monster's size picks its mini (D14); a hero
- * picks its own with the optional `mini` field (D13). Every length here is in
+ * (images plus manifest.json). A monster's size picks its mini; a hero
+ * picks its own with the optional `mini` field. Every length here is in
  * base radii, so a mini scales with the base it stands on.
  */
 

@@ -9,10 +9,10 @@ export function assign(world: World, heroId: string, monsterId: string): World {
 }
 
 /**
- * Shift+drop: append the monster as a ghost. No-op if already a target.
+ * Shift+drop: append the monster as a secondary target. No-op if already a target.
  * An idle hero gets it as main target instead.
  */
-export function addGhost(world: World, heroId: string, monsterId: string): World {
+export function addSecondary(world: World, heroId: string, monsterId: string): World {
   const hero = getHero(world, heroId);
   getLivingMonster(world, monsterId);
   if (hero.targets.includes(monsterId)) return world;

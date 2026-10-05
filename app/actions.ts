@@ -116,7 +116,7 @@ export async function dropHero(
       if (typeof drop.shift !== "boolean") throw new Error("Drop shift must be a boolean");
       const shift = drop.shift;
       await updateWorld((w) => {
-        if (shift) return domain.addGhost(w, hid, mid);
+        if (shift) return domain.addSecondary(w, hid, mid);
         // A plain drop back on the current main target changes nothing (keeps secondary targets).
         const hero = w.heroes.find((h) => h.id === hid);
         if (hero && hero.targets[0] === mid) return w;

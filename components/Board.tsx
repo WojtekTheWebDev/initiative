@@ -71,6 +71,25 @@ export function Board({ world }: { world: World }) {
   return (
     <div className="relative h-dvh w-full overflow-hidden">
       <FigureStyles />
+      {/* Before the map in the DOM, so Tab reaches the HUD before the figures on the table. */}
+      <Hud
+        topLeft={
+          <>
+            <Wordmark />
+            <MusterTokens monsters={unfoughtMonsters} onPick={flyTo} />
+          </>
+        }
+        topRight={<CreateButtons onCreate={dialogs.openCreate} />}
+        bottomCenter={<TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} />}
+        bottomRight={
+          <MapControls
+            map={map}
+            newMonster={() => dialogs.openCreate("monster")}
+            newHero={() => dialogs.openCreate("hero")}
+          />
+        }
+      />
+
       <MapCanvas
         ref={map}
         initialCamera={initialCamera}
@@ -95,24 +114,6 @@ export function Board({ world }: { world: World }) {
           <Figures drag={drag} scale={camera.scale} selection={selection} onSelect={select} />
         )}
       </MapCanvas>
-
-      <Hud
-        topLeft={
-          <>
-            <Wordmark />
-            <MusterTokens monsters={unfoughtMonsters} onPick={flyTo} />
-          </>
-        }
-        topRight={<CreateButtons onCreate={dialogs.openCreate} />}
-        bottomCenter={<TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} />}
-        bottomRight={
-          <MapControls
-            map={map}
-            newMonster={() => dialogs.openCreate("monster")}
-            newHero={() => dialogs.openCreate("hero")}
-          />
-        }
-      />
 
       <FigureDialogs
         dialogs={dialogs}

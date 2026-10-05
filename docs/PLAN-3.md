@@ -1,5 +1,7 @@
 # Initiative: Iteration 3 Plan (the obsidian HUD)
 
+> **Completed** (T17 to T25 merged on `main`, October 2026). Kept as a record; `docs/DESIGN.md` is the current spec.
+
 This plan turns the UI review into tasks that separate agents can pick up. The format matches `docs/PLAN-2.md`: each task lists what it depends on, which files it owns, the contract it must keep, and how to tell it is done.
 
 **Every agent must first read** `AGENTS.md`, `docs/DESIGN.md` (its HUD and Interactions sections are the target of this plan), this file, and the Next.js guides in `node_modules/next/dist/docs/` for any Next API it uses.

@@ -11,6 +11,11 @@
   --hud-ground: #232d18;
   /* Translucent dark glass for every HUD surface. */
   --hud-glass: rgba(14, 16, 20, 0.74);
+  /*
+   * Denser glass, without blur, for the dialogs over the dimmed table. A blur
+   * that size would be redrawn on every frame the table moves behind it.
+   */
+  --hud-glass-dense: rgba(14, 16, 20, 0.94);
   /* The thin gold edge of a glass surface and of quiet controls. */
   --hud-line: rgba(217, 180, 95, 0.32);
   --hud-fg: #ece6d6;
@@ -25,6 +30,7 @@
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root {
     --hud-glass: rgb(18, 20, 25);
+    --hud-glass-dense: rgb(18, 20, 25);
   }
 }
 
@@ -68,6 +74,15 @@
   background: var(--hud-glass);
   -webkit-backdrop-filter: blur(var(--hud-blur));
   backdrop-filter: blur(var(--hud-blur));
+  border: 1px solid var(--hud-line);
+  border-radius: var(--hud-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  color: var(--hud-fg);
+}
+
+/* A dialog panel: the glass surface without the backdrop blur, see --hud-glass-dense. */
+@utility hud-glass-dense {
+  background: var(--hud-glass-dense);
   border: 1px solid var(--hud-line);
   border-radius: var(--hud-radius);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);

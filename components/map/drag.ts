@@ -48,7 +48,7 @@ export function applyOp(world: World, op: WorldOp): World {
       case "dropHero": {
         const { heroId, drop } = op;
         if ("pos" in drop) return domain.setIdle(world, heroId, drop.pos);
-        if (drop.shift) return domain.addGhost(world, heroId, drop.monsterId);
+        if (drop.shift) return domain.addSecondary(world, heroId, drop.monsterId);
         const hero = world.heroes.find((h) => h.id === heroId);
         if (hero && hero.targets[0] === drop.monsterId) return world;
         return domain.assign(world, heroId, drop.monsterId);

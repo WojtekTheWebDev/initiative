@@ -32,7 +32,7 @@ export function CardHeader({ portrait, name, facts }: { portrait: ReactNode; nam
       {portrait}
       <div className="min-w-0">
         <h2 className="font-display text-base leading-tight break-words text-hud-gold">{name}</h2>
-        <p className="mt-0.5 text-sm text-hud-muted">{facts}</p>
+        <p className="mt-0.5 flex flex-wrap gap-x-2 text-sm text-hud-muted">{facts}</p>
       </div>
     </div>
   );
