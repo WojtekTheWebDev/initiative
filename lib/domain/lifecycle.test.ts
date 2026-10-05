@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deleteMonster, heroesChanged, moveMonster, revive, slay } from "./lifecycle";
+import { deleteMonster, heroesChanged, localToday, moveMonster, revive, slay } from "./lifecycle";
 import { expectValid, makeWorld } from "./test-fixtures";
 import type { World } from "@/lib/types";
 
@@ -190,5 +190,11 @@ describe("moveMonster", () => {
 
   it("throws on an unknown monster", () => {
     expect(() => moveMonster(makeWorld(), "nope", { x: 0, y: 0 })).toThrow(/Unknown monster/);
+  });
+});
+
+describe("localToday", () => {
+  it("is the local calendar date, zero-padded", () => {
+    expect(localToday(new Date(2026, 0, 5, 23, 59))).toBe("2026-01-05");
   });
 });

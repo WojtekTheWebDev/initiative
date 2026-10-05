@@ -9,6 +9,7 @@ const GESTURES: Row[] = [
   { keys: "Drag", does: "Pan the table, or move a figure" },
   { keys: "Drop a hero on a monster", does: "Make it the hero's only target" },
   { keys: <><Kbd>Shift</Kbd> + drop</>, does: "Add it as a secondary target" },
+  { keys: "Drop a monster on the trophy shelf", does: "Slay it (Undo on the toast)" },
   { keys: "Wheel or pinch", does: "Zoom at the pointer" },
   { keys: <Kbd>Esc</Kbd>, does: "Cancel a drag, close what is open" },
 ];

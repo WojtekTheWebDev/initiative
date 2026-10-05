@@ -65,7 +65,7 @@ function ToastView({ toast, onDismiss }: { toast: Shown; onDismiss: () => void }
   const error = toast.tone === "error";
   const { action } = toast;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-28 z-50 flex justify-center px-4">
       <Glass
         role={error ? "alert" : "status"}
         className={`pointer-events-auto flex max-w-xl items-center gap-3 py-2 pr-2 pl-3.5 text-sm motion-safe:animate-hud-rise ${

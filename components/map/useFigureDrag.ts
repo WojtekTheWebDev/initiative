@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import type { Pos, World } from "@/lib/types";
+import { localToday } from "@/lib/domain";
 import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import * as actions from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
@@ -21,17 +22,22 @@ import type { MapHandle } from "./MapCanvas";
 import type { FigureHandlers } from "./MiniFigure";
 import {
   applyOp,
+  dropAction,
   heroHomeAfterDrag,
   homeAfterDrag,
   layoutWithDrag,
   pastThreshold,
   resolveHeroDrop,
   type LiveDrag,
+  type ScreenRect,
   type WorldOp,
 } from "./drag";
 
 /** How a monster is highlighted while a hero is dragged over it. */
 export type DropHint = "assign" | "secondary";
+
+/** The trophy shelf during a monster drag: it glows, and brighter while the monster is over it. */
+export type ShelfHint = "armed" | "over";
 
 /** A target arrow: a hero and one of its targets. */
 export type TargetRef = { heroId: string; monsterId: string };
@@ -42,6 +48,8 @@ type Live = {
   layout: WorldLayout;
   /** Hero drags: the monster under the cursor and what dropping there would do. */
   hint: { monsterId: string; kind: DropHint } | null;
+  /** Monster drags: letting go now would slay it on the trophy shelf. */
+  overShelf: boolean;
 };
 
 /** One pointer press on a figure, from pointerdown until pointerup. */
@@ -60,8 +68,10 @@ type Session = {
   moved: boolean;
   shift: boolean;
   cursor: Pos;
+  /** The pointer in client px. */
+  client: Pos;
   pos: Pos;
-  /** The pointer is over the visible map (not over the side panel, header or trophies). */
+  /** The pointer is over the visible map (not over a HUD surface). */
   onMap: boolean;
   /** The layout drawn for the last pointer move: the next one starts from it. */
   frame: WorldLayout;
@@ -81,7 +91,8 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
  *   either way.
  * - Clicking an arrow opens its popover (`link`).
  * - On drop, a dragged monster's home, or an idle hero's, moves by the drag
- *   offset (see homeAfterDrag). The change is applied optimistically with the
+ *   offset (see homeAfterDrag). A monster dropped on the trophy shelf
+ *   (`shelfRef`) is slain instead (see dropAction and `slay`). The change is applied optimistically with the
  *   same lib/domain rule the server uses, then the Server Action runs. The
  *   optimistic world stays until the refreshed server data arrives (no
  *   snap-back); on failure it reverts and an error toast says so.
@@ -92,6 +103,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const [link, setLink] = useState<TargetRef | null>(null);
   const toast = useToast();
   const session = useRef<Session | null>(null);
+  const shelfRef = useRef<HTMLElement | null>(null);
   const suppressClick = useRef(false);
 
   const drag = live?.drag ?? null;
@@ -116,6 +128,33 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     [addOp, toast],
   );
 
+  /**
+   * Slays a monster optimistically, then shows the slay toast with Undo, which
+   * revives it (optimistically too) with what the server says the slay changed.
+   */
+  const slay = useCallback(
+    (id: string) => {
+      const name = optimisticWorld.monsters.find((m) => m.id === id)?.name ?? "Monster";
+      startTransition(async () => {
+        addOp({ kind: "slay", id, today: localToday() });
+        try {
+          const before = await unwrap(actions.slayMonster(id));
+          toast.show({
+            tone: "slain",
+            message: `${name} slain`,
+            action: { label: "Undo", icon: "undo", run: () => run({ kind: "revive", id, before }) },
+          });
+        } catch (err) {
+          const reason = err instanceof Error && err.message ? err.message : "the server didn't answer";
+          toast.show({ tone: "error", message: `Couldn't slay ${name}: ${reason}. The change was undone.` });
+        }
+      });
+    },
+    [optimisticWorld, addOp, toast, run],
+  );
+
+  const shelfRect = (): ScreenRect | null => shelfRef.current?.getBoundingClientRect() ?? null;
+
   function showLive(s: Session) {
     let hint: Live["hint"] = null;
     if (s.kind === "hero" && s.onMap) {
@@ -124,15 +163,17 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
         hint = { monsterId: drop.monsterId, kind: drop.shift ? "secondary" : "assign" };
       }
     }
+    const overShelf = dropAction(s.kind, s.client, s.onMap, shelfRect()) === "slay";
     const drag: LiveDrag = { kind: s.kind, id: s.id, pos: s.pos };
     s.frame = layoutWithDrag(s.world, s.layout, drag, s.frame);
-    setLive({ drag, layout: s.frame, hint });
+    setLive({ drag, layout: s.frame, hint, overShelf });
   }
 
   function track(s: Session, clientX: number, clientY: number) {
     const handle = map.current;
     if (!handle) return;
     s.cursor = handle.clientToWorld(clientX, clientY);
+    s.client = { x: clientX, y: clientY };
     s.onMap = handle.isOnMap(clientX, clientY);
     s.pos = {
       x: s.origin.x + (s.cursor.x - s.startWorld.x),
@@ -147,14 +188,19 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     setLive(null);
     if (!e) return; // cancelled
     track(s, e.clientX, e.clientY);
+    // Let go over a HUD surface, a figure snaps back: it must not land on a
+    // monster hidden under it, nor stand idle there. The trophy shelf slays a monster.
+    const action = dropAction(s.kind, s.client, s.onMap, shelfRect());
+    if (action === "none") return;
+    if (action === "slay") {
+      slay(s.id);
+      return;
+    }
     if (s.kind === "monster") {
       const home = s.world.monsters.find((m) => m.id === s.id)?.pos;
       if (home) run({ kind: "moveMonster", id: s.id, pos: round(homeAfterDrag(home, s.origin, s.pos)) });
       return;
     }
-    // A hero let go over the side panel (or off the map) snaps back: it must not
-    // land on a monster hidden under the panel, nor stand idle there.
-    if (!s.onMap) return;
     const placed = s.layout.heroes.find((h) => h.hero.id === s.id);
     if (!placed) return;
     const standAt = round(heroHomeAfterDrag(placed, s.origin, s.pos));
@@ -202,7 +248,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     };
     const onKey = (ev: KeyboardEvent) => {
       if (ev.key === "Escape") {
-        ev.preventDefault(); // tells the side panel this Esc is taken
+        ev.preventDefault(); // tells the card and dialogs this Esc is taken
         finish(s, null);
         return;
       }
@@ -224,6 +270,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       moved: false,
       shift: e.shiftKey,
       cursor: startWorld,
+      client: { x: e.clientX, y: e.clientY },
       pos: origin,
       onMap: true,
       frame: layout,
@@ -288,6 +335,12 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     /** Highlight for a monster while a hero is dragged over it. */
     dropHint: (monsterId: string): DropHint | null =>
       live?.hint?.monsterId === monsterId ? live.hint.kind : null,
+    /** Slays a monster (the card's Slay), with the slay toast and its Undo. */
+    slay,
+    /** Attach to the trophy shelf: a monster dropped on it is slain. */
+    shelfRef,
+    /** How the trophy shelf shows during a monster drag; null otherwise. */
+    shelfHint: (live?.drag.kind === "monster" ? (live.overShelf ? "over" : "armed") : null) as ShelfHint | null,
     /** The figure being dragged, to draw on top of everything. */
     lifted: drag ? { kind: drag.kind, id: drag.id } : null,
     /** The arrow whose popover is open. */
@@ -318,5 +371,9 @@ function callServer(op: WorldOp): Promise<void> {
       return unwrap(actions.makeMain(op.heroId, op.monsterId));
     case "removeTarget":
       return unwrap(actions.removeTarget(op.heroId, op.monsterId));
+    case "slay":
+      return unwrap(actions.slayMonster(op.id)).then(() => {});
+    case "revive":
+      return unwrap(actions.reviveMonster(op.id, op.before));
   }
 }
