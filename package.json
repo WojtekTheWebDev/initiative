@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "make:felt": "node scripts/make-felt.mjs",
+    "make:icons": "node scripts/make-icons.mjs",
     "bake:minis": "playwright install --only-shell chromium && tsx scripts/bake-minis.ts",
     "bake:terrain": "npm run bake:minis -- --src assets/terrain --out public/terrain"
   },
