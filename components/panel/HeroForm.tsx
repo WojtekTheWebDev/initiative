@@ -5,8 +5,9 @@ import type { Hero, Pos } from "@/lib/types";
 import { HERO_MINIS, NEUTRAL_MINI, isHeroMini } from "@/lib/map/minis";
 import { createHero, updateHero } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
-import { MiniPortrait } from "@/components/MiniPortrait";
-import { Button, ErrorNote, Field, inputClass, useAction } from "./ui";
+import { Portrait } from "@/components/ui/Portrait";
+import { Button } from "@/components/ui/Button";
+import { ErrorNote, Field, inputClass, useAction } from "./ui";
 
 type Props =
   | {
@@ -57,7 +58,7 @@ export function HeroForm(props: Props) {
 
   return (
     <form onSubmit={submit}>
-      <h2 className="pr-8 text-lg font-semibold">{hero ? "Edit hero" : "New hero"}</h2>
+      <h2 className="font-display pr-8 text-lg tracking-[0.08em] text-hud-gold uppercase">{hero ? "Edit hero" : "New hero"}</h2>
 
       <Field label="Name">
         <input
@@ -109,9 +110,9 @@ function MiniPicker({ value, onChange }: { value: string; onChange: (mini: strin
   const current = isHeroMini(value) ? value : NEUTRAL_MINI;
   return (
     <fieldset className="mt-3">
-      <legend className="mb-1 text-xs font-semibold uppercase tracking-wide opacity-60">Mini</legend>
+      <legend className="mb-1 text-xs font-semibold tracking-wide text-hud-muted uppercase">Mini</legend>
       {missing && (
-        <p className="mb-1.5 text-xs text-amber-700 dark:text-amber-300">
+        <p className="mb-1.5 text-xs text-hud-gold">
           &ldquo;{value}&rdquo; is missing, so this hero stands as the neutral mini. Pick another.
         </p>
       )}
@@ -123,8 +124,8 @@ function MiniPicker({ value, onChange }: { value: string; onChange: (mini: strin
             <label
               key={m.id}
               title={neutral ? `Neutral (${m.name})` : m.name}
-              className={`flex cursor-pointer flex-col items-center gap-0.5 rounded-md border px-1 py-1.5 text-xs has-focus-visible:ring-2 has-focus-visible:ring-amber-500/40 ${
-                checked ? "border-amber-500 bg-amber-500/15" : "border-foreground/20 hover:bg-foreground/5"
+              className={`flex cursor-pointer flex-col items-center gap-0.5 rounded-md border px-1 py-1.5 text-xs has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-hud-gold ${
+                checked ? "border-hud-gold bg-hud-gold/15" : "border-hud-line hover:bg-white/5"
               }`}
             >
               <input
@@ -135,7 +136,7 @@ function MiniPicker({ value, onChange }: { value: string; onChange: (mini: strin
                 onChange={() => onChange(neutral ? "" : m.id)}
                 className="sr-only"
               />
-              <MiniPortrait mini={m} size={44} className={checked ? "ring-2 ring-amber-500" : ""} />
+              <Portrait mini={m} size={44} ring={checked ? "gold" : undefined} />
               <span className="w-full truncate text-center">{neutral ? "Neutral" : m.name}</span>
             </label>
           );

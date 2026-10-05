@@ -38,7 +38,7 @@ export function EdgeArrows({ view, monsters, onPick }: Props) {
             type="button"
             title={`${monster.name} (unfought)`}
             aria-label={`Fly to unfought monster ${monster.name}`}
-            className="pointer-events-auto absolute flex items-center justify-center rounded-full bg-background/85 shadow-md ring-1 ring-red-600/40 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600"
+            className="pointer-events-auto absolute flex items-center justify-center rounded-full bg-hud-glass shadow-md ring-1 ring-hud-danger/50 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hud-danger motion-safe:transition-transform"
             style={{
               left: a.x - SIZE / 2,
               top: a.y - SIZE / 2,

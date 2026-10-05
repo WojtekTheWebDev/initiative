@@ -3,7 +3,9 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import type { Monster } from "@/lib/types";
 import { monsterMini } from "@/lib/map/minis";
-import { MiniPortrait } from "@/components/MiniPortrait";
+import { Portrait } from "@/components/ui/Portrait";
+import { Glass } from "@/components/ui/Glass";
+import { Icon } from "@/components/ui/icons";
 
 type Props = {
   /** Living monsters no hero is fighting. */
@@ -13,8 +15,8 @@ type Props = {
 };
 
 /**
- * Header counter "⚠ N unfought" with a dropdown listing them. Calm
- * "All monsters engaged" when there are none.
+ * A red "N unfought" counter under the wordmark with a dropdown listing them.
+ * Calm "All monsters engaged" when there are none.
  */
 export function UnfoughtAlarm({ monsters, onPick }: Props) {
   const [isOpen, setOpen] = useState(false);
@@ -47,9 +49,10 @@ export function UnfoughtAlarm({ monsters, onPick }: Props) {
 
   if (count === 0) {
     return (
-      <span className="rounded px-2 py-1 text-sm text-emerald-700 dark:text-emerald-400" role="status">
-        ✓ All monsters engaged
-      </span>
+      <Glass as="span" role="status" className="flex items-center gap-1.5 px-2.5 py-1 text-sm text-hud-gold">
+        <Icon.swords className="size-4" />
+        All monsters engaged
+      </Glass>
     );
   }
 
@@ -90,28 +93,29 @@ export function UnfoughtAlarm({ monsters, onPick }: Props) {
         type="button"
         aria-expanded={open}
         aria-controls={listId}
-        className="rounded-md bg-red-600/10 px-2.5 py-1 text-sm font-semibold text-red-700 ring-1 ring-red-600/30 hover:bg-red-600/20 dark:text-red-400"
+        className="hud-glass flex cursor-pointer items-center gap-1.5 border-hud-danger/60 px-2.5 py-1 text-sm font-semibold text-[#ff9a9d] hover:bg-[#3a1416]"
         onClick={() => setOpen((o) => !o)}
         onKeyDown={onToggleKeyDown}
       >
-        ⚠ {count} unfought
+        <Icon.warn className="size-4" />
+        {count} unfought
       </button>
       {open && (
         <ul
           ref={listRef}
           id={listId}
           aria-label="Unfought monsters"
-          className="absolute top-full right-0 z-20 mt-1 max-h-80 w-72 overflow-y-auto rounded-md border border-foreground/10 bg-background py-1 shadow-lg"
+          className="hud-glass absolute top-full left-0 z-20 mt-1 max-h-80 w-72 overflow-y-auto py-1"
           onKeyDown={onListKeyDown}
         >
           {monsters.map((m) => (
             <li key={m.id}>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-foreground/10 focus-visible:bg-foreground/10 focus-visible:outline-none"
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none"
                 onClick={() => pick(m)}
               >
-                <MiniPortrait mini={monsterMini(m.size)} size={24} />
+                <Portrait mini={monsterMini(m.size)} size={24} ring="red" />
                 <span className="min-w-0 flex-1 truncate">{m.name}</span>
               </button>
             </li>

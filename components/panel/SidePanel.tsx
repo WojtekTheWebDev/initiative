@@ -9,16 +9,22 @@ import { MonsterFacts, MonsterPanel } from "./MonsterPanel";
 import { HeroPanel } from "./HeroPanel";
 import { MonsterForm } from "./MonsterForm";
 import { HeroForm } from "./HeroForm";
+import { Glass } from "@/components/ui/Glass";
+import { IconButton } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/icons";
 
 /** Flies the view to where a figure is drawn. `fallback` is used until the figure is on the map (e.g. just created). */
 export type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void;
 
-/** Panel width in px (Tailwind w-80). It covers the right edge of the map. */
+/** Panel width in px. With its gap to the window edge, it covers the right edge of the map. */
 export const PANEL_WIDTH = 320;
+/** Screen px between the panel and the right edge of the window. */
+const PANEL_GAP = 16;
 
 /**
- * The side panel, drawn over the right edge of the map (the map keeps its size).
- * Render it inside a `relative` container that holds the map.
+ * The side panel: a glass card on the right edge of the map, below the
+ * top-right HUD cluster (the map keeps its size). Render it inside a
+ * `relative` container that holds the map.
  */
 export function SidePanel({
   panel,
@@ -61,7 +67,7 @@ export function SidePanel({
   const visible = () => {
     const m = map.current;
     if (!m) return { x: -200, y: -200, width: 400, height: 400 };
-    return visibleViewBox(m.camera, m.viewportSize, PANEL_WIDTH);
+    return visibleViewBox(m.camera, m.viewportSize, PANEL_WIDTH + PANEL_GAP);
   };
   const created = (kind: "monster" | "hero") => (id: string, pos: Pos) => {
     panel.select({ kind, id });
@@ -89,7 +95,10 @@ export function SidePanel({
     const monster = world.monsters.find((m) => m.id === mode.id);
     content = monster && (
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide opacity-60">🏆 Trophy</p>
+        <p className="font-display mb-2 flex items-center gap-1.5 text-xs tracking-[0.08em] text-hud-gold uppercase">
+          <Icon.trophy className="size-4" />
+          Trophy
+        </p>
         <MonsterFacts monster={monster} />
       </div>
     );
@@ -128,20 +137,19 @@ export function SidePanel({
   }
 
   return (
-    <aside
-      className="absolute inset-y-0 right-0 z-20 overflow-y-auto border-l border-foreground/10 bg-background/95 p-4 shadow-xl backdrop-blur-sm"
-      style={{ width: PANEL_WIDTH, maxWidth: "100%" }}
+    <Glass
+      as="aside"
+      className="absolute top-18 bottom-4 z-40 overflow-y-auto p-4"
+      style={{ right: PANEL_GAP, width: PANEL_WIDTH, maxWidth: `calc(100% - ${2 * PANEL_GAP}px)` }}
     >
-      <button
-        type="button"
-        aria-label="Close panel"
+      <IconButton
+        label="Close panel"
         title="Close (Esc)"
-        className="absolute top-2 right-2 rounded px-2 py-1 text-sm opacity-60 hover:bg-foreground/10 hover:opacity-100"
+        icon="close"
+        className="absolute top-2 right-2 border-transparent bg-transparent"
         onClick={panel.close}
-      >
-        ✕
-      </button>
+      />
       {content}
-    </aside>
+    </Glass>
   );
 }

@@ -1,19 +1,19 @@
 "use client";
 
+import { Glass } from "@/components/ui/Glass";
+import { Button } from "@/components/ui/Button";
 import type { PanelState } from "./usePanel";
 
-/** "+ Monster" and "+ Hero" for the header; they open the create forms in the side panel. */
+/** "+ Monster" and "+ Hero" in the top-right HUD cluster; they open the create forms in the side panel. */
 export function CreateButtons({ panel }: { panel: PanelState }) {
-  const cls =
-    "rounded-md border border-foreground/20 px-2.5 py-1 text-sm font-medium hover:bg-foreground/10";
   return (
-    <>
-      <button type="button" className={cls} onClick={() => panel.openCreate("monster")}>
-        + Monster
-      </button>
-      <button type="button" className={cls} onClick={() => panel.openCreate("hero")}>
-        + Hero
-      </button>
-    </>
+    <Glass className="flex gap-1.5 p-1.5">
+      <Button icon="plus" aria-label="New monster" onClick={() => panel.openCreate("monster")}>
+        Monster
+      </Button>
+      <Button icon="plus" aria-label="New hero" onClick={() => panel.openCreate("hero")}>
+        Hero
+      </Button>
+    </Glass>
   );
 }

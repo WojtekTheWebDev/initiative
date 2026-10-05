@@ -1,26 +1,89 @@
 @import "tailwindcss";
 
+/*
+ * The HUD skin: obsidian glass with gold hairlines. It is the same in light
+ * and dark mode, like the felt table it floats over.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* The felt at the dark edge of the lamp's pool, behind everything. */
+  --hud-ground: #232d18;
+  /* Translucent dark glass for every HUD surface. */
+  --hud-glass: rgba(14, 16, 20, 0.74);
+  /* The thin gold edge of a glass surface and of quiet controls. */
+  --hud-line: rgba(217, 180, 95, 0.32);
+  --hud-fg: #ece6d6;
+  --hud-muted: rgba(236, 230, 214, 0.62);
+  --hud-gold: #d9b45f;
+  --hud-danger: #e5484d;
+  --hud-radius: 12px;
+  --hud-blur: 10px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+/* Without backdrop blur, translucent glass would not read over busy felt. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --hud-glass: rgb(18, 20, 25);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-hud-ground: var(--hud-ground);
+  --color-hud-glass: var(--hud-glass);
+  --color-hud-line: var(--hud-line);
+  --color-hud-fg: var(--hud-fg);
+  --color-hud-muted: var(--hud-muted);
+  --color-hud-gold: var(--hud-gold);
+  --color-hud-danger: var(--hud-danger);
+  --radius-hud: var(--hud-radius);
+  --font-sans: var(--font-barlow), system-ui, sans-serif;
+  --font-display: var(--font-cinzel), Georgia, serif;
+
+  --animate-hud-fade: hud-fade 160ms ease-out;
+  --animate-hud-pop: hud-pop 180ms ease-out;
+  --animate-hud-rise: hud-rise 200ms ease-out;
+
+  @keyframes hud-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes hud-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+  @keyframes hud-rise {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}
+
+/* A glass surface: see components/ui/Glass.tsx. */
+@utility hud-glass {
+  background: var(--hud-glass);
+  -webkit-backdrop-filter: blur(var(--hud-blur));
+  backdrop-filter: blur(var(--hud-blur));
+  border: 1px solid var(--hud-line);
+  border-radius: var(--hud-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  color: var(--hud-fg);
+}
+
+@layer base {
+  body {
+    background: var(--hud-ground);
+    color: var(--hud-fg);
+    font-family: var(--font-sans);
+  }
+
+  /* Every control shows a gold ring when reached with the keyboard. */
+  :where(button, a, input, textarea, select, [tabindex]):focus-visible {
+    outline: 2px solid var(--hud-gold);
+    outline-offset: 2px;
+  }
 }

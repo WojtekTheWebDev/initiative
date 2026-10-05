@@ -2,10 +2,11 @@
 
 import type { Hero, Monster, World } from "@/lib/types";
 import { heroMini, monsterMini } from "@/lib/map/minis";
-import { MiniPortrait } from "@/components/MiniPortrait";
+import { Portrait } from "@/components/ui/Portrait";
 import { deleteHero } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
-import { Button, ConfirmButton, ErrorNote, SectionLabel, useAction } from "./ui";
+import { Button, ConfirmButton } from "@/components/ui/Button";
+import { ErrorNote, SectionLabel, useAction } from "./ui";
 
 export function HeroPanel({
   world,
@@ -28,9 +29,9 @@ export function HeroPanel({
   return (
     <div>
       <div className="flex items-center gap-3 pr-8">
-        <MiniPortrait mini={heroMini(hero.mini)} size={56} />
+        <Portrait mini={heroMini(hero.mini)} size={56} />
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold break-words">{hero.name}</h2>
+          <h2 className="font-display text-lg break-words text-hud-gold">{hero.name}</h2>
           <p className="text-sm opacity-70">
             {hero.class} · {heroMini(hero.mini).name}
           </p>
@@ -47,10 +48,10 @@ export function HeroPanel({
               <button
                 type="button"
                 title="Fly to this monster"
-                className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-foreground/10 ${i > 0 ? "opacity-60" : ""}`}
+                className={`flex w-full items-center gap-2 rounded px-1.5 py-1 text-left hover:bg-white/10 ${i > 0 ? "opacity-60" : ""}`}
                 onClick={() => onFlyTo(m)}
               >
-                <MiniPortrait mini={monsterMini(m.size)} size={24} />
+                <Portrait mini={monsterMini(m.size)} size={24} />
                 <span className="flex-1 truncate">{m.name}</span>
                 <span className="text-xs opacity-60">{i === 0 ? "main" : "secondary"}</span>
               </button>

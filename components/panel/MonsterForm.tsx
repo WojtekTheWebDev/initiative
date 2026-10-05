@@ -4,10 +4,11 @@ import { useState, type FormEvent } from "react";
 import type { Monster, Pos, Size } from "@/lib/types";
 import { creatureOf } from "@/lib/domain";
 import { monsterMini } from "@/lib/map/minis";
-import { MiniPortrait } from "@/components/MiniPortrait";
+import { Portrait } from "@/components/ui/Portrait";
 import { createMonster, updateMonster } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
-import { Button, ErrorNote, Field, inputClass, useAction } from "./ui";
+import { Button } from "@/components/ui/Button";
+import { ErrorNote, Field, inputClass, useAction } from "./ui";
 
 const SIZES: Size[] = ["S", "M", "L", "XL"];
 
@@ -60,7 +61,7 @@ export function MonsterForm(props: Props) {
 
   return (
     <form onSubmit={submit}>
-      <h2 className="pr-8 text-lg font-semibold">{monster ? "Edit monster" : "New monster"}</h2>
+      <h2 className="font-display pr-8 text-lg tracking-[0.08em] text-hud-gold uppercase">{monster ? "Edit monster" : "New monster"}</h2>
 
       <Field label="Name">
         <input
@@ -74,13 +75,13 @@ export function MonsterForm(props: Props) {
       </Field>
 
       <fieldset className="mt-3">
-        <legend className="mb-1 text-xs font-semibold uppercase tracking-wide opacity-60">Size</legend>
+        <legend className="mb-1 text-xs font-semibold tracking-wide text-hud-muted uppercase">Size</legend>
         <div className="grid grid-cols-4 gap-1.5">
           {SIZES.map((s) => (
             <label
               key={s}
-              className={`flex cursor-pointer flex-col items-center rounded-md border px-1 py-1.5 text-xs has-focus-visible:ring-2 has-focus-visible:ring-amber-500/40 ${
-                size === s ? "border-amber-500 bg-amber-500/15" : "border-foreground/20 hover:bg-foreground/5"
+              className={`flex cursor-pointer flex-col items-center rounded-md border px-1 py-1.5 text-xs has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-hud-gold ${
+                size === s ? "border-hud-gold bg-hud-gold/15" : "border-hud-line hover:bg-white/5"
               }`}
             >
               <input
@@ -91,7 +92,7 @@ export function MonsterForm(props: Props) {
                 onChange={() => setSize(s)}
                 className="sr-only"
               />
-              <MiniPortrait mini={monsterMini(s)} size={40} />
+              <Portrait mini={monsterMini(s)} size={40} />
               <span className="font-semibold">{s}</span>
               <span className="opacity-70">{creatureOf(s)}</span>
             </label>

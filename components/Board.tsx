@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Monster, Pos, World } from "@/lib/types";
 import { fitBounds, type ViewportSize } from "@/lib/map/camera";
 import { openingPoints, shownTags, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
@@ -22,11 +22,12 @@ import { SidePanel, type FlyToFigure } from "@/components/panel/SidePanel";
 import { CreateButtons } from "@/components/panel/CreateButtons";
 import { usePanel } from "@/components/panel/usePanel";
 import { Trophies } from "@/components/Trophies";
+import { Hud, Wordmark } from "@/components/Hud";
 
 export type Selection = { kind: "monster" | "hero"; id: string } | null;
 
-/** Screen px kept around the opening view, outside the figures and their name tags. */
-const OPENING_PADDING = 48;
+/** Screen px kept around the opening view, outside the figures and their name tags, so the HUD clusters don't cover them. */
+const OPENING_PADDING = 88;
 
 export function Board({ world }: { world: World }) {
   // Shared UI state. T6-T8 hook into these.
@@ -64,41 +65,39 @@ export function Board({ world }: { world: World }) {
     fitBounds(openingPoints(layout), viewport, OPENING_PADDING);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="relative h-dvh w-full overflow-hidden">
       <FigureStyles />
-      <Header>
-        <UnfoughtAlarm monsters={unfoughtMonsters} onPick={flyTo} />
-        <CreateButtons panel={panel} />
-      </Header>
+      <MapCanvas
+        ref={map}
+        initialCamera={initialCamera}
+        footprints={footprints}
+        onBackgroundClick={() => setSelection(null)}
+        overlay={(view) => (
+          <>
+            <EdgeArrows view={view} monsters={unfoughtPlaced} onPick={flyTo} />
+            <DragOverlay drag={drag} view={view} />
+          </>
+        )}
+      >
+        {({ camera }) => (
+          <Figures drag={drag} scale={camera.scale} selection={panel.selection} onSelect={setSelection} />
+        )}
+      </MapCanvas>
 
-      <div className="relative flex min-h-0 flex-1">
-        <MapCanvas
-          ref={map}
-          initialCamera={initialCamera}
-          footprints={footprints}
-          onBackgroundClick={() => setSelection(null)}
-          overlay={(view) => (
-            <>
-              <EdgeArrows view={view} monsters={unfoughtPlaced} onPick={flyTo} />
-              <DragOverlay drag={drag} view={view} />
-            </>
-          )}
-        >
-          {({ camera }) => (
-            <Figures
-              drag={drag}
-              scale={camera.scale}
-              selection={panel.selection}
-              onSelect={setSelection}
-            />
-          )}
-        </MapCanvas>
+      <Hud
+        topLeft={
+          <>
+            <Wordmark />
+            <UnfoughtAlarm monsters={unfoughtMonsters} onPick={flyTo} />
+          </>
+        }
+        topRight={<CreateButtons panel={panel} />}
+        bottomCenter={
+          <Trophies monsters={drag.world.monsters} openId={panel.trophyId} onOpen={panel.openTrophy} />
+        }
+      />
 
-        {/* T8: side panel, an overlay on the right edge of the map */}
-        <SidePanel panel={panel} world={drag.world} map={map} flyTo={flyToFigure} />
-      </div>
-
-      <Trophies monsters={drag.world.monsters} openId={panel.trophyId} onOpen={panel.openTrophy} />
+      <SidePanel panel={panel} world={drag.world} map={map} flyTo={flyToFigure} />
     </div>
   );
 }
@@ -199,13 +198,4 @@ function drawnPos(layout: WorldLayout, kind: "monster" | "hero", id: string): Po
   return kind === "monster"
     ? layout.monsters.find((m) => m.monster.id === id)?.pos
     : layout.heroes.find((h) => h.hero.id === id)?.pos;
-}
-
-function Header({ children }: { children?: ReactNode }) {
-  return (
-    <header className="flex h-12 shrink-0 items-center gap-4 border-b border-foreground/10 px-4">
-      <h1 className="text-base font-semibold tracking-tight">⚔️ Initiative</h1>
-      <div className="flex flex-1 items-center justify-end gap-2">{children}</div>
-    </header>
-  );
 }
