@@ -8,6 +8,7 @@ export type Monster = {
   pos: Pos;
   notes?: string;
   slain?: string; // 'YYYY-MM-DD', kept as a string, never a Date
+  slainBy?: string[]; // hero ids targeting it when slain: main fighters first, then secondary, each by id
   externalKey?: string;
 };
 

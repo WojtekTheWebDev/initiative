@@ -43,6 +43,18 @@ describe("validateWorld", () => {
     expect(validateWorld(w)).toEqual(['Hero "cid" has a mini that is not text']);
   });
 
+  it("accepts slainBy only as a list of hero ids", () => {
+    const w = makeWorld();
+    w.monsters[3].slainBy = ["ana", "gone"];
+    expect(validateWorld(w)).toEqual([]);
+    w.monsters[3].slainBy = "ana" as never;
+    w.monsters[2].slainBy = [1] as never;
+    expect(validateWorld(w)).toEqual([
+      'Monster "m3" has a slainBy that is not a list of hero ids',
+      'Monster "m4" has a slainBy that is not a list of hero ids',
+    ]);
+  });
+
   it("does not mutate the world", () => {
     const w: World = makeWorld();
     validateWorld(w);

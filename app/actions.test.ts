@@ -70,6 +70,30 @@ describe("server actions (smoke)", () => {
     expect((await world()).monsters.find((m) => m.id === id)).toBeUndefined();
   });
 
+  it("slays with slainBy and revives the heroes it changed", async () => {
+    await world(); // seeds data/ from data.example/
+    const heroesBefore = await readFile(path.join(dir, "data", "heroes.yaml"), "utf8");
+    const monstersBefore = await readFile(path.join(dir, "data", "monsters.yaml"), "utf8");
+
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 1, 12, 0));
+    const changed = await unwrap(actions.slayMonster("search-rewrite"));
+    vi.useRealTimers();
+    expect(changed).toEqual([
+      { id: "ana", targets: ["search-rewrite", "flaky-ci"] },
+      { id: "bartek", targets: ["search-rewrite"] },
+    ]);
+    const slain = (await world()).monsters.find((m) => m.id === "search-rewrite");
+    expect(slain).toMatchObject({ slain: "2026-10-01", slainBy: ["ana", "bartek"] });
+
+    await unwrap(actions.reviveMonster("search-rewrite", changed));
+    expect(await readFile(path.join(dir, "data", "heroes.yaml"), "utf8")).toBe(heroesBefore);
+    expect(await readFile(path.join(dir, "data", "monsters.yaml"), "utf8")).toBe(monstersBefore);
+
+    const bad = await actions.reviveMonster("search-rewrite", [{ id: "ana", targets: "x" as never }]);
+    expect(bad.ok ? "" : bad.error).toMatch(/Targets/);
+  });
+
   it("creates and updates heroes", async () => {
     const id = await unwrap(actions.createHero({ name: "Eve", class: "cleric", pos: { x: 3, y: 4 } }));
     await actions.updateHero(id, { name: "Eva" });

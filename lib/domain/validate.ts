@@ -33,6 +33,9 @@ export function validateWorld(world: World): string[] {
   for (const m of world.monsters) {
     if (!SIZES.has(m.size)) problems.push(`Monster "${m.id}" has unknown size "${m.size}"`);
     if (!isPos(m.pos)) problems.push(`Monster "${m.id}" has no valid pos`);
+    if (m.slainBy !== undefined && !(Array.isArray(m.slainBy) && m.slainBy.every((id) => typeof id === "string"))) {
+      problems.push(`Monster "${m.id}" has a slainBy that is not a list of hero ids`);
+    }
   }
 
   for (const h of world.heroes) {

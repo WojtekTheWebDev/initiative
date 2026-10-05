@@ -113,6 +113,26 @@ describe("writing", () => {
     expect(world.monsters.find((m) => m.id === "legacy-api-sunset")?.slain).toBe("2026-10-01");
   });
 
+  it("writes slainBy right after slain, keeping comments", async () => {
+    await update$(mapMonster("legacy-api-sunset", (m) => ({ ...m, slain: "2026-10-01", slainBy: ["ana", "bartek"] })));
+    const text = await read("monsters.yaml");
+    expect(text).toBe(
+      (await example("monsters.yaml")).replace(
+        "  pos: { x: -300, y: 420 }\n",
+        "  pos: { x: -300, y: 420 }\n  slain: 2026-10-01\n  slainBy: [ana, bartek]\n",
+      ),
+    );
+    expect((await read$()).monsters.find((m) => m.id === "legacy-api-sunset")?.slainBy).toEqual(["ana", "bartek"]);
+
+    await update$(mapMonster("legacy-api-sunset", (m) => ({ ...m, slain: undefined, slainBy: undefined })));
+    expect(await read("monsters.yaml")).toBe(await example("monsters.yaml"));
+  });
+
+  it("reads slainBy as a list of ids", async () => {
+    const world = await read$();
+    expect(world.monsters.find((m) => m.id === "onboarding-docs")?.slainBy).toEqual(["dmitri", "ana"]);
+  });
+
   it("removes a deleted item together with its comment", async () => {
     await update$((w) => ({ ...w, heroes: w.heroes.filter((h) => h.id !== "dmitri") }));
     const text = await read("heroes.yaml");

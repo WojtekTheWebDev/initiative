@@ -1,6 +1,8 @@
 # Monsters: anything to deal with. pos is its home: the figure is drawn near it,
 # pulled toward the monsters that share its heroes.
 # size: S | M | L | XL  ->  spider | orc | mushroom king | dragon
+# slain: the date it was slain; absent = alive. slainBy: the heroes that were
+# targeting it then, main fighters first; left out when nobody fought it.
 
 - id: search-rewrite
   name: Search Rewrite
@@ -43,3 +45,4 @@
   size: S
   pos: { x: -80, y: 300 }
   slain: 2026-09-28
+  slainBy: [dmitri, ana]
