@@ -13,6 +13,8 @@ import {
   viewBoxOf,
   worldToScreen,
   zoomAt,
+  zoomAtCenter,
+  ZOOM_STEP,
   type Camera,
 } from "./camera";
 
@@ -150,5 +152,28 @@ describe("centerOn / lerpCamera", () => {
     expect(end.x).toBeCloseTo(100);
     expect(end.scale).toBeCloseTo(2);
     expect(lerpCamera(a, b, 0.5).scale).toBeCloseTo(1);
+  });
+});
+
+describe("zoomAtCenter", () => {
+  const cam: Camera = { x: -200, y: 100, scale: 0.5 };
+  const center = { x: vp.width / 2, y: vp.height / 2 };
+  it("keeps the world point in the middle of the screen fixed", () => {
+    const next = zoomAtCenter(cam, vp, ZOOM_STEP);
+    expect(next.scale).toBeCloseTo(0.75);
+    const before = screenToWorld(cam, center);
+    const after = screenToWorld(next, center);
+    expect(after.x).toBeCloseTo(before.x);
+    expect(after.y).toBeCloseTo(before.y);
+  });
+  it("undoes itself with the inverse factor", () => {
+    const back = zoomAtCenter(zoomAtCenter(cam, vp, ZOOM_STEP), vp, 1 / ZOOM_STEP);
+    expect(back.x).toBeCloseTo(cam.x);
+    expect(back.y).toBeCloseTo(cam.y);
+    expect(back.scale).toBeCloseTo(cam.scale);
+  });
+  it("stops at the zoom limits", () => {
+    expect(zoomAtCenter({ x: 0, y: 0, scale: MAX_SCALE }, vp, ZOOM_STEP).scale).toBe(MAX_SCALE);
+    expect(zoomAtCenter({ x: 0, y: 0, scale: MIN_SCALE }, vp, 1 / ZOOM_STEP).scale).toBe(MIN_SCALE);
   });
 });

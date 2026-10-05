@@ -36,6 +36,10 @@ export type MapHandle = {
   isOnMap(clientX: number, clientY: number): boolean;
   /** Animates (about 300ms) to center `point` at a readable zoom. */
   flyTo(point: Pos): void;
+  /** Zooms by `factor` around the middle of the screen, gliding like `flyTo`. */
+  zoomBy(factor: number): void;
+  /** Glides back to the opening view (`initialCamera`), worked out for the current viewport. */
+  fitAll(): void;
   /** Animates to an exact camera (e.g. from `fitBounds`). */
   animateTo(camera: Camera): void;
   /** Jumps to a camera without animation. */
@@ -48,7 +52,7 @@ export type MapView = { camera: Camera; viewport: ViewportSize; viewBox: ViewBox
 type Layer = ReactNode | ((view: MapView) => ReactNode);
 
 type Props = {
-  /** A camera, or a function computing one from the first measured viewport size (e.g. `fitBounds`). */
+  /** The opening view: a camera, or a function computing one from the viewport size (e.g. `fitBounds`). `fitAll` returns to it. */
   initialCamera: InitialCamera;
   /** World-space SVG content. */
   children?: Layer;
@@ -89,7 +93,7 @@ export function MapCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const cam = useCamera(initialCamera);
-  const { cameraRef, viewportRef, setCamera, setViewport, flyTo, animateTo } = cam;
+  const { cameraRef, viewportRef, setCamera, setViewport, flyTo, zoomBy, fitAll, animateTo } = cam;
   const onBackgroundClickRef = useRef(onBackgroundClick);
 
   useEffect(() => {
@@ -120,11 +124,13 @@ export function MapCanvas({
           return Boolean(top && containerRef.current?.contains(top));
         },
         flyTo,
+        zoomBy,
+        fitAll,
         animateTo,
         setCamera: (c: Camera) => setCamera(c),
       };
     },
-    [cameraRef, viewportRef, flyTo, animateTo, setCamera],
+    [cameraRef, viewportRef, flyTo, zoomBy, fitAll, animateTo, setCamera],
   );
 
   // Track the canvas size.
