@@ -23,13 +23,13 @@ export function monsterPatch(monster: Monster, fields: MonsterFields): MonsterPa
   return patch;
 }
 
-/** `mini` is "" for none, which draws the neutral adventurer. */
-export type HeroFields = { name: string; class: string; mini: string };
+/** `guild` is "" for none; `mini` is "" for none, which draws the neutral adventurer. */
+export type HeroFields = { name: string; class: string; guild: string; mini: string };
 export type HeroPatch = Partial<HeroFields>;
 
 /** The fields of a hero as the dialog edits them. */
 export function heroFields(hero: Hero | undefined): HeroFields {
-  return { name: hero?.name ?? "", class: hero?.class ?? "", mini: hero?.mini ?? "" };
+  return { name: hero?.name ?? "", class: hero?.class ?? "", guild: hero?.guild ?? "", mini: hero?.mini ?? "" };
 }
 
 /** Only the fields that changed: changing only the mini writes only `mini`. */
@@ -39,6 +39,8 @@ export function heroPatch(hero: Hero, fields: HeroFields): HeroPatch {
   const cls = fields.class.trim();
   if (name !== hero.name) patch.name = name;
   if (cls !== hero.class) patch.class = cls;
+  const guild = fields.guild.trim();
+  if (guild !== (hero.guild ?? "")) patch.guild = guild;
   if (fields.mini !== (hero.mini ?? "")) patch.mini = fields.mini;
   return patch;
 }

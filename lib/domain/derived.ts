@@ -27,6 +27,11 @@ export function fightersOf(world: World, monsterId: string): { main: Hero[]; sec
   return { main: main.sort(byId), secondary: secondary.sort(byId) };
 }
 
+/** A hero's class and guild as one phrase: "archer of Cloud", or just "archer" with no guild. */
+export function roleOf(hero: Hero): string {
+  return hero.guild ? `${hero.class} of ${hero.guild}` : hero.class;
+}
+
 export type Creature = "spider" | "orc" | "mushroom king" | "dragon";
 
 const CREATURES: Record<Size, Creature> = { S: "spider", M: "orc", L: "mushroom king", XL: "dragon" };

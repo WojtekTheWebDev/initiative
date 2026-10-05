@@ -46,6 +46,7 @@ heroes:
   - id: ana
     name: Ana
     class: archer             # free-text label, shown as text only
+    guild: Cloud              # optional; free-text team the hero is in, shown as text only
     mini: hooded-rogue        # optional; a hero mini id (public/minis/manifest.json); absent or unknown = neutral adventurer
     targets: [search-rewrite, flaky-ci]   # ordered; first = main, rest = secondary targets
     pos: { x: -600, y: 40 }   # home while idle; stored only while idle (targets empty)
@@ -54,7 +55,7 @@ heroes:
 Rules worked out from the data, not stored:
 - **Engaged or unfought** depends on whether any hero has the monster in `targets`. There is no `fighters` or `status` field.
 - **Creature type** comes from `size`. There is no `kind` field. The size also picks the monster's mini.
-- **A hero's mini** is its `mini` pick. A hero with no `mini`, or with an id that isn't in the roster, is drawn as the neutral adventurer. `class` never affects the art.
+- **A hero's mini** is its `mini` pick. A hero with no `mini`, or with an id that isn't in the roster, is drawn as the neutral adventurer. `class` and `guild` never affect the art.
 - **Where figures are drawn** comes from the targets, through a force layout (`lib/map/layout.ts` on top of the solver in `lib/map/force.ts`). The drawn position is never saved.
   - A stored `pos` is a **home**. Every monster and every idle hero is held to its home by the same weak spring, so it stays near it but can be nudged aside, and drifts back when there is room.
   - An engaged hero has no home. A spring to each of its targets pulls it toward them and pulls them toward it, so heroes and monsters that target each other gather into a cluster: a monster that shares a hero with another is drawn between its home and theirs. The main target pulls harder and holds the hero closer than secondary targets.
@@ -138,11 +139,11 @@ Everything drawn over the table is the HUD. The table fills the whole window and
   - **On a phone** (a window under 640 px wide or under 500 px tall, either way up) the muster tokens and the party roster are left out, so the table stays in view, and the first-visit banner runs across the window under the top clusters. In a window under 640 px wide **+ Monster** and **+ Hero** stack, so the wordmark fits beside them.
 - **Figure card:** clicking a figure opens a compact card beside it, on the right of its base with a small pointer, flipped to the left near the right edge of the screen and kept inside the screen. It lives in the canvas' screen-space overlay, so it follows the figure while you pan, zoom or while figures glide. It hides while a figure is dragged and while the figure's base is out of view.
   - **Monster:** portrait, name, size and creature, key, notes clipped to three lines with **more** to expand them in place, fighters as overlapping portraits (a click selects that hero), then **Edit**, **Slay** and a **⋯** menu with **Delete**.
-  - **Hero:** portrait, name, class and mini, targets in order with main marked by a crown (a click flies to that monster), then **Edit** and a **⋯** menu with **Delete**.
+  - **Hero:** portrait, name, class and guild ("archer of Cloud", or just "archer") and mini, targets in order with main marked by a crown (a click flies to that monster), then **Edit** and a **⋯** menu with **Delete**.
   - Esc, a click on empty table or selecting another figure closes it.
 - **Dialogs:** create and edit open centred dialogs over the dimmed table. They trap focus. The close button in the corner closes them, and so does Esc (after the arrow buttons or a drag claim it first), so they have no Cancel button; a click on the dim closes them when nothing has been typed. In a window under 640 px wide their buttons stack full width. On a screen too short for a dialog, its body scrolls under the title and close button, which stay in view. On a phone the mini previews are half size.
   - **Monster dialog** ("Summon a monster" or "Edit monster"): a large preview of the mini above a size slider with four stops, S spider, M orc, L mushroom king and XL dragon, the preview swapping as the slider moves (arrow keys work); then name and notes, and **Summon** or **Save**.
-  - **Hero dialog** ("Recruit a hero" or "Edit hero"), laid out like a game's character screen: the chosen mini large on the left with arrows to flip through the roster (Neutral first, arrow keys work, a count such as "2 of 6"), and name and class on the right. Class is a free-text field. A pick that isn't in the roster shows as missing, with Neutral shown, so you can choose again.
+  - **Hero dialog** ("Recruit a hero" or "Edit hero"), laid out like a game's character screen: the chosen mini large on the left with arrows to flip through the roster (Neutral first, arrow keys work, a count such as "2 of 6"), and name, class and guild on the right. Class and guild are free-text fields; guild is optional and names the team the hero is in, such as Cloud. A pick that isn't in the roster shows as missing, with Neutral shown, so you can choose again.
   - **Save** in a dialog changes only the fields that were edited.
 - **Party roster:** the gold twin of the muster tokens, answering who fights what without a click. Under the create buttons, a gold count ("5 heroes · 1 idle") and one token per hero: portrait, name, their main target's portrait and name with a crown, and "+N" for secondary targets. An idle hero's token is faded and says "Idle". Engaged heroes come first, then idle ones, each by name. Targets that aren't living monsters are skipped. Past six, the rest fold into "+N more", which opens the full list. A token selects its hero: the figure card opens and the view flies there. The selected hero's token is lit gold. With no heroes there is no roster.
 - **Trophy shelf:** a small glass button in the bottom-left corner with a trophy icon and the trophy count ("3 trophies", or "No trophies yet"). It shows no minis. A click opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).

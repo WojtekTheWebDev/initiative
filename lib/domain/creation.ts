@@ -43,6 +43,14 @@ function withMini(hero: Hero, mini: string | undefined): Hero {
   return next;
 }
 
+/** Set or remove a hero's guild: "" / whitespace removes it. */
+function withGuild(hero: Hero, guild: string | undefined): Hero {
+  const next = { ...hero };
+  if (guild === undefined || guild.trim() === "") delete next.guild;
+  else next.guild = guild.trim();
+  return next;
+}
+
 export type CreateMonsterInput = { name: string; size: Size; notes?: string; pos: Pos };
 
 export function createMonster(world: World, input: CreateMonsterInput): { world: World; id: string } {
@@ -54,12 +62,12 @@ export function createMonster(world: World, input: CreateMonsterInput): { world:
   return { world: { ...world, monsters: [...world.monsters, monster] }, id };
 }
 
-export type CreateHeroInput = { name: string; class: string; mini?: string; pos: Pos };
+export type CreateHeroInput = { name: string; class: string; guild?: string; mini?: string; pos: Pos };
 
 export function createHero(world: World, input: CreateHeroInput): { world: World; id: string } {
   const id = idFor(input.name, "hero", world.heroes);
   const hero = withMini(
-    { id, name: input.name, class: input.class, targets: [], pos: { x: input.pos.x, y: input.pos.y } },
+    withGuild({ id, name: input.name, class: input.class, targets: [], pos: { x: input.pos.x, y: input.pos.y } }, input.guild),
     input.mini,
   );
   return { world: { ...world, heroes: [...world.heroes, hero] }, id };
@@ -76,13 +84,14 @@ export function updateMonster(world: World, monsterId: string, patch: MonsterPat
   return replaceMonster(world, monster);
 }
 
-export type HeroPatch = { name?: string; class?: string; mini?: string };
+export type HeroPatch = { name?: string; class?: string; guild?: string; mini?: string };
 
-/** Absent keys stay unchanged; `mini: ""` removes the pick. The id never changes. */
+/** Absent keys stay unchanged; `guild: ""` removes the guild and `mini: ""` the pick. The id never changes. */
 export function updateHero(world: World, heroId: string, patch: HeroPatch): World {
   let hero = { ...getHero(world, heroId) };
   if (patch.name !== undefined) hero.name = patch.name;
   if (patch.class !== undefined) hero.class = patch.class;
+  if ("guild" in patch) hero = withGuild(hero, patch.guild);
   if ("mini" in patch) hero = withMini(hero, patch.mini);
   return replaceHero(world, hero);
 }

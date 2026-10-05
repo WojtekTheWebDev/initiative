@@ -39,6 +39,9 @@ export function validateWorld(world: World): string[] {
   }
 
   for (const h of world.heroes) {
+    if (h.guild !== undefined && typeof h.guild !== "string") {
+      problems.push(`Hero "${h.id}" has a guild that is not text`);
+    }
     // Any text is a valid mini: an id that isn't in the roster only changes the drawing.
     if (h.mini !== undefined && typeof h.mini !== "string") {
       problems.push(`Hero "${h.id}" has a mini that is not text`);

@@ -131,6 +131,26 @@ describe("hero minis", () => {
   });
 });
 
+describe("hero guilds", () => {
+  it("stores a trimmed guild on create, and none for a blank one", () => {
+    const named = createHero(makeWorld(), { name: "Dana", class: "cleric", guild: " Cloud ", pos: { x: 0, y: 0 } });
+    expect(named.world.heroes.at(-1)?.guild).toBe("Cloud");
+    const blank = createHero(makeWorld(), { name: "Dana", class: "cleric", guild: "  ", pos: { x: 0, y: 0 } });
+    expect("guild" in blank.world.heroes.at(-1)!).toBe(false);
+    expectValid(named.world);
+  });
+
+  it("sets, keeps and removes the guild on update", () => {
+    let w = updateHero(makeWorld(), "ana", { guild: "Payments" });
+    expect(w.heroes[0].guild).toBe("Payments");
+    w = updateHero(w, "ana", { class: "mage" });
+    expect(w.heroes[0].guild).toBe("Payments");
+    w = updateHero(w, "ana", { guild: "" });
+    expect("guild" in w.heroes[0]).toBe(false);
+    expectValid(w);
+  });
+});
+
 describe("updateHero", () => {
   it("renames and reclasses without changing the id", () => {
     const w = updateHero(makeWorld(), "ana", { name: "Anna", class: "mage" });

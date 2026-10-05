@@ -12,8 +12,8 @@ import { heroFields, heroPatch, isDirty, type HeroFields } from "./helpers";
 
 /**
  * "Recruit a hero" (create) or "Edit hero" (with `hero`), laid out like a
- * game's character screen: the mini carousel on the left, name and class on
- * the right. Mount it to open it; it calls `onClose` when done.
+ * game's character screen: the mini carousel on the left, name, class and
+ * guild on the right. Mount it to open it; it calls `onClose` when done.
  */
 export function HeroDialog({
   hero,
@@ -51,6 +51,7 @@ export function HeroDialog({
         const created = createHero(w, {
           name: fields.name.trim(),
           class: fields.class.trim(),
+          guild: fields.guild.trim() || undefined,
           mini: fields.mini || undefined,
           pos,
         });
@@ -92,6 +93,15 @@ export function HeroDialog({
               onChange={(e) => set({ class: e.target.value })}
               required
               placeholder="e.g. backend engineer"
+            />
+          </Field>
+
+          <Field label="Guild">
+            <input
+              className={inputClass}
+              value={fields.guild}
+              onChange={(e) => set({ guild: e.target.value })}
+              placeholder="e.g. Cloud"
             />
           </Field>
           <div className="mt-auto flex justify-end gap-2 pt-5 max-sm:flex-col">

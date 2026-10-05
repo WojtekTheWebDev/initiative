@@ -19,7 +19,14 @@ const world: World = {
     { id: "docs", name: "Docs", size: "S", pos: { x: 0, y: 0 }, slain: "2026-09-28", slainBy: ["dmitri"] },
   ],
   heroes: [
-    { id: "ana", name: "Ana", class: "archer", mini: "hooded-rogue", targets: ["search-rewrite", "flaky-ci"] },
+    {
+      id: "ana",
+      name: "Ana",
+      class: "archer",
+      guild: "Cloud",
+      mini: "hooded-rogue",
+      targets: ["search-rewrite", "flaky-ci"],
+    },
     { id: "dmitri", name: "Dmitri", class: "rogue", targets: [], pos: { x: -600, y: 40 } },
   ],
 };
@@ -59,6 +66,8 @@ describe("stringifySave", () => {
   it("writes fields in a fixed order", () => {
     const ana = text.split("- id: ana")[1].split("\n\n")[0];
     expect(ana.indexOf("name:")).toBeLessThan(ana.indexOf("class:"));
+    expect(ana.indexOf("class:")).toBeLessThan(ana.indexOf("guild:"));
+    expect(ana.indexOf("guild:")).toBeLessThan(ana.indexOf("mini:"));
     expect(ana.indexOf("mini:")).toBeLessThan(ana.indexOf("targets:"));
   });
 

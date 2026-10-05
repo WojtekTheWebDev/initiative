@@ -2,7 +2,7 @@
 
 import type { Hero, Monster, World } from "@/lib/types";
 import { heroMini, monsterMini } from "@/lib/map/minis";
-import { deleteHero } from "@/lib/domain";
+import { deleteHero, roleOf } from "@/lib/domain";
 import { Portrait } from "@/components/ui/Portrait";
 import { Icon } from "@/components/ui/icons";
 import { CardHeader, CardLabel, CardMenu, EditButton, useCardAction } from "./parts";
@@ -43,7 +43,7 @@ export function HeroCard({
         name={hero.name}
         facts={
           <>
-            {hero.class} · {mini.name}
+            {roleOf(hero)} · {mini.name}
           </>
         }
       />

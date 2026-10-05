@@ -23,7 +23,7 @@ export const SAVE_VERSION = 1;
 
 /** Field order of each item, matching `data.example/initiative.yaml`. */
 export const MONSTER_FIELDS = ["id", "name", "size", "pos", "notes", "slain", "slainBy", "externalKey"] as const;
-export const HERO_FIELDS = ["id", "name", "class", "mini", "targets", "pos"] as const;
+export const HERO_FIELDS = ["id", "name", "class", "guild", "mini", "targets", "pos"] as const;
 
 const HEADER = " Initiative save. Open it with Load game in the wordmark menu.";
 
@@ -146,6 +146,8 @@ function readHeroes(list: unknown, problems: string[]): Hero[] {
       class: str(h.class) ?? "",
       targets: Array.isArray(h.targets) ? h.targets.map(String) : [],
     };
+    const guild = str(h.guild);
+    if (guild !== undefined) hero.guild = guild;
     const mini = str(h.mini);
     if (mini !== undefined) hero.mini = mini;
     const pos = toPos(h.pos);

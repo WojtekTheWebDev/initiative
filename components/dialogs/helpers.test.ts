@@ -59,6 +59,13 @@ describe("heroPatch", () => {
     });
   });
 
+  it("sends a trimmed guild only when it changed, with absent as empty", () => {
+    expect(heroPatch(ana, { ...heroFields(ana), guild: " " })).toEqual({});
+    expect(heroPatch(ana, { ...heroFields(ana), guild: " Cloud " })).toEqual({ guild: "Cloud" });
+    const cloud = hero("cid", "rogue", { guild: "Cloud" });
+    expect(heroPatch(cloud, { ...heroFields(cloud), guild: "" })).toEqual({ guild: "" });
+  });
+
   it("keeps a missing pick untouched when the mini was not flipped", () => {
     const lost = hero("lost", "mage", { mini: "retired-wizard" });
     expect(heroPatch(lost, heroFields(lost))).toEqual({});

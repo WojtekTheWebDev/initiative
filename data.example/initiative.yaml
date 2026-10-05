@@ -54,8 +54,9 @@ monsters:
 
 heroes:
   # Heroes: engineers on the team, plus you.
-  # class: a free-text label. mini: which painted miniature stands for the hero
-  # (see public/minis/manifest.json); leave it out for the neutral adventurer.
+  # class: a free-text label. guild: optional, the team the hero is in.
+  # mini: which painted miniature stands for the hero (see
+  # public/minis/manifest.json); leave it out for the neutral adventurer.
   # targets: ordered list of monster ids; first = main fight, rest = secondary targets.
   # pos is an idle hero's home, stored only while it is idle (targets empty).
   # An engaged hero is drawn between its targets.
@@ -63,18 +64,21 @@ heroes:
   - id: ana
     name: Ana
     class: archer
+    guild: Search
     mini: hooded-rogue
     targets: [search-rewrite, flaky-ci]
 
   - id: bartek
     name: Bartek
     class: warrior
+    guild: Search
     mini: knight
     targets: [search-rewrite]
 
   - id: celine
     name: Celine
     class: mage
+    guild: Payments
     mini: mage
     targets: [payments-incident]
 

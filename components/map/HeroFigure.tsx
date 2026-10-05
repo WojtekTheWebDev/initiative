@@ -1,4 +1,5 @@
 import type { PlacedHero } from "@/lib/map/layout";
+import { roleOf } from "@/lib/domain";
 import { heroMini } from "@/lib/map/minis";
 import { HERO_BASE_RADIUS } from "@/lib/map/rings";
 import { HERO_TAG_FONT, heroTagText } from "@/lib/map/tags";
@@ -22,7 +23,7 @@ export function HeroFigure({ placed, scale, selected, onPointerDown, onClick, on
       scale={scale}
       rings={selected ? ["selected"] : []}
       faded={idle}
-      title={`${hero.name} (${hero.class}${idle ? ", idle" : ""})`}
+      title={`${hero.name} (${roleOf(hero)}${idle ? ", idle" : ""})`}
       data={{ "data-hero": hero.id }}
       onPointerDown={onPointerDown}
       onClick={onClick}

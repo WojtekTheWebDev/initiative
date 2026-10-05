@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alive, creatureOf, fightersOf, unfought } from "./derived";
+import { alive, creatureOf, fightersOf, roleOf, unfought } from "./derived";
 import { makeWorld } from "./test-fixtures";
 
 describe("alive", () => {
@@ -39,6 +39,13 @@ describe("fightersOf", () => {
 
   it("returns empty lists for an unknown monster", () => {
     expect(fightersOf(makeWorld(), "nope")).toEqual({ main: [], secondary: [] });
+  });
+});
+
+describe("roleOf", () => {
+  it("names the guild after the class, or just the class without one", () => {
+    expect(roleOf({ id: "a", name: "A", class: "archer", guild: "Cloud", targets: [] })).toBe("archer of Cloud");
+    expect(roleOf({ id: "a", name: "A", class: "archer", targets: [] })).toBe("archer");
   });
 });
 
