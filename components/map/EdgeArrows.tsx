@@ -6,7 +6,6 @@ import { offscreenArrows } from "@/lib/map/arrows";
 import type { PlacedMonster } from "@/lib/map/layout";
 import type { MapView } from "./MapCanvas";
 
-const UNFOUGHT = "#dc2626";
 /** Arrow button size in screen px. */
 const SIZE = 30;
 
@@ -38,7 +37,7 @@ export function EdgeArrows({ view, monsters, onPick }: Props) {
             type="button"
             title={`${monster.name} (unfought)`}
             aria-label={`Fly to unfought monster ${monster.name}`}
-            className="pointer-events-auto absolute flex items-center justify-center rounded-full bg-hud-glass shadow-md ring-1 ring-hud-danger/50 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hud-danger motion-safe:transition-transform"
+            className="pointer-events-auto absolute flex items-center justify-center rounded-full border border-hud-danger/60 bg-hud-glass shadow-[0_2px_8px_rgba(0,0,0,0.45)] backdrop-blur-[var(--hud-blur)] hover:scale-110 hover:border-hud-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hud-danger motion-safe:transition-transform"
             style={{
               left: a.x - SIZE / 2,
               top: a.y - SIZE / 2,
@@ -55,7 +54,7 @@ export function EdgeArrows({ view, monsters, onPick }: Props) {
               style={{ transform: `rotate(${a.angle}rad)` }}
             >
               {/* Points right at angle 0. */}
-              <path d="M 10 0 L -6 -8 L -2 0 L -6 8 Z" fill={UNFOUGHT} />
+              <path d="M 10 0 L -6 -8 L -2 0 L -6 8 Z" fill="var(--hud-danger)" />
             </svg>
           </button>
         );
