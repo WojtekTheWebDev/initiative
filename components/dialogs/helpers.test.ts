@@ -3,7 +3,6 @@ import type { Hero, Monster } from "@/lib/types";
 import { HERO_MINIS } from "@/lib/map/minis";
 import {
   SPAWN_JITTER,
-  classChips,
   heroFields,
   heroPatch,
   isDirty,
@@ -71,29 +70,6 @@ describe("isDirty", () => {
     const start = heroFields(undefined);
     expect(isDirty(start, { ...start })).toBe(false);
     expect(isDirty(start, { ...start, name: "A" })).toBe(true);
-  });
-});
-
-describe("classChips", () => {
-  const heroes = [
-    hero("a", "mage"),
-    hero("b", "archer"),
-    hero("c", " mage "),
-    hero("d", ""),
-    hero("e", "commander"),
-  ];
-
-  it("lists the distinct, non-empty classes, sorted", () => {
-    expect(classChips(heroes)).toEqual(["archer", "commander", "mage"]);
-  });
-
-  it("leaves out the hero being edited", () => {
-    expect(classChips(heroes, "e")).toEqual(["archer", "mage"]);
-    expect(classChips(heroes, "a")).toEqual(["archer", "commander", "mage"]);
-  });
-
-  it("is empty with no other heroes", () => {
-    expect(classChips([hero("a", "mage")], "a")).toEqual([]);
   });
 });
 

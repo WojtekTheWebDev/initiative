@@ -8,25 +8,21 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { ErrorNote, Field, inputClass, useAction } from "./form";
 import { MiniCarousel } from "./MiniCarousel";
-import { classChips, heroFields, heroPatch, isDirty, type HeroFields } from "./helpers";
+import { heroFields, heroPatch, isDirty, type HeroFields } from "./helpers";
 
 /**
  * "Recruit a hero" (create) or "Edit hero" (with `hero`), laid out like a
  * game's character screen: the mini carousel on the left, name and class on
- * the right, with the classes other heroes already have offered as chips.
- * Mount it to open it; it calls `onClose` when done.
+ * the right. Mount it to open it; it calls `onClose` when done.
  */
 export function HeroDialog({
   hero,
-  heroes,
   spawnAt,
   onCreated,
   onClose,
 }: {
   /** The hero to edit; absent to recruit a new one. */
   hero?: Hero;
-  /** Every hero, for the class chips. */
-  heroes: readonly Hero[];
   /** Where a new (idle) hero stands, asked for when it is recruited. */
   spawnAt: () => Pos;
   onCreated: (id: string, pos: Pos) => void;
@@ -36,7 +32,6 @@ export function HeroDialog({
   const [fields, setFields] = useState(start);
   const set = (patch: Partial<HeroFields>) => setFields((f) => ({ ...f, ...patch }));
   const { pending, error, run, clearError } = useAction();
-  const chips = classChips(heroes, hero?.id);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -90,29 +85,6 @@ export function HeroDialog({
               placeholder="e.g. backend engineer"
             />
           </Field>
-          {chips.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Classes other heroes have">
-              {chips.map((c) => {
-                const chosen = fields.class.trim() === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    aria-pressed={chosen}
-                    onClick={() => set({ class: c })}
-                    className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-xs motion-safe:transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hud-gold ${
-                      chosen
-                        ? "border-hud-gold bg-hud-gold/15 text-hud-gold"
-                        : "border-hud-line text-hud-muted hover:border-hud-gold/60 hover:text-hud-fg"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
           <div className="mt-auto flex justify-end gap-2 pt-5">
             <Button onClick={onClose} disabled={pending}>
               Cancel

@@ -19,8 +19,6 @@ the lighting are applied when baking (`npm run bake:minis`), not stored here.
 | `mage.glb` | Mage, KayKit Adventurers | Kay Lousberg (KayKit) | same pack, `Characters/gltf/Mage.glb` | CC0 1.0 | Kept the staff; removed the spellbooks and wand. |
 | `rogue.glb` | Rogue, KayKit Adventurers | Kay Lousberg (KayKit) | same pack, `Characters/gltf/Rogue.glb` | CC0 1.0 | Kept both knives; removed the crossbows and throwable. |
 | `hooded-rogue.glb` | Rogue (Hooded), KayKit Adventurers | Kay Lousberg (KayKit) | same pack, `Characters/gltf/Rogue_Hooded.glb` | CC0 1.0 | Kept the one-handed crossbow; removed the knives, two-handed crossbow and throwable. |
-| `ninja.glb` | Ninja | Quaternius | <https://poly.pizza/m/xGYmeDpfTu> | CC0 1.0 | None besides the common ones. |
-| `pirate.glb` | Pirate Captain | Quaternius | <https://poly.pizza/m/sN18LyyHAU> | CC0 1.0 | None besides the common ones. |
 
 The KayKit pack's licence file reads: "License: (Creative Commons Zero, CC0)
 ... This content is free to use in personal, educational and commercial

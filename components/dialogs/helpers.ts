@@ -48,16 +48,6 @@ export function isDirty<F extends Record<string, string>>(start: F, now: F): boo
   return Object.keys(start).some((k) => start[k] !== now[k]);
 }
 
-/** The class chips: the distinct, non-empty classes of the heroes other than `selfId`, sorted. */
-export function classChips(heroes: readonly Hero[], selfId?: string): string[] {
-  const classes = new Set<string>();
-  for (const h of heroes) {
-    const cls = h.class.trim();
-    if (h.id !== selfId && cls) classes.add(cls);
-  }
-  return [...classes].sort((a, b) => a.localeCompare(b));
-}
-
 /**
  * Where the carousel stands for a hero's `mini`: its index in the roster, and
  * whether the pick is missing from it (then Neutral, index 0, is shown).

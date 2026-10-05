@@ -54,7 +54,6 @@ export function FigureDialogs({
     <HeroDialog
       key={key}
       hero={hero}
-      heroes={world.heroes}
       spawnAt={spawnAt}
       onCreated={(id, pos) => onCreated("hero", id, pos)}
       onClose={close}

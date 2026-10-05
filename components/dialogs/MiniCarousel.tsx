@@ -11,7 +11,7 @@ const PREVIEW = 200;
 
 /**
  * The hero's mini, large, with arrows to flip through the roster (Neutral
- * first, wrapping at both ends) and a count such as "4 of 8". Arrow keys
+ * first, wrapping at both ends) and a count such as "2 of 6". Arrow keys
  * flip it while it has focus. `value` is the hero's `mini` ("" for none); a
  * pick that isn't in the roster shows as missing, with Neutral on show.
  */
