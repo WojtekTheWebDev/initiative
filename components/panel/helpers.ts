@@ -1,20 +1,5 @@
-import type { Monster, Pos, World } from "@/lib/types";
+import type { Monster, Pos } from "@/lib/types";
 import { viewBoxOf, type Camera, type ViewBox, type ViewportSize } from "@/lib/map/camera";
-
-/** What is selected on the map. Mirrors Board's `Selection`. */
-export type PanelSelection = { kind: "monster" | "hero"; id: string } | null;
-
-/**
- * The selection if it still points at a living monster or an existing hero,
- * otherwise `null` (the item was slain or deleted, maybe by hand in the YAML).
- */
-export function liveSelection<S extends PanelSelection>(world: World, selection: S): S | null {
-  if (!selection) return null;
-  if (selection.kind === "monster") {
-    return world.monsters.some((m) => m.id === selection.id && !m.slain) ? selection : null;
-  }
-  return world.heroes.some((h) => h.id === selection.id) ? selection : null;
-}
 
 /** Slain monsters, newest `slain` date first; same day by name. */
 export function trophiesOf(monsters: Monster[]): (Monster & { slain: string })[] {
