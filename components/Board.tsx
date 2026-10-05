@@ -13,7 +13,7 @@ import { MonsterFigure, MonsterLabel } from "@/components/map/MonsterFigure";
 import { HeroFigure, HeroLabel } from "@/components/map/HeroFigure";
 import { TargetArrows } from "@/components/map/TargetArrows";
 import { unfought } from "@/lib/domain";
-import { UnfoughtAlarm } from "@/components/UnfoughtAlarm";
+import { MusterTokens } from "@/components/MusterTokens";
 import { EdgeArrows } from "@/components/map/EdgeArrows";
 import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
@@ -88,7 +88,7 @@ export function Board({ world }: { world: World }) {
         topLeft={
           <>
             <Wordmark />
-            <UnfoughtAlarm monsters={unfoughtMonsters} onPick={flyTo} />
+            <MusterTokens monsters={unfoughtMonsters} onPick={flyTo} />
           </>
         }
         topRight={<CreateButtons panel={panel} />}
