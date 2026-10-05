@@ -4,10 +4,11 @@ import { heroShape, monsterShape, type WorldLayout } from "./layout";
 /*
  * The terrain of the felt table, worked out from world coordinates alone.
  *
- * The world is cut into square chunks. `terrainChunk(cx, cy)` is pure: the same
- * chunk always gives the same terrain, and nothing about it is stored. Anything
- * that spans chunks (biomes, hills, roads, rivers) comes from a function of the
- * world position, so neighbouring chunks agree at their shared border.
+ * The world is cut into square chunks. `terrainChunk(cx, cy, terrain)` is
+ * pure: the same chunk of the same terrain (mixed, or one biome) always looks
+ * the same, and nothing about it is stored. Anything that spans chunks
+ * (biomes, hills, roads, rivers) comes from a function of the world position,
+ * so neighbouring chunks agree at their shared border.
  *
  * Terrain is decoration only. It never affects the layout or hit-testing.
  */
@@ -40,6 +41,10 @@ export const TABLE_SQUASH = Math.sin((38 * Math.PI) / 180);
 export type Biome = "meadow" | "woods" | "highlands" | "marsh";
 /** Every biome, in the order `biomeWeights` reports them. */
 export const BIOMES: readonly Biome[] = ["meadow", "woods", "highlands", "marsh"];
+/** What the table is made of: every biome in regions across the map, or one biome everywhere. */
+export type Terrain = "mixed" | Biome;
+/** Every terrain, in the order Settings offers them. */
+export const TERRAINS: readonly Terrain[] = ["mixed", ...BIOMES];
 /** How much of each biome is at a point, in `BIOMES` order. Sums to 1. */
 export type BiomeWeights = [number, number, number, number];
 
@@ -219,8 +224,17 @@ function cellCentre(i: number, j: number): [number, number] {
 const scratchDist = new Float64Array(9);
 const scratchBiome = new Uint8Array(9);
 
-/** How much of each biome is at a world point. Changes slowly and continuously across the map. */
-export function biomeWeights(x: number, y: number): BiomeWeights {
+/**
+ * How much of each biome is at a world point on `terrain`. On the mixed
+ * terrain it changes slowly and continuously across the map; on a one-biome
+ * terrain that biome weighs 1 everywhere.
+ */
+export function biomeWeights(x: number, y: number, terrain: Terrain = "mixed"): BiomeWeights {
+  if (terrain !== "mixed") {
+    const only: BiomeWeights = [0, 0, 0, 0];
+    only[BIOMES.indexOf(terrain)] = 1;
+    return only;
+  }
   const wx = x + (fbm(x / 1500, y / 1500, Seed.WarpX, 2) - 0.5) * BIOME_WARP * 2;
   const wy = y + (fbm(x / 1500, y / 1500, Seed.WarpY, 2) - 0.5) * BIOME_WARP * 2;
   // Cell (i, j) spans [i - 0.5, i + 0.5) cells, so cell (0, 0) is centred on the origin.
@@ -249,8 +263,49 @@ export function biomeWeights(x: number, y: number): BiomeWeights {
 }
 
 /** The biome with the most weight at a world point. */
-export function biomeAt(x: number, y: number): Biome {
-  return BIOMES[strongest(biomeWeights(x, y))];
+export function biomeAt(x: number, y: number, terrain: Terrain = "mixed"): Biome {
+  return BIOMES[strongest(biomeWeights(x, y, terrain))];
+}
+
+/** Points near the origin, ring by ring outward, `step` apart. */
+function* spiral(step: number, rings: number): Generator<Pos> {
+  for (let ring = 0; ring <= rings; ring++) {
+    for (let j = -ring; j <= ring; j++) {
+      for (let i = -ring; i <= ring; i++) {
+        if (Math.max(Math.abs(i), Math.abs(j)) === ring) yield { x: i * step, y: j * step };
+      }
+    }
+  }
+}
+
+/**
+ * The middle of the picture Settings shows of `terrain`, which is `width` ×
+ * `height` world units. On the mixed terrain: the place near the origin where
+ * the picture holds the most biomes. On a one-biome terrain: a raised piece
+ * near the origin, lifted by half its height so the whole piece is in the
+ * picture, or the origin when none stands close by.
+ */
+export function terrainSpot(terrain: Terrain, width: number, height: number): Pos {
+  if (terrain === "mixed") {
+    let best: Pos = { x: 0, y: 0 };
+    let most = 0;
+    for (const p of spiral(CHUNK_SIZE / 2, 10)) {
+      const seen = new Set<Biome>();
+      for (const fy of [-0.5, 0, 0.5]) for (const fx of [-0.5, 0, 0.5]) seen.add(biomeAt(p.x + fx * width, p.y + fy * height));
+      if (seen.size > most) {
+        most = seen.size;
+        best = p;
+      }
+      if (most === BIOMES.length) break;
+    }
+    return best;
+  }
+  for (const p of spiral(CHUNK_SIZE, 4)) {
+    const { cx, cy } = chunkOf(p);
+    const piece = terrainChunk(cx, cy, terrain).pieces[0];
+    if (piece) return { x: piece.x, y: piece.y - piece.height / 2 };
+  }
+  return { x: 0, y: 0 };
 }
 
 function strongest(w: BiomeWeights): number {
@@ -606,8 +661,8 @@ export function chunkOf(p: Pos): { cx: number; cy: number } {
   return { cx: Math.floor(p.x / CHUNK_SIZE), cy: Math.floor(p.y / CHUNK_SIZE) };
 }
 
-/** The terrain of chunk (cx, cy), which covers [cx, cx + 1) × [cy, cy + 1) chunk sizes. Pure. */
-export function terrainChunk(cx: number, cy: number): TerrainChunk {
+/** The terrain of chunk (cx, cy), which covers [cx, cx + 1) × [cy, cy + 1) chunk sizes, on `terrain`. Pure. */
+export function terrainChunk(cx: number, cy: number, terrain: Terrain = "mixed"): TerrainChunk {
   const x0 = cx * CHUNK_SIZE;
   const y0 = cy * CHUNK_SIZE;
   const rect: Rect = { x0, y0, x1: (cx + 1) * CHUNK_SIZE, y1: (cy + 1) * CHUNK_SIZE };
@@ -622,7 +677,7 @@ export function terrainChunk(cx: number, cy: number): TerrainChunk {
   const sx = (i: number) => (i === GROUND_CELLS ? rect.x1 : x0 + i * STEP);
   const sy = (j: number) => (j === GROUND_CELLS ? rect.y1 : y0 + j * STEP);
   for (let j = 0; j < n; j += 2) {
-    for (let i = 0; i < n; i += 2) weights[j * n + i] = biomeWeights(sx(i), sy(j));
+    for (let i = 0; i < n; i += 2) weights[j * n + i] = biomeWeights(sx(i), sy(j), terrain);
   }
   for (let j = 0; j < n; j++) {
     for (let i = 0; i < n; i++) {
@@ -716,7 +771,7 @@ export function terrainChunk(cx: number, cy: number): TerrainChunk {
     const y = y0 + PIECE_MARGIN + rand() * (CHUNK_SIZE - 2 * PIECE_MARGIN);
     const rKind = rand();
     const r2 = rand();
-    const biome = biomeAt(x, y);
+    const biome = biomeAt(x, y, terrain);
     const kind = pick(PIECES[biome], rKind);
     const { radius, height } = PIECE_SIZE[kind];
     if (pieces.some((p) => Math.hypot(p.x - x, p.y - y) < PIECE_SPACING)) continue;
@@ -763,7 +818,7 @@ export function terrainChunk(cx: number, cy: number): TerrainChunk {
   return {
     cx,
     cy,
-    biome: biomeAt(x0 + CHUNK_SIZE / 2, y0 + CHUNK_SIZE / 2),
+    biome: biomeAt(x0 + CHUNK_SIZE / 2, y0 + CHUNK_SIZE / 2, terrain),
     ground,
     contours,
     roads,

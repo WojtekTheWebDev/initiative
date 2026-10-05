@@ -10,12 +10,14 @@ import {
   MAX_PIECES,
   PIECE_SIZE,
   PIECE_SPACING,
+  biomeAt,
   biomeWeights,
   chunksIn,
   gridOpacity,
   pieceBox,
   pieceDepth,
   terrainChunk,
+  terrainSpot,
   type PieceKind,
   type Polyline,
   type RaisedPiece,
@@ -152,6 +154,69 @@ describe("biomeWeights", () => {
 
   it("starts on meadow at the origin", () => {
     expect(biomeWeights(0, 0)[0]).toBeGreaterThan(0.5);
+  });
+
+  it("weighs one biome fully on a one-biome terrain", () => {
+    for (const biome of BIOMES) {
+      for (const [x, y] of [[0, 0], [5000, -3000], [-12000, 800]]) {
+        const w = biomeWeights(x, y, biome);
+        expect(w[BIOMES.indexOf(biome)]).toBe(1);
+        expect(w.reduce((s, v) => s + v, 0)).toBe(1);
+      }
+    }
+  });
+});
+
+describe("terrainChunk on one biome", () => {
+  it("is made of that biome alone", () => {
+    for (const biome of BIOMES) {
+      const kinds = new Set<string>();
+      for (let cy = -2; cy <= 2; cy++) {
+        for (let cx = -2; cx <= 2; cx++) {
+          const c = terrainChunk(cx, cy, biome);
+          expect(c.biome).toBe(biome);
+          for (const p of c.pieces) expect(p.biome).toBe(biome);
+          for (const s of c.scatter) kinds.add(s.kind);
+        }
+      }
+      kinds.delete("reeds"); // reeds line every riverbank
+      const own: Record<string, string[]> = {
+        meadow: ["tuft", "flowers", "rock", "bush", "pebbles"],
+        woods: ["leaves", "autumnBush", "log", "tuft", "rock", "bush"],
+        highlands: ["rock", "pebbles", "dryTuft", "bush"],
+        marsh: ["tuft", "puddle", "log"],
+      };
+      for (const k of kinds) expect(own[biome], `${biome} ${k}`).toContain(k);
+    }
+  });
+
+  it("keeps the same roads and rivers as the mixed terrain", () => {
+    const mixed = terrainChunk(2, -1);
+    const marsh = terrainChunk(2, -1, "marsh");
+    expect(marsh.roads).toEqual(mixed.roads);
+    expect(marsh.rivers).toEqual(mixed.rivers);
+  });
+
+  it("is the mixed terrain when none is given", () => {
+    expect(terrainChunk(2, -1, "mixed")).toEqual(terrainChunk(2, -1));
+  });
+});
+
+describe("terrainSpot", () => {
+  it("shows several biomes for the mixed terrain", () => {
+    const p = terrainSpot("mixed", 960, 600);
+    const seen = new Set<string>();
+    for (const fy of [-0.5, 0, 0.5]) for (const fx of [-0.5, 0, 0.5]) seen.add(biomeAt(p.x + fx * 960, p.y + fy * 600));
+    expect(seen.size).toBeGreaterThan(1);
+  });
+
+  it("puts a raised piece in the picture of each biome", () => {
+    for (const biome of BIOMES) {
+      const p = terrainSpot(biome, 960, 600);
+      const { cx, cy } = { cx: Math.floor(p.x / CHUNK_SIZE), cy: Math.floor(p.y / CHUNK_SIZE) };
+      const near = [-1, 0, 1].flatMap((dy) => [-1, 0, 1].flatMap((dx) => terrainChunk(cx + dx, cy + dy, biome).pieces));
+      expect(near.some((q) => Math.abs(q.x - p.x) < 480 && Math.abs(q.y - p.y) < 300), biome).toBe(true);
+    }
   });
 });
 

@@ -12,17 +12,19 @@ import {
   gridOpacity,
   pieceDepth,
   terrainChunk,
+  terrainSpot,
   type FigureFootprint,
   type Polyline,
   type RaisedPiece,
+  type Terrain,
   type TerrainChunk,
 } from "@/lib/map/terrain";
 import { Art, TableArtDefs, bridgeArt, pieceKey, scatterKey } from "./TableArt";
 
 /*
  * The felt table under the figures: biome-tinted felt, hills, rivers, roads,
- * scatter and raised pieces, all worked out from the world coordinates by
- * lib/map/terrain.ts. Only the chunks in view are drawn, and each chunk's
+ * scatter and raised pieces, all worked out from the world coordinates and the
+ * terrain chosen in Settings by lib/map/terrain.ts. Only the chunks in view are drawn, and each chunk's
  * drawing is memoised, so panning only moves the viewBox. Nothing here takes
  * pointer events.
  *
@@ -54,15 +56,17 @@ type DrawnChunk = TerrainChunk & {
   riverPath: string;
 };
 
-/** Generated chunks, oldest first. Generation is pure, so this only saves time. */
+/** Generated chunks by terrain and position, oldest first. Generation is pure, so this only saves time. */
 const cache = new Map<string, DrawnChunk>();
 const CACHE_LIMIT = 600;
 
-function chunk(cx: number, cy: number): DrawnChunk {
-  const key = `${cx},${cy}`;
+const cacheKey = (cx: number, cy: number, terrain: Terrain) => `${terrain}:${cx},${cy}`;
+
+function chunk(cx: number, cy: number, terrain: Terrain): DrawnChunk {
+  const key = cacheKey(cx, cy, terrain);
   const hit = cache.get(key);
   if (hit) return hit;
-  const c = terrainChunk(cx, cy);
+  const c = terrainChunk(cx, cy, terrain);
   const drawn: DrawnChunk = {
     ...c,
     groundUrl: bmpDataUrl(c.ground, GROUND_CELLS + 1),
@@ -143,8 +147,20 @@ const LINE: Partial<Record<Layer, { path: "roadPath" | "riverPath"; stroke: stri
   roadCrown: { path: "roadPath", stroke: "#857049", width: 9 },
 };
 
-const ChunkLayer = memo(function ChunkLayer({ cx, cy, layer, detail }: { cx: number; cy: number; layer: Layer; detail: boolean }) {
-  const c = chunk(cx, cy);
+const ChunkLayer = memo(function ChunkLayer({
+  cx,
+  cy,
+  terrain,
+  layer,
+  detail,
+}: {
+  cx: number;
+  cy: number;
+  terrain: Terrain;
+  layer: Layer;
+  detail: boolean;
+}) {
+  const c = chunk(cx, cy, terrain);
   const line = LINE[layer];
   if (line) {
     const d = c[line.path];
@@ -229,17 +245,31 @@ function visibleChunks(vb: ViewBox) {
 const FLAT_BELOW_FELT: Layer[] = ["ground", "contours", "riverBank", "riverWater", "riverDeep", "riverSheen", "roadEdge", "roadBed", "roadRuts", "roadCrown"];
 const FLAT_ON_FELT: Layer[] = ["bridges", "scatter"];
 
-/** The felt and everything flat on it. Goes first in the map's SVG. */
-export function TableGround({ viewBox: vb, scale }: { viewBox: ViewBox; scale: number }) {
+/**
+ * The felt and everything flat on it, on `terrain`. Goes first in the
+ * map's SVG. With `warm`, the chunks just outside the view are generated while
+ * the browser is idle, ready for panning.
+ */
+export function TableGround({
+  viewBox: vb,
+  scale,
+  terrain,
+  warm = true,
+}: {
+  viewBox: ViewBox;
+  scale: number;
+  terrain: Terrain;
+  warm?: boolean;
+}) {
   const chunks = visibleChunks(vb);
-  useWarmRing(vb);
+  useWarmRing(vb, terrain, warm);
   const detail = scale >= SCATTER_MIN_SCALE;
   const layers = (list: Layer[]): ReactNode =>
     list.map((layer) =>
       layer === "contours" && scale < CONTOUR_MIN_SCALE ? null : (
         <g key={layer}>
           {chunks.map(({ cx, cy }) => (
-            <ChunkLayer key={`${cx},${cy}`} cx={cx} cy={cy} layer={layer} detail={detail} />
+            <ChunkLayer key={`${cx},${cy}`} cx={cx} cy={cy} terrain={terrain} layer={layer} detail={detail} />
           ))}
         </g>
       ),
@@ -265,16 +295,17 @@ export function TableGround({ viewBox: vb, scale }: { viewBox: ViewBox; scale: n
  * Generates the ring of chunks just outside the drawn area while the browser is
  * idle, so a chunk is ready before panning brings it into view.
  */
-function useWarmRing(vb: ViewBox) {
+function useWarmRing(vb: ViewBox, terrain: Terrain, warm: boolean) {
   const ring = chunksIn(vb, OVERSCAN + CHUNK_SIZE);
   const first = ring[0];
   const last = ring[ring.length - 1];
   const key = `${first.cx},${first.cy},${last.cx},${last.cy}`;
   useEffect(() => {
+    if (!warm) return;
     const [cx0, cy0, cx1, cy1] = key.split(",").map(Number);
     const todo: [number, number][] = [];
     for (let cy = cy0; cy <= cy1; cy++) {
-      for (let cx = cx0; cx <= cx1; cx++) if (!cache.has(`${cx},${cy}`)) todo.push([cx, cy]);
+      for (let cx = cx0; cx <= cx1; cx++) if (!cache.has(cacheKey(cx, cy, terrain))) todo.push([cx, cy]);
     }
     if (todo.length === 0) return;
     const idle = typeof requestIdleCallback === "function";
@@ -282,7 +313,7 @@ function useWarmRing(vb: ViewBox) {
     const work = (deadline?: IdleDeadline) => {
       while (todo.length > 0 && (!deadline || deadline.timeRemaining() > 3)) {
         const [cx, cy] = todo.pop()!;
-        chunk(cx, cy);
+        chunk(cx, cy, terrain);
         if (!deadline) break;
       }
       if (todo.length > 0) schedule();
@@ -292,7 +323,7 @@ function useWarmRing(vb: ViewBox) {
     };
     schedule();
     return () => (idle ? cancelIdleCallback(handle) : window.clearTimeout(handle));
-  }, [key]);
+  }, [key, terrain, warm]);
 }
 
 /** A faint chalk grid, so distances still read on the felt. */
@@ -315,22 +346,24 @@ function Grid({ viewBox: vb, px, opacity }: { viewBox: ViewBox; px: number; opac
 }
 
 /**
- * Raised pieces in view. With `front` false: the ones that go under the
- * figures. With `front` true: the ones that stand in front of a figure they
+ * Raised pieces in view, on `terrain`. With `front` false: the
+ * ones that go under the figures. With `front` true: the ones that stand in front of a figure they
  * overlap, drawn over the figures. See `pieceDepth`.
  */
 export function TablePieces({
   viewBox: vb,
   footprints,
   front,
+  terrain,
 }: {
   viewBox: ViewBox;
   footprints: FigureFootprint[];
   front: boolean;
+  terrain: Terrain;
 }) {
   const pieces: { piece: RaisedPiece; opacity: number }[] = [];
   for (const { cx, cy } of visibleChunks(vb)) {
-    for (const piece of chunk(cx, cy).pieces) {
+    for (const piece of chunk(cx, cy, terrain).pieces) {
       const depth = pieceDepth(piece, footprints);
       if (depth.inFront === front) pieces.push({ piece, opacity: depth.opacity });
     }
@@ -366,5 +399,48 @@ export function Lamp() {
           "radial-gradient(ellipse 72% 78% at 46% 42%, rgba(255, 216, 150, 0.16) 0%, rgba(255, 200, 130, 0.07) 34%, rgba(0, 0, 0, 0) 54%, rgba(14, 9, 3, 0.32) 80%, rgba(8, 5, 2, 0.6) 100%)",
       }}
     />
+  );
+}
+
+/** World units down a terrain preview at `zoomOut` 1, and the zoom it is then drawn at (close enough for scatter and the grid). */
+const PREVIEW_HEIGHT = 600;
+const PREVIEW_SCALE = 0.5;
+const NO_FIGURES: FigureFootprint[] = [];
+const spots = new Map<string, { x: number; y: number }>();
+
+/**
+ * A picture of a terrain near the origin (see `terrainSpot`), drawn by the
+ * same code as the map, `aspect` times as wide as it is tall. `zoomOut` shows
+ * that many times more of the table across, with the detail of that zoom. It borrows the felt patterns and art from the map's
+ * <TableDefs>, so it only renders while the map is on the page.
+ */
+export function TerrainPreview({
+  terrain,
+  aspect,
+  zoomOut = 1,
+  className,
+}: {
+  terrain: Terrain;
+  aspect: number;
+  zoomOut?: number;
+  className?: string;
+}) {
+  const height = PREVIEW_HEIGHT * zoomOut;
+  const width = height * aspect;
+  const key = `${terrain}:${width}x${height}`;
+  let spot = spots.get(key);
+  if (!spot) spots.set(key, (spot = terrainSpot(terrain, width, height)));
+  const vb = { x: spot.x - width / 2, y: spot.y - height / 2, width, height };
+  return (
+    <svg
+      viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+      className={className}
+      style={{ background: FELT_BASE }}
+    >
+      <TableGround viewBox={vb} scale={PREVIEW_SCALE / zoomOut} terrain={terrain} warm={false} />
+      <TablePieces viewBox={vb} footprints={NO_FIGURES} front={false} terrain={terrain} />
+    </svg>
   );
 }

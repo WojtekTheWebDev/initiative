@@ -20,7 +20,7 @@ import {
   type ViewBox,
   type ViewportSize,
 } from "@/lib/map/camera";
-import type { FigureFootprint } from "@/lib/map/terrain";
+import type { FigureFootprint, Terrain } from "@/lib/map/terrain";
 import { useCamera, type InitialCamera } from "./useCamera";
 import { FELT_BASE, Lamp, TableDefs, TableGround, TablePieces } from "./Table";
 
@@ -60,6 +60,8 @@ type Props = {
   overlay?: Layer;
   /** Where the figures and their labels stand, so raised terrain pieces never hide them. */
   footprints?: FigureFootprint[];
+  /** What the table is made of; mixed when left out. */
+  terrain?: Terrain;
   /** Click (no drag) on empty ground; receives the world point. */
   onBackgroundClick?: (world: Pos) => void;
   /** React 19 ref-as-prop. */
@@ -86,6 +88,7 @@ export function MapCanvas({
   children,
   overlay,
   footprints = NO_FOOTPRINTS,
+  terrain = "mixed",
   onBackgroundClick,
   ref,
   className,
@@ -278,10 +281,10 @@ export function MapCanvas({
         <TableDefs />
         {view && (
           <>
-            <TableGround viewBox={view.viewBox} scale={view.camera.scale} />
-            <TablePieces viewBox={view.viewBox} footprints={footprints} front={false} />
+            <TableGround viewBox={view.viewBox} scale={view.camera.scale} terrain={terrain} />
+            <TablePieces viewBox={view.viewBox} footprints={footprints} front={false} terrain={terrain} />
             <g>{typeof children === "function" ? children(view) : children}</g>
-            <TablePieces viewBox={view.viewBox} footprints={footprints} front />
+            <TablePieces viewBox={view.viewBox} footprints={footprints} front terrain={terrain} />
           </>
         )}
       </svg>

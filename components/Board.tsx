@@ -28,6 +28,7 @@ import { FigureDialogs } from "@/components/dialogs/FigureDialogs";
 import { TrophyShelf } from "@/components/trophies/TrophyShelf";
 import { Hud } from "@/components/Hud";
 import { GameMenu } from "@/components/game/GameMenu";
+import { useSettings } from "@/components/game/GameProvider";
 import { ExampleBanner } from "@/components/game/ExampleBanner";
 import type { GameFiles } from "@/components/game/useGameFiles";
 
@@ -40,6 +41,7 @@ const OPENING_PADDING = 88;
 /** The table and its HUD, drawn from the game in this browser. `files` backs the game menu and the first-visit banner. */
 export function Board({ files }: { files: GameFiles }) {
   const map = useRef<MapHandle>(null);
+  const settings = useSettings();
   // Drag and drop; `drag.layout` includes the live drag.
   const drag = useFigureDrag(map);
   // The figure whose card is open; `null` once it is slain or deleted.
@@ -115,6 +117,7 @@ export function Board({ files }: { files: GameFiles }) {
         ref={map}
         initialCamera={initialCamera}
         footprints={footprints}
+        terrain={settings.terrain}
         onBackgroundClick={() => select(null)}
         overlay={(view) => (
           <>

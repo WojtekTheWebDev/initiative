@@ -5,6 +5,7 @@ import { backupDue, daysAgo, type GameState } from "@/lib/save/game";
 import { Glass } from "@/components/ui/Glass";
 import { Icon, type IconName } from "@/components/ui/icons";
 import { AboutDialog } from "./AboutDialog";
+import { SettingsDialog } from "./SettingsDialog";
 import { useGame } from "./GameProvider";
 import type { GameFiles } from "./useGameFiles";
 
@@ -15,7 +16,7 @@ function modKey(): string {
 
 /**
  * The wordmark in the top-left corner, which opens the game menu: Save game
- * to file, Load game from file, New game and About, over a line saying where the
+ * to file, Load game from file, New game, Settings and About, over a line saying where the
  * table is kept and when it was last saved to a file. After `BACKUP_DAYS` of
  * unsaved changes an amber dot sits on the wordmark.
  *
@@ -26,6 +27,7 @@ export function GameMenu({ files }: { files: GameFiles }) {
   const state = useGame();
   const [open, setOpen] = useState(false);
   const [about, setAbout] = useState(false);
+  const [settings, setSettings] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const due = backupDue(state.game, new Date());
 
@@ -112,6 +114,9 @@ export function GameMenu({ files }: { files: GameFiles }) {
           <Item icon="newGame" onClick={choose(files.openNewGame)}>
             New game…
           </Item>
+          <Item icon="settings" onClick={choose(() => setSettings(true))}>
+            Settings
+          </Item>
           <Item icon="info" onClick={choose(() => setAbout(true))}>
             About Initiative
           </Item>
@@ -123,6 +128,13 @@ export function GameMenu({ files }: { files: GameFiles }) {
         open={about}
         onClose={() => {
           setAbout(false);
+          ref.current?.querySelector<HTMLElement>("[aria-haspopup]")?.focus();
+        }}
+      />
+      <SettingsDialog
+        open={settings}
+        onClose={() => {
+          setSettings(false);
           ref.current?.querySelector<HTMLElement>("[aria-haspopup]")?.focus();
         }}
       />

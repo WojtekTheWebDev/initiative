@@ -3,9 +3,10 @@
 import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { World } from "@/lib/types";
 import { createGameStore, STORAGE_KEY, type GameState, type GameStore } from "@/lib/save/game";
+import { createSettingsStore, DEFAULT_SETTINGS, SETTINGS_KEY, type Settings, type SettingsStore } from "@/lib/save/settings";
 import { useToast } from "@/components/ui/Toast";
 
-type GameContextValue = { store: GameStore; example: World } | null;
+type GameContextValue = { store: GameStore; example: World; settings: SettingsStore } | null;
 
 const GameContext = createContext<GameContextValue>(null);
 
@@ -19,20 +20,24 @@ function localStorageOrNull(): Storage | null {
 }
 
 /**
- * Holds the game in the browser's local storage (see `createGameStore`).
- * The server has no game, so it renders the children without one; the
- * browser reads the stored game, or deals `example`, once it hydrates. A game
- * stored by another tab is taken in through the `storage` event.
+ * Holds the game and the settings in the browser's local storage (see
+ * `createGameStore` and `createSettingsStore`). The server has no game, so it
+ * renders the children without one; the browser reads the stored game, or
+ * deals `example`, once it hydrates. A game or settings stored by another tab
+ * are taken in through the `storage` event.
  */
 export function GameProvider({ example, children }: { example: World; children: ReactNode }) {
-  const [value] = useState<GameContextValue>(() =>
-    typeof window === "undefined" ? null : { store: createGameStore(localStorageOrNull(), example), example },
-  );
+  const [value] = useState<GameContextValue>(() => {
+    if (typeof window === "undefined") return null;
+    const storage = localStorageOrNull();
+    return { store: createGameStore(storage, example), example, settings: createSettingsStore(storage) };
+  });
 
   useEffect(() => {
     if (!value) return;
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) value.store.external(e.newValue);
+      if (e.key === SETTINGS_KEY) value.settings.external(e.newValue);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -61,8 +66,20 @@ export function useGame(): GameState {
   return state;
 }
 
+const defaultSettings = () => DEFAULT_SETTINGS;
+
+/** This browser's settings (the defaults on the server). */
+export function useSettings(): Settings {
+  const value = useContext(GameContext);
+  return useSyncExternalStore(
+    value?.settings.subscribe ?? noSubscribe,
+    value?.settings.getState ?? defaultSettings,
+    defaultSettings,
+  );
+}
+
 /** The game store and the example table, for code that changes the game. */
-export function useGameStore(): { store: GameStore; example: World } {
+export function useGameStore(): { store: GameStore; example: World; settings: SettingsStore } {
   const value = useContext(GameContext);
   if (!value) throw new Error("useGameStore() needs a <GameProvider> in the browser");
   return value;
