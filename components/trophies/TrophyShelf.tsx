@@ -22,10 +22,13 @@ export function TrophyShelf({
   world,
   shelfRef,
   hint,
+  onRevive,
 }: {
   world: World;
   shelfRef: RefObject<HTMLElement | null>;
   hint: ShelfHint | null;
+  /** Revive on a plaque in the trophy hall. */
+  onRevive: (monsterId: string) => void;
 }) {
   const [hallOpen, setHallOpen] = useState(false);
   const trophies = useMemo(() => trophiesOf(world.monsters), [world.monsters]);
@@ -56,7 +59,7 @@ export function TrophyShelf({
           </span>
         </button>
       </div>
-      <TrophyHall world={world} open={hallOpen} onClose={() => setHallOpen(false)} />
+      <TrophyHall world={world} open={hallOpen} onClose={() => setHallOpen(false)} onRevive={onRevive} />
     </>
   );
 }

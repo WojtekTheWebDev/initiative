@@ -80,7 +80,9 @@ export function Board({ world }: { world: World }) {
           </>
         }
         topRight={<CreateButtons onCreate={dialogs.openCreate} />}
-        bottomLeft={<TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} />}
+        bottomLeft={(
+          <TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} onRevive={drag.revive} />
+        )}
         bottomRight={
           <MapControls
             map={map}

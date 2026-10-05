@@ -14,7 +14,7 @@ import {
   type RefObject,
 } from "react";
 import type { Pos, World } from "@/lib/types";
-import { localToday } from "@/lib/domain";
+import { localToday, type HeroBefore } from "@/lib/domain";
 import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import * as actions from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
@@ -106,6 +106,8 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const toast = useToast();
   const session = useRef<Session | null>(null);
   const shelfRef = useRef<HTMLElement | null>(null);
+  // What each slay in this session changed, so a revive can give the fighters back.
+  const slainBefore = useRef(new Map<string, HeroBefore[]>());
   const suppressClick = useRef(false);
 
   const drag = live?.drag ?? null;
@@ -131,6 +133,20 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   );
 
   /**
+   * Revives a slain monster optimistically. If it was slain in this session,
+   * its fighters get their targets back (see `revive` in lib/domain); otherwise
+   * only the monster returns.
+   */
+  const revive = useCallback(
+    (id: string) => {
+      const before = slainBefore.current.get(id) ?? [];
+      slainBefore.current.delete(id);
+      run({ kind: "revive", id, before });
+    },
+    [run],
+  );
+
+  /**
    * Slays a monster optimistically, then shows the slay toast with Undo, which
    * revives it (optimistically too) with what the server says the slay changed.
    */
@@ -140,11 +156,11 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       startTransition(async () => {
         addOp({ kind: "slay", id, today: localToday() });
         try {
-          const before = await unwrap(actions.slayMonster(id));
+          slainBefore.current.set(id, await unwrap(actions.slayMonster(id)));
           toast.show({
             tone: "slain",
             message: `${name} slain`,
-            action: { label: "Undo", icon: "undo", run: () => run({ kind: "revive", id, before }) },
+            action: { label: "Undo", icon: "undo", run: () => revive(id) },
           });
         } catch (err) {
           const reason = err instanceof Error && err.message ? err.message : "the server didn't answer";
@@ -152,7 +168,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
         }
       });
     },
-    [optimisticWorld, addOp, toast, run],
+    [optimisticWorld, addOp, toast, revive],
   );
 
   const shelfRect = (): ScreenRect | null => shelfRef.current?.getBoundingClientRect() ?? null;
@@ -349,6 +365,8 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
       live?.hint?.monsterId === monsterId ? live.hint.kind : null,
     /** Slays a monster (the card's Slay), with the slay toast and its Undo. */
     slay,
+    /** Brings a slain monster back to the table (Undo on the slay toast, Revive in the trophy hall). */
+    revive,
     /** Attach to the trophy shelf: a monster dropped on it is slain. */
     shelfRef,
     /** How the trophy shelf shows during a monster drag; null otherwise. */
