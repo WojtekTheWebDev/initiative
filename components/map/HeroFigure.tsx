@@ -11,7 +11,7 @@ type Props = FigureHandlers & {
 };
 
 /** A hero: its picked mini (or the neutral adventurer), a little faded while idle. */
-export function HeroFigure({ placed, scale, selected, onPointerDown, onClick }: Props) {
+export function HeroFigure({ placed, scale, selected, onPointerDown, onClick, onKeyDown }: Props) {
   const { hero, pos, targets } = placed;
   const idle = targets.length === 0;
   return (
@@ -26,6 +26,7 @@ export function HeroFigure({ placed, scale, selected, onPointerDown, onClick }: 
       data={{ "data-hero": hero.id }}
       onPointerDown={onPointerDown}
       onClick={onClick}
+      onKeyDown={onKeyDown}
     />
   );
 }

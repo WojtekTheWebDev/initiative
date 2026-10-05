@@ -36,7 +36,9 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Arrows:** click an arrow for **Make main** or **Remove target**. Selecting a hero or monster highlights its arrows.
 - **Unfought monsters** pulse red. The red counter under the wordmark lists them, and red arrows at the edge of the view point to the ones off-screen. Click either to fly there.
 - **Slay** a monster by dropping it on the trophy shelf at the bottom, or with **Slay** on its card. Heroes fighting it move on to their next target, or stand idle where it was. The toast offers **Undo** for 8 seconds. Click the shelf to open the trophy hall, with a plaque for every slain monster and who fought it. **Delete** does the same cleanup but removes the monster for good, so it asks you to click twice.
-- **+ Monster** and **+ Hero** in the top-right corner open the create forms.
+- **+ Monster** and **+ Hero** in the top-right corner open the summon and recruit dialogs; **Edit** on a card opens the same dialog filled in.
+- **Map controls** in the bottom-right corner zoom and fit everything; **?** lists the keyboard shortcuts (`N`, `H`, `F`, `+`, `-`).
+- **Keyboard:** Tab reaches every control, figure and arrow, Enter opens it and Esc closes it.
 
 ## Data
 

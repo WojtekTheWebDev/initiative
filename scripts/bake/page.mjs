@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-/** Camera elevation and azimuth, in degrees (D8). */
+/** Camera elevation and azimuth, in degrees. */
 const ELEVATION = 38;
 const AZIMUTH = 18;
 /** Rendered at this many times the output size, then scaled down for clean edges. */

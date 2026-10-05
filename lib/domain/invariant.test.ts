@@ -10,7 +10,7 @@ const living = ["m1", "m2", "m3"];
 for (const h of heroes) {
   for (const m of living) {
     ops.push([`assign ${h} ${m}`, (w) => domain.assign(w, h, m)]);
-    ops.push([`addGhost ${h} ${m}`, (w) => domain.addGhost(w, h, m)]);
+    ops.push([`addSecondary ${h} ${m}`, (w) => domain.addSecondary(w, h, m)]);
     ops.push([`removeTarget ${h} ${m}`, (w) => domain.removeTarget(w, h, m)]);
   }
   ops.push([`setIdle ${h}`, (w) => domain.setIdle(w, h, { x: 1, y: 1 })]);

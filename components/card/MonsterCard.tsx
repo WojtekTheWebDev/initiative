@@ -37,8 +37,8 @@ export function MonsterCard({
   onEdit?: () => void;
 }) {
   const act = useCardAction();
-  const { main, ghosts } = fightersOf(world, monster.id);
-  const fighters = [...main.map((hero) => ({ hero, main: true })), ...ghosts.map((hero) => ({ hero, main: false }))];
+  const { main, secondary } = fightersOf(world, monster.id);
+  const fighters = [...main.map((hero) => ({ hero, main: true })), ...secondary.map((hero) => ({ hero, main: false }))];
 
   return (
     <>
@@ -53,8 +53,10 @@ export function MonsterCard({
         name={monster.name}
         facts={
           <>
-            {monster.size} · {creatureOf(monster.size)}
-            {monster.externalKey && <span className="ml-2 inline-block font-mono whitespace-nowrap text-hud-fg">{monster.externalKey}</span>}
+            <span>
+              {monster.size} · {creatureOf(monster.size)}
+            </span>
+            {monster.externalKey && <span className="font-mono whitespace-nowrap text-hud-fg">{monster.externalKey}</span>}
           </>
         }
       />

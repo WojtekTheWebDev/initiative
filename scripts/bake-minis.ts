@@ -1,5 +1,5 @@
 /*
- * Bakes 3D models into the images the map draws (D10). Dev only: the output is
+ * Bakes 3D models into the images the map draws. Dev only: the output is
  * committed, so neither `npm run dev` nor `npm run build` runs this.
  *
  *   npm run bake:minis                         # assets/minis -> public/minis
@@ -49,7 +49,7 @@ type ModelSpec = {
   /** Display name, e.g. in the hero form's picker. */
   name: string;
   kind: "hero" | "monster" | "terrain";
-  /** Monsters only: the size this model stands for (D14). */
+  /** Monsters only: the size this model stands for. */
   size?: Size;
   /**
    * World units per model unit. Defaults to the base radius of the kind (and

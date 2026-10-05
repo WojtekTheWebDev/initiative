@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import type { Pos } from "@/lib/types";
 import { worldToScreen, type Camera } from "@/lib/map/camera";
 import { linksOf } from "@/lib/map/links";
@@ -48,7 +48,8 @@ type Props = {
  * above naming the pair: a gold crown, Make main (only on a secondary arrow),
  * and red shears, Remove target. Lives in the canvas' screen-space overlay.
  * The first button takes focus when they open and Tab cycles between them.
- * Closes on Esc or a press outside them.
+ * Closes on Esc, which hands the focus back to the arrow, or on a press
+ * outside them.
  */
 export function TargetButtons({ anchor, heroName, monsterName, main, onMakeMain, onRemove, onClose }: Props) {
   const ref = useRef<HTMLDivElement>(null);
@@ -57,14 +58,17 @@ export function TargetButtons({ anchor, heroName, monsterName, main, onMakeMain,
     onCloseRef.current = onClose;
   }, [onClose]);
 
+  // The arrow that opened them, read while rendering, before a button takes the focus.
+  const [opener] = useState(() => (document.activeElement instanceof SVGElement ? document.activeElement : null));
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onCloseRef.current();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        e.preventDefault(); // tells the side panel this Esc is taken
+        e.preventDefault(); // tells the figure card this Esc is taken
         onCloseRef.current();
+        if (opener?.isConnected) opener.focus();
       }
     };
     // Capture phase, so a press that starts a pan or drag still closes them.
@@ -74,7 +78,7 @@ export function TargetButtons({ anchor, heroName, monsterName, main, onMakeMain,
       window.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [opener]);
 
   const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     if (e.key !== "Tab" || !ref.current) return;

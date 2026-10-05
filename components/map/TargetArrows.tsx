@@ -29,7 +29,7 @@ type Props = {
 /**
  * An arrow from every hero to each of its targets, like a gold cord laid on the
  * table: solid for the main target, dashed for secondary ones. Drawn in world
- * space below the figures.
+ * space below the figures. Each arrow is a button in the Tab order.
  */
 export function TargetArrows({ layout, scale, focus, bindLink }: Props) {
   const names = new Map<string, string>([
@@ -64,6 +64,7 @@ function Arrow({
   title,
   onPointerDown,
   onClick,
+  onKeyDown,
 }: FigureHandlers & { link: PlacedLink; scale: number; state: "normal" | "focused" | "faded"; title: string }) {
   const { from, to, main } = link;
   const px = 1 / scale;
@@ -87,9 +88,13 @@ function Arrow({
     <g
       data-figure=""
       data-link={`${link.heroId}:${link.monsterId}`}
+      role="button"
+      tabIndex={0}
+      aria-label={title}
       style={{ cursor: "pointer" }}
       onPointerDown={onPointerDown}
       onClick={onClick}
+      onKeyDown={onKeyDown}
     >
       <title>{title}</title>
       <g opacity={opacity} strokeLinecap="round" style={{ pointerEvents: "none" }}>

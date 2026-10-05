@@ -13,7 +13,7 @@ type Props = FigureHandlers & {
 };
 
 /** A monster: the mini for its size, ringed red while unfought. */
-export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown, onClick }: Props) {
+export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown, onClick, onKeyDown }: Props) {
   const { monster, pos, radius, unfought } = placed;
   const rings: BaseRing[] = [];
   if (unfought) rings.push("unfought");
@@ -30,6 +30,7 @@ export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown
       data={{ "data-monster": monster.id }}
       onPointerDown={onPointerDown}
       onClick={onClick}
+      onKeyDown={onKeyDown}
     />
   );
 }

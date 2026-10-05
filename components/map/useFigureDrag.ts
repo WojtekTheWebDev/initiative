@@ -8,6 +8,7 @@ import {
   useOptimistic,
   useRef,
   useState,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent,
   type PointerEvent,
   type RefObject,
@@ -89,13 +90,14 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
  *   it and the map re-lays out around it on every move (its cluster follows),
  *   while a hero moves alone. Arrows come from the layout, so they follow
  *   either way.
- * - Clicking an arrow opens its popover (`link`).
+ * - Clicking an arrow opens its buttons (`link`, see TargetButtons).
  * - On drop, a dragged monster's home, or an idle hero's, moves by the drag
  *   offset (see homeAfterDrag). A monster dropped on the trophy shelf
- *   (`shelfRef`) is slain instead (see dropAction and `slay`). The change is applied optimistically with the
- *   same lib/domain rule the server uses, then the Server Action runs. The
- *   optimistic world stays until the refreshed server data arrives (no
- *   snap-back); on failure it reverts and an error toast says so.
+ *   (`shelfRef`) is slain instead (see dropAction and `slay`). The change is
+ *   applied optimistically with the same lib/domain rule the server uses,
+ *   then the Server Action runs. The optimistic world stays until the
+ *   refreshed server data arrives (no snap-back); on failure it reverts and
+ *   an error toast says so.
  */
 export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
   const [optimisticWorld, addOp] = useOptimistic(world, applyOp);
@@ -302,26 +304,36 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     return true;
   }
 
-  /** Handlers for a draggable monster or hero. `onClick` runs only for a press without a drag. */
+  /** Enter or Space on a focused figure or arrow does what a click does, unless a drag is under way. */
+  function onActivateKey(e: ReactKeyboardEvent<SVGGElement>, run: () => void) {
+    if ((e.key !== "Enter" && e.key !== " ") || session.current) return;
+    e.preventDefault();
+    run();
+  }
+
+  /** Handlers for a draggable monster or hero. `onClick` runs only for a press without a drag, or for Enter or Space. */
   function bindFigure(kind: "monster" | "hero", id: string, onClick: () => void): FigureHandlers {
     return {
       onPointerDown: (e) => start(kind, id, e),
       onClick: (e) => {
         if (guardClick(e)) onClick();
       },
+      onKeyDown: (e) => onActivateKey(e, onClick),
     };
   }
 
-  /** Handlers for a target arrow: a click opens its popover. */
+  /** Handlers for a target arrow: a click, Enter or Space opens its buttons. */
   function bindLink(heroId: string, monsterId: string): FigureHandlers {
+    const open = () => setLink({ heroId, monsterId });
     return {
       onPointerDown: (e) => {
         e.stopPropagation();
         suppressClick.current = false;
       },
       onClick: (e) => {
-        if (guardClick(e)) setLink({ heroId, monsterId });
+        if (guardClick(e)) open();
       },
+      onKeyDown: (e) => onActivateKey(e, open),
     };
   }
 
@@ -343,7 +355,7 @@ export function useFigureDrag(world: World, map: RefObject<MapHandle | null>) {
     shelfHint: (live?.drag.kind === "monster" ? (live.overShelf ? "over" : "armed") : null) as ShelfHint | null,
     /** The figure being dragged, to draw on top of everything. */
     lifted: drag ? { kind: drag.kind, id: drag.id } : null,
-    /** The arrow whose popover is open. */
+    /** The arrow whose buttons are open. */
     link,
     closeLink: () => setLink(null),
     makeMain: (t: TargetRef) => {

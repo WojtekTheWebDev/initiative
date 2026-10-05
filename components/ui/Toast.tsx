@@ -38,6 +38,9 @@ type Shown = ToastOptions & { id: number };
 /**
  * Holds the one toast on screen and draws it at the bottom centre of the
  * window, just above the trophy shelf. Mounted once, in the root layout.
+ *
+ * It stacks over the table but under the HUD clusters (`z-30` in Hud.tsx),
+ * so a trophy shelf tooltip shows over it, and under the dialogs.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<Shown | null>(null);
@@ -65,7 +68,7 @@ function ToastView({ toast, onDismiss }: { toast: Shown; onDismiss: () => void }
   const error = toast.tone === "error";
   const { action } = toast;
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-28 z-50 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-28 z-20 flex justify-center px-4">
       <Glass
         role={error ? "alert" : "status"}
         className={`pointer-events-auto flex max-w-xl items-center gap-3 py-2 pr-2 pl-3.5 text-sm motion-safe:animate-hud-rise ${

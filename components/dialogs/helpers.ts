@@ -48,7 +48,7 @@ export function isDirty<F extends Record<string, string>>(start: F, now: F): boo
   return Object.keys(start).some((k) => start[k] !== now[k]);
 }
 
-/** The class chips (D20): the distinct, non-empty classes of the heroes other than `selfId`, sorted. */
+/** The class chips: the distinct, non-empty classes of the heroes other than `selfId`, sorted. */
 export function classChips(heroes: readonly Hero[], selfId?: string): string[] {
   const classes = new Set<string>();
   for (const h of heroes) {

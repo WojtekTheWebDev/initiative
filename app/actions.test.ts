@@ -38,7 +38,7 @@ describe("server actions (smoke)", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
-  it("dropHero maps to addGhost, assign and setIdle", async () => {
+  it("dropHero maps to addSecondary, assign and setIdle", async () => {
     await actions.dropHero("bartek", { monsterId: "flaky-ci", shift: true });
     expect((await world()).heroes.find((h) => h.id === "bartek")?.targets).toEqual(["search-rewrite", "flaky-ci"]);
 

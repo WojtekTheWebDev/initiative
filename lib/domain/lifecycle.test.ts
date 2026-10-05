@@ -24,7 +24,7 @@ describe.each([
     expectValid(w);
   });
 
-  it("removes a ghost target", () => {
+  it("removes a secondary target", () => {
     const w = kill(makeWorld(), "m2");
     expect(hero(w, "ana").targets).toEqual(["m1"]);
     expectValid(w);

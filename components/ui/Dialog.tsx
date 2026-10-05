@@ -9,6 +9,7 @@ const FOCUSABLE =
 
 /**
  * A centred glass dialog over the dimmed table, rendered into `document.body`.
+ * Its panel is dense glass without the backdrop blur (`hud-glass-dense`).
  *
  * - Focus moves into it on open (to an `autoFocus` field, else the first
  *   control), Tab stays inside it, and focus returns to where it was on close.
@@ -126,7 +127,7 @@ function DialogPanel({
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={onKeyDown}
-        className={`hud-glass relative max-h-full w-full max-w-lg overflow-y-auto p-5 outline-none motion-safe:animate-hud-pop ${className}`}
+        className={`hud-glass-dense relative max-h-full w-full max-w-lg overflow-y-auto p-5 outline-none motion-safe:animate-hud-pop ${className}`}
       >
         <h2 id={titleId} className="font-display pr-10 text-lg tracking-[0.08em] text-hud-gold uppercase">
           {title}

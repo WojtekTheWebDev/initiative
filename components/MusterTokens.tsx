@@ -86,6 +86,7 @@ function FoldedList({ monsters, onPick }: Props) {
     };
     const onKeyDown = (e: globalThis.KeyboardEvent) => {
       if (e.key === "Escape") {
+        e.preventDefault(); // this Esc closes the list, not the figure card
         setOpen(false);
         toggleRef.current?.focus();
       }
