@@ -5,6 +5,7 @@ import type { Pos } from "@/lib/types";
 import {
   flyTarget,
   lerpCamera,
+  zoomAtCenter,
   type Camera,
   type ViewportSize,
 } from "@/lib/map/camera";
@@ -21,7 +22,11 @@ export function prefersReducedMotion(): boolean {
   );
 }
 
-/** An initial camera, or a function that computes one from the first measured viewport. */
+/**
+ * The opening view: a camera, or a function that computes one from a viewport.
+ * The first measured viewport gives the opening camera, and `fitAll` returns
+ * to it (calling the latest function again with the current viewport).
+ */
 export type InitialCamera = Camera | ((viewport: ViewportSize) => Camera);
 
 /**
@@ -40,12 +45,19 @@ export function useCamera(initial: InitialCamera) {
   const cameraRef = useRef<Camera | null>(camera);
   const viewportRef = useRef<ViewportSize | null>(null);
   const animRef = useRef<number | null>(null);
+  /** Where the running animation ends, so a zoom step taken mid-glide builds on it. */
+  const targetRef = useRef<Camera | null>(null);
+
+  useEffect(() => {
+    initialRef.current = initial;
+  }, [initial]);
 
   const stopAnimation = useCallback(() => {
     if (animRef.current !== null) {
       cancelAnimationFrame(animRef.current);
       animRef.current = null;
     }
+    targetRef.current = null;
   }, []);
 
   const commit = useCallback((next: Camera) => {
@@ -72,8 +84,7 @@ export function useCamera(initial: InitialCamera) {
       viewportRef.current = size;
       setViewportState(size);
       if (!cameraRef.current) {
-        const init = initialRef.current;
-        commit(typeof init === "function" ? init(size) : init);
+        commit(resolveInitial(initialRef.current, size));
       }
     },
     [commit],
@@ -88,11 +99,17 @@ export function useCamera(initial: InitialCamera) {
         commit(target);
         return;
       }
+      targetRef.current = target;
       const start = performance.now();
       const step = (now: number) => {
         const t = Math.min(1, (now - start) / FLY_MS);
         commit(t >= 1 ? target : lerpCamera(from, target, easeInOutCubic(t)));
-        animRef.current = t >= 1 ? null : requestAnimationFrame(step);
+        if (t >= 1) {
+          animRef.current = null;
+          targetRef.current = null;
+        } else {
+          animRef.current = requestAnimationFrame(step);
+        }
       };
       animRef.current = requestAnimationFrame(step);
     },
@@ -110,6 +127,24 @@ export function useCamera(initial: InitialCamera) {
     [animateTo],
   );
 
+  /** Zooms by `factor` around the middle of the screen, gliding like a fly-to. */
+  const zoomBy = useCallback(
+    (factor: number) => {
+      const cam = targetRef.current ?? cameraRef.current;
+      const vp = viewportRef.current;
+      if (!cam || !vp) return;
+      animateTo(zoomAtCenter(cam, vp, factor));
+    },
+    [animateTo],
+  );
+
+  /** Glides back to the opening view, worked out again for the current figures and viewport. */
+  const fitAll = useCallback(() => {
+    const vp = viewportRef.current;
+    if (!vp) return;
+    animateTo(resolveInitial(initialRef.current, vp));
+  }, [animateTo]);
+
   useEffect(() => stopAnimation, [stopAnimation]);
 
   return {
@@ -121,5 +156,11 @@ export function useCamera(initial: InitialCamera) {
     setViewport,
     animateTo,
     flyTo,
+    zoomBy,
+    fitAll,
   };
+}
+
+function resolveInitial(initial: InitialCamera, viewport: ViewportSize): Camera {
+  return typeof initial === "function" ? initial(viewport) : initial;
 }

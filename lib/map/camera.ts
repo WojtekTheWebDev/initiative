@@ -74,6 +74,14 @@ export function zoomAt(camera: Camera, screen: Pos, factor: number): Camera {
   };
 }
 
+/** How much one zoom-in step of the map controls or the `+` key magnifies. */
+export const ZOOM_STEP = 1.5;
+
+/** Zooms by `factor` around the middle of the viewport. Scale is clamped. */
+export function zoomAtCenter(camera: Camera, viewport: ViewportSize, factor: number): Camera {
+  return zoomAt(camera, { x: viewport.width / 2, y: viewport.height / 2 }, factor);
+}
+
 /** Moves the camera so the content follows a drag of (dx, dy) screen pixels. */
 export function panBy(camera: Camera, dx: number, dy: number): Camera {
   return { ...camera, x: camera.x - dx / camera.scale, y: camera.y - dy / camera.scale };

@@ -18,6 +18,7 @@ import { EdgeArrows } from "@/components/map/EdgeArrows";
 import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
 import { DragOverlay } from "@/components/map/DragOverlay";
+import { MapControls } from "@/components/map/MapControls";
 import { SidePanel, type FlyToFigure } from "@/components/panel/SidePanel";
 import { CreateButtons } from "@/components/panel/CreateButtons";
 import { usePanel } from "@/components/panel/usePanel";
@@ -60,7 +61,7 @@ export function Board({ world }: { world: World }) {
   // T8: side panel / forms state; `panel.selection` is null once the item is slain or deleted.
   const panel = usePanel(drag.world, selection, setSelection);
 
-  // Only the first call matters: MapCanvas computes the opening camera once.
+  // The opening view, worked out from the figures; "fit everything" returns to it.
   const initialCamera = (viewport: ViewportSize) =>
     fitBounds(openingPoints(layout), viewport, OPENING_PADDING);
 
@@ -94,6 +95,13 @@ export function Board({ world }: { world: World }) {
         topRight={<CreateButtons panel={panel} />}
         bottomCenter={
           <Trophies monsters={drag.world.monsters} openId={panel.trophyId} onOpen={panel.openTrophy} />
+        }
+        bottomRight={
+          <MapControls
+            map={map}
+            newMonster={() => panel.openCreate("monster")}
+            newHero={() => panel.openCreate("hero")}
+          />
         }
       />
 
