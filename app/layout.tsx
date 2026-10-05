@@ -20,18 +20,12 @@ const cinzel = Cinzel({
 const DESCRIPTION =
   "A planning playing game: lay out your work as monsters and your team as heroes on a tabletop map, and see at a glance who fights what. It runs in your browser and keeps your table there.";
 
-/**
- * Where the site is served, for the canonical link and absolute image URLs:
- * NEXT_PUBLIC_SITE_URL when set, else the production domain Vercel provides
- * at build time. Next.js falls back to the deployment URL on its own.
- */
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined);
+/** Where the site is served, for the canonical link and absolute image URLs. NEXT_PUBLIC_SITE_URL overrides it. */
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://initiative-ppg.vercel.app";
 
 // The icons, the link preview image and the web manifest are files in app/ (see `npm run make:icons`).
 export const metadata: Metadata = {
-  ...(SITE_URL && { metadataBase: new URL(SITE_URL) }),
+  metadataBase: new URL(SITE_URL),
   title: "Initiative · A planning playing game",
   description: DESCRIPTION,
   applicationName: "Initiative",

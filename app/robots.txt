@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://initiative-ppg.vercel.app/sitemap.xml
