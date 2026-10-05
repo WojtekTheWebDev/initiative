@@ -226,6 +226,7 @@ describe("relax", () => {
       times.push(performance.now() - t0);
     }
     times.sort((a, b) => a - b);
-    expect(times[3]).toBeLessThan(15);
+    // The budget is for a developer machine; shared CI runners get four times as long.
+    expect(times[3]).toBeLessThan(15 * (process.env.CI ? 4 : 1));
   });
 });
