@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import type { Pos, World } from "@/lib/types";
-import type { MapHandle } from "@/components/map/MapCanvas";
-import { heroSpawn, monsterSpawn, visibleViewBox } from "./helpers";
+import type { FigureKind } from "@/components/dialogs/useDialogs";
 import type { PanelState } from "./usePanel";
 import { MonsterFacts, MonsterPanel } from "./MonsterPanel";
 import { HeroPanel } from "./HeroPanel";
-import { MonsterForm } from "./MonsterForm";
-import { HeroForm } from "./HeroForm";
 import { Glass } from "@/components/ui/Glass";
 import { IconButton } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/icons";
@@ -29,23 +26,24 @@ const PANEL_GAP = 16;
 export function SidePanel({
   panel,
   world,
-  map,
   flyTo,
+  onEdit,
 }: {
   panel: PanelState;
   world: World;
-  map: RefObject<MapHandle | null>;
   flyTo: FlyToFigure;
+  /** Opens the edit dialog for a figure. */
+  onEdit: (kind: FigureKind, id: string) => void;
 }) {
   const { selection, mode } = panel;
   const isOpen = selection !== null || mode !== null;
 
-  // Esc leaves an edit form first, then closes the panel. Other Esc handlers
-  // (a drag in progress, the target popover) claim the key with preventDefault();
-  // they may run after this listener, so look at the event once dispatch is over.
+  // Esc closes the panel. Other Esc handlers (a drag in progress, the target
+  // popover, a dialog) claim the key with preventDefault(); they may run after
+  // this listener, so look at the event once dispatch is over.
   const onEscape = useRef<() => void>(() => {});
   useEffect(() => {
-    onEscape.current = mode?.type === "edit" ? panel.back : panel.close;
+    onEscape.current = panel.close;
   });
   useEffect(() => {
     if (!isOpen) return;
@@ -63,35 +61,8 @@ export function SidePanel({
 
   if (!isOpen) return null;
 
-  /** The visible part of the map, not counting the area under this panel. */
-  const visible = () => {
-    const m = map.current;
-    if (!m) return { x: -200, y: -200, width: 400, height: 400 };
-    return visibleViewBox(m.camera, m.viewportSize, PANEL_WIDTH + PANEL_GAP);
-  };
-  const created = (kind: "monster" | "hero") => (id: string, pos: Pos) => {
-    panel.select({ kind, id });
-    flyTo(kind, id, pos);
-  };
-
   let content: ReactNode = null;
-  if (mode?.type === "create" && mode.kind === "monster") {
-    content = (
-      <MonsterForm
-        spawnAt={() => monsterSpawn(visible())}
-        onCreated={created("monster")}
-        onCancel={panel.back}
-      />
-    );
-  } else if (mode?.type === "create" && mode.kind === "hero") {
-    content = (
-      <HeroForm
-        spawnAt={() => heroSpawn(visible())}
-        onCreated={created("hero")}
-        onCancel={panel.back}
-      />
-    );
-  } else if (mode?.type === "trophy") {
+  if (mode?.type === "trophy") {
     const monster = world.monsters.find((m) => m.id === mode.id);
     content = monster && (
       <div>
@@ -105,34 +76,28 @@ export function SidePanel({
   } else if (selection?.kind === "monster") {
     const monster = world.monsters.find((m) => m.id === selection.id);
     if (monster) {
-      content =
-        mode?.type === "edit" ? (
-          <MonsterForm key={monster.id} monster={monster} onSaved={panel.back} onCancel={panel.back} />
-        ) : (
-          <MonsterPanel
-            world={world}
-            monster={monster}
-            onEdit={panel.edit}
-            onGone={panel.close}
-            onSelectHero={(id) => panel.select({ kind: "hero", id })}
-          />
-        );
+      content = (
+        <MonsterPanel
+          world={world}
+          monster={monster}
+          onEdit={() => onEdit("monster", monster.id)}
+          onGone={panel.close}
+          onSelectHero={(id) => panel.select({ kind: "hero", id })}
+        />
+      );
     }
   } else if (selection?.kind === "hero") {
     const hero = world.heroes.find((h) => h.id === selection.id);
     if (hero) {
-      content =
-        mode?.type === "edit" ? (
-          <HeroForm key={hero.id} hero={hero} onSaved={panel.back} onCancel={panel.back} />
-        ) : (
-          <HeroPanel
-            world={world}
-            hero={hero}
-            onEdit={panel.edit}
-            onGone={panel.close}
-            onFlyTo={(m) => flyTo("monster", m.id, m.pos)}
-          />
-        );
+      content = (
+        <HeroPanel
+          world={world}
+          hero={hero}
+          onEdit={() => onEdit("hero", hero.id)}
+          onGone={panel.close}
+          onFlyTo={(m) => flyTo("monster", m.id, m.pos)}
+        />
+      );
     }
   }
 

@@ -4,19 +4,15 @@ import { useState } from "react";
 import type { World } from "@/lib/types";
 import { liveSelection, type PanelSelection } from "./helpers";
 
-/** What the side panel shows besides the selected item's details. */
-export type PanelMode =
-  | { type: "create"; kind: "monster" | "hero" }
-  | { type: "edit" }
-  | { type: "trophy"; id: string }
-  | null;
+/** What the side panel shows instead of the selected item's details. */
+export type PanelMode = { type: "trophy"; id: string } | null;
 
 export type PanelState = ReturnType<typeof usePanel>;
 
 /**
  * Side panel state on top of Board's map selection.
  * - `selection` is the live selection: `null` once the item is slain or deleted.
- * - Any change of the map selection closes a form or trophy view, so clicking a
+ * - Any change of the map selection closes the trophy view, so clicking a
  *   figure always shows that figure.
  */
 export function usePanel<S extends PanelSelection>(
@@ -34,30 +30,22 @@ export function usePanel<S extends PanelSelection>(
     if (mode) setMode(null);
   }
 
-  // A mode only applies in the context it was opened in.
-  let active: PanelMode = mode;
-  if (mode?.type === "edit" && !live) active = null;
-  if ((mode?.type === "create" || mode?.type === "trophy") && live) active = null;
-  if (mode?.type === "trophy" && !world.monsters.some((m) => m.id === mode.id && m.slain)) {
-    active = null;
-  }
+  // The trophy view replaces the selection, and applies only while that monster is slain.
+  const active: PanelMode =
+    mode && !live && world.monsters.some((m) => m.id === mode.id && m.slain) ? mode : null;
 
-  /** Opens a mode that replaces the selection (create form, trophy details). */
-  const open = (next: Exclude<PanelMode, { type: "edit" } | null>) => {
+  /** Opens a trophy's details, which replace the selection. */
+  const openTrophy = (id: string) => {
     setSeen(null);
     setSelection(null);
-    setMode(next);
+    setMode({ type: "trophy", id });
   };
 
   return {
     selection: live,
     mode: active,
-    openCreate: (kind: "monster" | "hero") => open({ type: "create", kind }),
-    openTrophy: (id: string) => open({ type: "trophy", id }),
-    trophyId: active?.type === "trophy" ? active.id : null,
-    edit: () => setMode({ type: "edit" }),
-    /** Leave a form or trophy view; the selection stays. */
-    back: () => setMode(null),
+    openTrophy,
+    trophyId: active?.id ?? null,
     select: (s: S | null) => {
       setMode(null);
       setSelection(s);

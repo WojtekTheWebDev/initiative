@@ -19,8 +19,10 @@ import { useFigureDrag, type FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
 import { DragOverlay } from "@/components/map/DragOverlay";
 import { SidePanel, type FlyToFigure } from "@/components/panel/SidePanel";
-import { CreateButtons } from "@/components/panel/CreateButtons";
+import { CreateButtons } from "@/components/CreateButtons";
 import { usePanel } from "@/components/panel/usePanel";
+import { useDialogs } from "@/components/dialogs/useDialogs";
+import { FigureDialogs } from "@/components/dialogs/FigureDialogs";
 import { Trophies } from "@/components/Trophies";
 import { Hud, Wordmark } from "@/components/Hud";
 
@@ -59,6 +61,8 @@ export function Board({ world }: { world: World }) {
   const flyTo = (m: Monster) => flyToFigure("monster", m.id, m.pos);
   // T8: side panel / forms state; `panel.selection` is null once the item is slain or deleted.
   const panel = usePanel(drag.world, selection, setSelection);
+  // The monster and hero dialogs: `dialogs.openCreate(kind)` and `dialogs.openEdit(kind, id)`.
+  const dialogs = useDialogs();
 
   // Only the first call matters: MapCanvas computes the opening camera once.
   const initialCamera = (viewport: ViewportSize) =>
@@ -91,13 +95,22 @@ export function Board({ world }: { world: World }) {
             <UnfoughtAlarm monsters={unfoughtMonsters} onPick={flyTo} />
           </>
         }
-        topRight={<CreateButtons panel={panel} />}
+        topRight={<CreateButtons onCreate={dialogs.openCreate} />}
         bottomCenter={
           <Trophies monsters={drag.world.monsters} openId={panel.trophyId} onOpen={panel.openTrophy} />
         }
       />
 
-      <SidePanel panel={panel} world={drag.world} map={map} flyTo={flyToFigure} />
+      <SidePanel panel={panel} world={drag.world} flyTo={flyToFigure} onEdit={dialogs.openEdit} />
+      <FigureDialogs
+        dialogs={dialogs}
+        world={drag.world}
+        map={map}
+        onCreated={(kind, id, pos) => {
+          panel.select({ kind, id });
+          flyToFigure(kind, id, pos);
+        }}
+      />
     </div>
   );
 }

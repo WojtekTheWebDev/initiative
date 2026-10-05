@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { IconButton } from "./Button";
 
@@ -62,9 +62,12 @@ function DialogPanel({
   const titleId = useId();
   const panel = useRef<HTMLDivElement>(null);
   const pressedDim = useRef(false);
+  // Read while rendering, before an `autoFocus` field inside takes the focus.
+  const [opener] = useState(() =>
+    document.activeElement instanceof HTMLElement ? document.activeElement : null,
+  );
 
   useEffect(() => {
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const el = panel.current;
     if (el && !el.contains(document.activeElement)) {
       const first = Array.from(el.querySelectorAll<HTMLElement>(FOCUSABLE)).find(
@@ -75,7 +78,7 @@ function DialogPanel({
     return () => {
       if (opener?.isConnected) opener.focus();
     };
-  }, []);
+  }, [opener]);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape") {
