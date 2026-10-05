@@ -214,6 +214,7 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - The server has no game, so it renders a plain felt ground; the browser reads local storage once it hydrates (`useSyncExternalStore` with a `null` server snapshot in `components/game/GameProvider.tsx`). A loaded or new game remounts the board, so it opens on the fitted view with nothing selected.
 - Keep `cacheComponents` **off**.
 - **Icons and link previews** are static files in `app/`: `favicon.ico`, `icon.svg` (crossed swords in gold on felt, the source of the others), `apple-icon.png`, `opengraph-image.jpg` with its alt text, `manifest.json` (with `public/icon-192.png` and `icon-512.png`), `robots.txt` and `sitemap.xml`. `npm run make:icons` (`scripts/make-icons.mjs`) renders the icons from `icon.svg`, and the link preview from the example table in the running app. The title, description, Open Graph and X card are in `app/layout.tsx`; absolute URLs and the canonical link use the site's address, https://initiative-ppg.vercel.app (`NEXT_PUBLIC_SITE_URL` overrides it), which `robots.txt` and `sitemap.xml` also name.
+- **Vercel Web Analytics** counts page views: `<Analytics />` from `@vercel/analytics/next` in `app/layout.tsx`. It sends only the visited URL and the browser, never anything from the table, and does nothing until Analytics is enabled for the project in the Vercel dashboard.
 - Avoid deprecated APIs: the one-argument `revalidateTag`, and `middleware`, which is now `proxy`.
 - Read `node_modules/next/dist/docs/` before relying on Next APIs.
 

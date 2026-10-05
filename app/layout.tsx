@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow, Cinzel } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${barlow.variable} ${cinzel.variable} h-dvh overflow-hidden antialiased`}>
       <body className="h-dvh overflow-hidden">
         <ToastProvider>{children}</ToastProvider>
+        <Analytics />
       </body>
     </html>
   );
