@@ -48,9 +48,9 @@ describe("hitTestMonster", () => {
 
   it("hits the body of a tall mini, up to the top of its head and out to its wings", () => {
     const m3 = monsters.find((m) => m.monster.id === "m3")!;
-    const troll = miniBodyRect(monsterMini("L"), m3.pos, m3.radius);
-    expect(hitTestMonster(monsters, { x: m3.pos.x, y: troll.y + 1 })?.monster.id).toBe("m3");
-    expect(hitTestMonster(monsters, { x: m3.pos.x, y: troll.y - 1 })).toBeNull();
+    const king = miniBodyRect(monsterMini("L"), m3.pos, m3.radius);
+    expect(hitTestMonster(monsters, { x: m3.pos.x, y: king.y + 1 })?.monster.id).toBe("m3");
+    expect(hitTestMonster(monsters, { x: m3.pos.x, y: king.y - 1 })).toBeNull();
 
     const dragon = layoutWorld({
       monsters: [{ id: "d", name: "D", size: "XL", pos: { x: 0, y: 0 } }],
@@ -69,7 +69,7 @@ describe("hitTestMonster", () => {
       ],
       heroes: [],
     }).monsters.map((m) => ({ ...m, pos: m.monster.pos }));
-    // On the far monster's base, and on the near goblin's body, which is drawn over it.
+    // On the far monster's base, and on the near spider's body, which is drawn over it.
     expect(hitTestMonster(pair, { x: 0, y: 30 })?.monster.id).toBe("near");
     expect(hitTestMonster(pair, { x: 0, y: -20 })?.monster.id).toBe("far");
   });

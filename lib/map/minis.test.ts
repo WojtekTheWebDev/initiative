@@ -24,7 +24,7 @@ const entries = manifest as Record<string, { kind: string; image: string }>;
 describe("the baked minis", () => {
   it("give every monster size its own mini, with a manifest entry and an image", () => {
     const ids = SIZES.map((s) => monsterMini(s).id);
-    expect(ids).toEqual(["goblin", "orc", "troll", "dragon"]);
+    expect(ids).toEqual(["spider", "orc", "mushroom-king", "dragon"]);
     for (const id of ids) {
       expect(entries[id].kind).toBe("monster");
       expect(existsSync(publicFile(entries[id].image))).toBe(true);

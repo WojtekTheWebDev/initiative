@@ -27,7 +27,7 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
 # data/monsters.yaml
 - id: search-rewrite        # slug from name; unique suffix on clash
   name: Search Rewrite
-  size: XL                  # S | M | L | XL → goblin | orc | troll | dragon
+  size: XL                  # S | M | L | XL → spider | orc | mushroom king | dragon
   pos: { x: -420, y: 180 }  # home: the figure is held near it; always present
   notes: |                  # optional, free text
     Next step: spike on Meilisearch
@@ -81,7 +81,7 @@ Rules for writing:
 - **Opening view:** fits every living figure with its mini and name tag.
 - **Figures:** painted miniatures standing on the table, seen from a three-quarter angle (38° up, 18° around). Each is one baked image (see Art), never live 3D.
   - Every figure is a soft contact shadow on the felt, the baked mini anchored on the centre of its round base, and a name tag. The base radius is the mini's unit, so a mini scales with its base: 22 units for a hero, and 31, 40, 52 and 68 for monsters from S to XL, so the minis, not their tags, catch the eye.
-  - Monsters by size: S goblin, M orc, L troll, XL dragon. The base grows with size.
+  - Monsters by size: S spider, M orc, L mushroom king, XL dragon. The base grows with size.
   - Heroes stand as the mini they picked (`mini`), or as the neutral adventurer, an unpainted grey mini. Idle heroes are slightly faded.
   - **Base rings** are ellipses squashed by `BASE_SQUASH = sin 38°` (`lib/map/rings.ts`), the way a round base looks from that angle. The unfought pulse (red), selection (amber) and the drop hints (green for a plain drop, purple with Shift) all sit around the base.
   - **Name tags** are slim dark tags with gold small capitals (Cinzel) just below the front of the base, red for an unfought monster, kept small next to the minis (11 units for monsters, 10 for heroes). They never shrink below 10 px on screen, and they are drawn above every mini, so no mini hides a name. Their size is worked out in `lib/map/tags.ts`, so the layout keeps room for them. When zoomed out far enough that tags would cover each other, the less important ones are left out (see Force layout), and hero names hide below zoom 0.45.

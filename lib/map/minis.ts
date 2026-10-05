@@ -74,7 +74,7 @@ for (const e of ENTRIES) {
   if (e.kind === "monster" && e.size && !monsterBySize.has(e.size)) monsterBySize.set(e.size, toMini(e));
 }
 
-/** The mini for a monster of this size: S goblin, M orc, L troll, XL dragon. */
+/** The mini for a monster of this size: S spider, M orc, L mushroom king, XL dragon. */
 export function monsterMini(size: Size): Mini {
   const mini = monsterBySize.get(size);
   if (!mini) throw new Error(`public/minis/manifest.json has no monster mini for size ${size}`);

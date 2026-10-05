@@ -1,9 +1,0 @@
-{
-  "name": "Troll",
-  "kind": "monster",
-  "size": "L",
-  "colors": {
-    "Yeti_Main": "#7b8466",
-    "Yeti_Secondary": "#5d7468"
-  }
-}

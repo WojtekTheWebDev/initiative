@@ -45,9 +45,9 @@ describe("fightersOf", () => {
 describe("creatureOf", () => {
   it("maps sizes to creatures", () => {
     expect(["S", "M", "L", "XL"].map((s) => creatureOf(s as never))).toEqual([
-      "goblin",
+      "spider",
       "orc",
-      "troll",
+      "mushroom king",
       "dragon",
     ]);
   });

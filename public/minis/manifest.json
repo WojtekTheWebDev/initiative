@@ -34,24 +34,6 @@
       "height": 1.585
     }
   },
-  "goblin": {
-    "name": "Goblin",
-    "kind": "monster",
-    "size": "S",
-    "image": "/minis/goblin.webp",
-    "width": 2,
-    "height": 2.734,
-    "anchor": {
-      "x": 1.001,
-      "y": 2.056
-    },
-    "body": {
-      "x": 0.226,
-      "y": 0,
-      "width": 1.54,
-      "height": 2.185
-    }
-  },
   "hooded-rogue": {
     "name": "Hooded Rogue",
     "kind": "hero",
@@ -101,6 +83,24 @@
       "y": 0.011,
       "width": 1.773,
       "height": 2.114
+    }
+  },
+  "mushroom-king": {
+    "name": "Mushroom King",
+    "kind": "monster",
+    "size": "L",
+    "image": "/minis/mushroom-king.webp",
+    "width": 2.043,
+    "height": 2.351,
+    "anchor": {
+      "x": 0.999,
+      "y": 1.672
+    },
+    "body": {
+      "x": 0.168,
+      "y": 0,
+      "width": 1.875,
+      "height": 1.788
     }
   },
   "neutral": {
@@ -189,22 +189,22 @@
       "height": 2.034
     }
   },
-  "troll": {
-    "name": "Troll",
+  "spider": {
+    "name": "Spider",
     "kind": "monster",
-    "size": "L",
-    "image": "/minis/troll.webp",
-    "width": 2,
-    "height": 1.957,
+    "size": "S",
+    "image": "/minis/spider.webp",
+    "width": 2.032,
+    "height": 1.524,
     "anchor": {
-      "x": 0.999,
-      "y": 1.276
+      "x": 1.001,
+      "y": 0.841
     },
     "body": {
-      "x": 0.144,
+      "x": 0.032,
       "y": 0,
-      "width": 1.822,
-      "height": 1.274
+      "width": 2,
+      "height": 1.347
     }
   }
 }

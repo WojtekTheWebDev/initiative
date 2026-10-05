@@ -30,9 +30,9 @@ projects." See also <https://kaylousberg.itch.io/kaykit-adventurers>.
 
 | File | Size | Model | Author | Source | Licence | Changes |
 | ---- | ---- | ----- | ------ | ------ | ------- | ------- |
-| `goblin.glb` | S | Goblin | Quaternius | <https://poly.pizza/m/OdCOFSmEhl> | CC0 1.0 | None besides the common ones. |
+| `spider.glb` | S | Spider, from the Animated Enemies bundle | Quaternius | <https://poly.pizza/m/yRYJiAJyiM> | CC0 1.0 | None besides the common ones. |
 | `orc.glb` | M | Orc | Quaternius | <https://poly.pizza/m/5vO2YJsPEf> | CC0 1.0 | None besides the common ones. |
-| `troll.glb` | L | Yeti (stands in for a troll) | Quaternius | <https://poly.pizza/m/ceRHrn8HHE> | CC0 1.0 | Recoloured mossy grey-green when baking (`"colors"` in `troll.json`). |
+| `mushroom-king.glb` | L | Mushroom King, from the Ultimate Monsters bundle | Quaternius | <https://poly.pizza/m/grnFTziU8u> | CC0 1.0 | None besides the common ones. |
 | `dragon.glb` | XL | Dragon Evolved | Quaternius | <https://poly.pizza/m/LlwD0QNUPj> | CC0 1.0 | Posed with its `Flying_Idle` clip. |
 
 Each poly.pizza page lists the licence as "CC0 1.0". More of Quaternius's free

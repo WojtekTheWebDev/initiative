@@ -27,9 +27,9 @@ export function fightersOf(world: World, monsterId: string): { main: Hero[]; gho
   return { main: main.sort(byId), ghosts: ghosts.sort(byId) };
 }
 
-export type Creature = "goblin" | "orc" | "troll" | "dragon";
+export type Creature = "spider" | "orc" | "mushroom king" | "dragon";
 
-const CREATURES: Record<Size, Creature> = { S: "goblin", M: "orc", L: "troll", XL: "dragon" };
+const CREATURES: Record<Size, Creature> = { S: "spider", M: "orc", L: "mushroom king", XL: "dragon" };
 
 export function creatureOf(size: Size): Creature {
   return CREATURES[size];
