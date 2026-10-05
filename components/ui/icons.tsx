@@ -23,7 +23,8 @@ export type IconName =
   | "save"
   | "load"
   | "newGame"
-  | "file";
+  | "file"
+  | "info";
 
 type IconComponent = (props: SVGProps<SVGSVGElement>) => JSX.Element;
 
@@ -162,6 +163,13 @@ export const Icon: Record<IconName, IconComponent> = {
     <>
       <path d="M6 3h8l4 4v14H6V3Z" />
       <path d="M14 3v4h4M9 13h6M9 17h6" />
+    </>,
+  ),
+  info: icon(
+    "info",
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5M12 8h.01" />
     </>,
   ),
 };

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { backupDue, daysAgo, type GameState } from "@/lib/save/game";
 import { Glass } from "@/components/ui/Glass";
 import { Icon, type IconName } from "@/components/ui/icons";
+import { AboutDialog } from "./AboutDialog";
 import { useGame } from "./GameProvider";
 import type { GameFiles } from "./useGameFiles";
 
@@ -14,7 +15,7 @@ function modKey(): string {
 
 /**
  * The wordmark in the top-left corner, which opens the game menu: Save game
- * to file, Load game from file and New game, over a line saying where the
+ * to file, Load game from file, New game and About, over a line saying where the
  * table is kept and when it was last saved to a file. After `BACKUP_DAYS` of
  * unsaved changes an amber dot sits on the wordmark.
  *
@@ -24,6 +25,7 @@ function modKey(): string {
 export function GameMenu({ files }: { files: GameFiles }) {
   const state = useGame();
   const [open, setOpen] = useState(false);
+  const [about, setAbout] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const due = backupDue(state.game, new Date());
 
@@ -110,10 +112,20 @@ export function GameMenu({ files }: { files: GameFiles }) {
           <Item icon="newGame" onClick={choose(files.openNewGame)}>
             New game…
           </Item>
+          <Item icon="info" onClick={choose(() => setAbout(true))}>
+            About Initiative
+          </Item>
           <hr className="mx-1.5 my-1 border-hud-line" />
           <Footer state={state} due={due} />
         </Glass>
       )}
+      <AboutDialog
+        open={about}
+        onClose={() => {
+          setAbout(false);
+          ref.current?.querySelector<HTMLElement>("[aria-haspopup]")?.focus();
+        }}
+      />
     </div>
   );
 }
