@@ -2,11 +2,20 @@
 
 *A planning playing game.*
 
+[![CI](https://github.com/WojtekTheWebDev/initiative/actions/workflows/ci.yml/badge.svg)](https://github.com/WojtekTheWebDev/initiative/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-gold.svg)](LICENSE)
+
+**[Play it in your browser](https://initiative-ppg.vercel.app)**: no sign-up, nothing to install.
+
+![The Initiative map: work as monsters and people as heroes on a felt tabletop, with gold arrows showing who fights what](app/opengraph-image.jpg)
+
 A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** (bigger scope means a bigger creature) and the people dealing with them are **heroes**. You plan by dragging heroes onto monsters on an infinite map. Monsters nobody is fighting pulse red, so gaps are easy to spot.
 
-It is for one user and keeps everything in your browser. It is a static page, so it runs on your machine or on any static host such as Vercel. Save files are plain YAML that you or an agent can edit by hand.
+It is for one user and keeps everything in your browser. It is a static page, so it runs on your machine or on any static host such as Vercel. Save files are plain YAML that you or an agent can edit by hand. The full spec is in [`docs/DESIGN.md`](docs/DESIGN.md).
 
-> Status: implemented. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full spec.
+## Privacy
+
+Your table never leaves your browser: there is no backend, account or sync. The hosted site counts page views with [Vercel Web Analytics](https://vercel.com/docs/analytics) (the page visited and the kind of browser, without cookies), and never anything from the table.
 
 ## Getting started
 
@@ -83,6 +92,18 @@ The scatter, raised pieces and bridges on the table are baked the same way, from
 
 `radius` is world units per model unit, `x` and `z` place a part (x to the right, z toward the viewer) around the piece's footprint centre, and a part can also take `y`, `rotate`, `scale` and `colors`. The whole piece can be turned with `rotate` (degrees around the vertical axis) or `along` (the angle its x axis should show at on screen, clockwise from the right); the stone bridges `bridge-0` to `bridge-11` use `along` to lie at every 15 degrees. `assets/terrain/colors.json` holds the material colours shared by every piece. Run `npm run bake:terrain` (or `npm run bake:terrain -- camp-0` for some keys) and commit the changed files in `public/terrain/`. If a raised piece grows, raise its kind's `PIECE_SIZE` in `lib/map/terrain.ts`; `npm test` fails when a baked piece outgrows it.
 
+## Deploy your own
+
+It is a static Next.js page, so any host that runs `npm run build` works. On Vercel, import the repository and deploy with the defaults. Set `NEXT_PUBLIC_SITE_URL` to your address so the canonical link and link previews point at it, and change the address in `app/robots.txt` and `app/sitemap.xml`. Page views are counted only if you turn on Web Analytics for the project.
+
 ## Stack
 
 Next.js 16 (App Router, a static page), React 19, Tailwind 4, the `yaml` package for save files, and Vitest. The minis are baked with three.js and Playwright (dev only).
+
+## Contributing
+
+Issues and pull requests are welcome: see [`CONTRIBUTING.md`](CONTRIBUTING.md). Please never attach a real save file; use the example table or made-up names.
+
+## Licence
+
+The code is [MIT](LICENSE) licensed. The 3D models are CC0, by [Kay Lousberg (KayKit)](https://kaylousberg.itch.io/kaykit-adventurers), [Quaternius](https://quaternius.com) and [Kenney](https://kenney.nl); see [`assets/minis/LICENSES.md`](assets/minis/LICENSES.md) and [`assets/terrain/LICENSES.md`](assets/terrain/LICENSES.md). The fonts, Cinzel and Barlow, come from Google Fonts under the SIL Open Font License.

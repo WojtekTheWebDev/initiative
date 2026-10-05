@@ -3,8 +3,12 @@
 import { Dialog } from "@/components/ui/Dialog";
 
 const AUTHOR_URL = "https://www.wojciechsikora.dev/";
+const SOURCE_URL = "https://github.com/WojtekTheWebDev/initiative";
 
-/** What the game is for and how it plays, with a link to its author's website. */
+const LINK =
+  "font-semibold text-hud-gold underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none";
+
+/** What the game is for and how it plays, with links to its author's website and its source code. */
 export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <Dialog title="About Initiative" open={open} onClose={onClose} className="max-w-md">
@@ -42,14 +46,14 @@ export function AboutDialog({ open, onClose }: { open: boolean; onClose: () => v
       </div>
       <p className="mt-5 border-t border-hud-line pt-4 text-sm text-hud-muted">
         Made by{" "}
-        <a
-          href={AUTHOR_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-hud-gold underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
-        >
+        <a href={AUTHOR_URL} target="_blank" rel="noopener noreferrer" className={LINK}>
           Wojciech Sikora
         </a>
+        . Open source on{" "}
+        <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer" className={LINK}>
+          GitHub
+        </a>
+        .
       </p>
     </Dialog>
   );

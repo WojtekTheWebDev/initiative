@@ -2,6 +2,29 @@
   "name": "initiative",
   "version": "0.1.0",
   "private": true,
+  "description": "A planning playing game: your work as monsters and your team as heroes on a tabletop map.",
+  "keywords": [
+    "planning",
+    "tabletop",
+    "rpg",
+    "svg",
+    "nextjs",
+    "local-first"
+  ],
+  "homepage": "https://initiative-ppg.vercel.app",
+  "bugs": "https://github.com/WojtekTheWebDev/initiative/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WojtekTheWebDev/initiative.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Wojciech Sikora",
+    "url": "https://www.wojciechsikora.dev/"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
