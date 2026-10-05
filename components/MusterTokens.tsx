@@ -24,14 +24,14 @@ const TOKEN =
  * token per unfought monster, largest first, then by name (see `muster`).
  * Past six, the rest fold into "+N more", which opens a glass list of them. A
  * token flies the camera to its monster. With none unfought, a small gold
- * "All engaged" seal.
+ * "All engaged" seal. On a phone (`compact`) there is no muster.
  */
 export function MusterTokens({ monsters, onPick }: Props) {
   const { shown, folded } = useMemo(() => muster(monsters), [monsters]);
 
   if (monsters.length === 0) {
     return (
-      <Glass as="p" role="status" className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-hud-gold">
+      <Glass as="p" role="status" className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-hud-gold compact:hidden">
         <Icon.swords className="size-3.5" />
         All engaged
       </Glass>
@@ -39,7 +39,7 @@ export function MusterTokens({ monsters, onPick }: Props) {
   }
 
   return (
-    <section aria-label="Unfought monsters" className="flex flex-col items-start gap-1.5">
+    <section aria-label="Unfought monsters" className="flex flex-col items-start gap-1.5 compact:hidden">
       <p
         role="status"
         className="flex items-center gap-1.5 px-1 text-sm font-semibold text-[#ff9a9d] [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"

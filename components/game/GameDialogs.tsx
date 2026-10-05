@@ -40,7 +40,6 @@ function LoadDialog({ files }: { files: GameFiles }) {
           by Save game.
         </Callout>
         <Actions>
-          <Button onClick={files.cancelLoad}>Cancel</Button>
           <Button tone="primary" onClick={files.pick}>
             Choose another file
           </Button>
@@ -73,7 +72,6 @@ function LoadDialog({ files }: { files: GameFiles }) {
       )}
       {game.unsavedSince && <UnsavedWarning>Loading this file replaces them.</UnsavedWarning>}
       <Actions>
-        <Button onClick={files.cancelLoad}>Cancel</Button>
         {game.unsavedSince && (
           <Button icon="save" onClick={files.save}>
             Save current first
@@ -99,7 +97,6 @@ function NewGameDialog({ files }: { files: GameFiles }) {
       </p>
       {game.unsavedSince && <UnsavedWarning>A new game throws them away.</UnsavedWarning>}
       <Actions>
-        <Button onClick={files.closeNewGame}>Cancel</Button>
         {game.unsavedSince && (
           <Button icon="save" onClick={files.save}>
             Save current first
@@ -169,8 +166,9 @@ function Callout({ tone, children }: { tone: "warn" | "danger"; children: ReactN
   );
 }
 
+/** A dialog's buttons, at its bottom right; in a narrow window they stack full width. */
 function Actions({ children }: { children: ReactNode }) {
-  return <div className="mt-5 flex flex-wrap justify-end gap-2">{children}</div>;
+  return <div className="mt-5 flex flex-wrap justify-end gap-2 max-sm:flex-col">{children}</div>;
 }
 
 /** "20 Sep 2026", in the local time zone. */

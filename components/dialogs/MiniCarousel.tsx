@@ -6,7 +6,7 @@ import { Portrait } from "@/components/ui/Portrait";
 import { IconButton } from "@/components/ui/Button";
 import { miniValue, rosterIndex, wrapStep } from "./helpers";
 
-/** Diameter of the mini on show, in px. */
+/** Diameter of the mini on show, in px; half that on a phone (`compact`). */
 const PREVIEW = 200;
 
 /**
@@ -39,7 +39,7 @@ export function MiniCarousel({ value, onChange }: { value: string; onChange: (mi
     >
       <div className="flex items-center gap-2">
         <IconButton label="Previous mini" icon="chevronLeft" tabIndex={-1} onClick={() => flip(-1)} />
-        <Portrait mini={mini} size={PREVIEW} ring="gold" />
+        <Portrait mini={mini} size={PREVIEW} ring="gold" className="compact:[zoom:0.5]" />
         <IconButton label="Next mini" icon="chevronRight" tabIndex={-1} onClick={() => flip(1)} />
       </div>
       <p className="font-display mt-3 text-sm tracking-[0.08em] text-hud-gold uppercase" aria-live="polite">

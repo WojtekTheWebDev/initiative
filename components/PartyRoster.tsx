@@ -18,7 +18,8 @@ const TOKEN =
  * "+N" for secondary targets; an idle hero's token is faded and says "Idle".
  * Past six, the rest fold into "+N more". A token selects its hero, which
  * opens the figure card and flies the camera there; the selected hero's
- * token is lit gold. With no heroes there is no roster.
+ * token is lit gold. With no heroes, or on a phone (`compact`), there is
+ * no roster.
  */
 export function PartyRoster({
   world,
@@ -36,7 +37,7 @@ export function PartyRoster({
   if (count === 0) return null;
 
   return (
-    <section aria-label="Party" className="flex flex-col items-end gap-1.5">
+    <section aria-label="Party" className="flex flex-col items-end gap-1.5 compact:hidden">
       <p className="flex items-center gap-1.5 px-1 text-sm font-semibold text-hud-gold [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]">
         <Icon.swords className="size-4" />
         {count} {count === 1 ? "hero" : "heroes"}

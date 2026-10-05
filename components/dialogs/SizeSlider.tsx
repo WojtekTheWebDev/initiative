@@ -7,7 +7,7 @@ import { monsterMini } from "@/lib/map/minis";
 import { Portrait } from "@/components/ui/Portrait";
 import { SIZES } from "./helpers";
 
-/** Diameter of the preview above the slider, in px. */
+/** Diameter of the preview above the slider, in px; half that on a phone (`compact`). */
 const PREVIEW = 176;
 
 /**
@@ -48,7 +48,7 @@ export function SizeSlider({ value, onChange }: { value: Size; onChange: (size: 
   return (
     <div>
       <div className="flex justify-center" aria-hidden="true">
-        <Portrait mini={monsterMini(value)} size={PREVIEW} ring="gold" />
+        <Portrait mini={monsterMini(value)} size={PREVIEW} ring="gold" className="compact:[zoom:0.5]" />
       </div>
       <div
         role="slider"

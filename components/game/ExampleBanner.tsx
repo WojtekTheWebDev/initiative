@@ -19,7 +19,7 @@ export function ExampleBanner({ files }: { files: GameFiles }) {
       role="status"
       className="flex max-w-[min(42rem,calc(100vw-2rem))] flex-wrap items-center gap-x-3 gap-y-2 py-1.5 pr-1.5 pl-3.5 text-sm motion-safe:animate-hud-rise"
     >
-      <span className="min-w-0 flex-1">This is an example table. Your own stays in this browser.</span>
+      <span className="min-w-48 flex-1">This is an example table. Your own stays in this browser.</span>
       <div className="flex items-center gap-1.5">
         <Button tone="primary" className="h-8" onClick={() => files.startNew("empty")}>
           Start empty

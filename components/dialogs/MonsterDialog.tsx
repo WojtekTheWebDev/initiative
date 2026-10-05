@@ -92,8 +92,7 @@ export function MonsterDialog({
           />
         </Field>
 
-        <div className="mt-5 flex justify-end gap-2">
-          <Button onClick={onClose}>Cancel</Button>
+        <div className="mt-5 flex justify-end gap-2 max-sm:flex-col">
           <Button type="submit" tone="primary" disabled={fields.name.trim() === ""}>
             {monster ? "Save" : "Summon"}
           </Button>

@@ -16,7 +16,7 @@ export function Hud({
   bottomLeft,
   bottomRight,
 }: {
-  /** The first-visit banner, centred along the top edge. */
+  /** The first-visit banner, centred along the top edge; on a phone, across the window under the top clusters. */
   top?: ReactNode;
   /** The wordmark and its game menu, with the muster tokens hanging below it. */
   topLeft?: ReactNode;
@@ -30,7 +30,7 @@ export function Hud({
   return (
     <div className="pointer-events-none fixed inset-0 z-30" style={{ padding: EDGE }}>
       <div className="relative h-full w-full">
-        {top && <Slot className="top-0 left-1/2 -translate-x-1/2 justify-center">{top}</Slot>}
+        {top && <Slot className="top-0 left-1/2 -translate-x-1/2 justify-center compact:top-16 max-sm:top-26! compact:right-0 compact:left-0 compact:translate-x-0">{top}</Slot>}
         {topLeft && <Slot className="top-0 left-0 flex-col items-start">{topLeft}</Slot>}
         {topRight && <Slot className="top-0 right-0 flex-col items-end">{topRight}</Slot>}
         {bottomLeft && <Slot className="bottom-0 left-0 items-end">{bottomLeft}</Slot>}

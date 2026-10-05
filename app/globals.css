@@ -72,6 +72,16 @@
   }
 }
 
+/*
+ * A phone, held either way: a narrow window or a short one. The HUD drops
+ * the muster and the party roster there, and dialogs shrink their minis.
+ */
+@custom-variant compact {
+  @media (max-width: 639px), (max-height: 499px) {
+    @slot;
+  }
+}
+
 /* A glass surface: see components/ui/Glass.tsx. */
 @utility hud-glass {
   background: var(--hud-glass);

@@ -94,8 +94,7 @@ export function HeroDialog({
               placeholder="e.g. backend engineer"
             />
           </Field>
-          <div className="mt-auto flex justify-end gap-2 pt-5">
-            <Button onClick={onClose}>Cancel</Button>
+          <div className="mt-auto flex justify-end gap-2 pt-5 max-sm:flex-col">
             <Button type="submit" tone="primary" disabled={fields.name.trim() === "" || fields.class.trim() === ""}>
               {hero ? "Save" : "Recruit"}
             </Button>
