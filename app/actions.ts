@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import * as domain from "@/lib/domain";
 import { updateWorld } from "@/lib/store";
 import type { ActionResult } from "@/lib/action-result";
+import type { HeroBefore } from "@/lib/domain";
 import type { Pos, Size } from "@/lib/types";
 
 // Every action re-reads the YAML, applies a pure rule from lib/domain, writes
@@ -55,6 +56,20 @@ function checkPos(value: unknown): Pos {
     throw new Error("Position must be { x, y } with finite numbers");
   }
   return { x: value.x as number, y: value.y as number };
+}
+
+function checkHeroesBefore(value: unknown): HeroBefore[] {
+  if (!Array.isArray(value)) throw new Error("Heroes to restore must be a list");
+  return value.map((item) => {
+    if (!isObject(item)) throw new Error("Each hero to restore must be { id, targets, pos? }");
+    const id = checkId(item.id, "Hero id");
+    if (!Array.isArray(item.targets) || !item.targets.every((t) => typeof t === "string")) {
+      throw new Error(`Targets of hero "${id}" must be a list of monster ids`);
+    }
+    const hero: HeroBefore = { id, targets: [...item.targets] };
+    if (item.pos !== undefined) hero.pos = checkPos(item.pos);
+    return hero;
+  });
 }
 
 function checkPatch(value: unknown): Record<string, unknown> {
@@ -183,11 +198,27 @@ export async function updateMonster(
   });
 }
 
-export async function slayMonster(id: string): Promise<ActionResult> {
+/** Returns what the slay changed for each hero, to hand back to `reviveMonster`. */
+export async function slayMonster(id: string): Promise<ActionResult<HeroBefore[]>> {
   return act(async () => {
     const monsterId = checkId(id, "Monster id");
     const today = localToday();
-    await updateWorld((w) => domain.slay(w, monsterId, today));
+    let changed: HeroBefore[] = [];
+    await updateWorld((w) => {
+      const next = domain.slay(w, monsterId, today);
+      changed = domain.heroesChanged(w, next);
+      return next;
+    });
+    return changed;
+  });
+}
+
+/** Undoes a slay: `before` is what `slayMonster` returned. */
+export async function reviveMonster(id: string, before: HeroBefore[]): Promise<ActionResult> {
+  return act(async () => {
+    const monsterId = checkId(id, "Monster id");
+    const clean = checkHeroesBefore(before);
+    await updateWorld((w) => domain.revive(w, monsterId, clean));
   });
 }
 

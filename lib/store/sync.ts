@@ -18,7 +18,7 @@ import type { Hero, Monster, Pos } from "@/lib/types";
 type Entity = { id: string } & Record<string, unknown>;
 
 /** Field order used when a new item is appended, matching `data.example/`. */
-export const MONSTER_FIELDS = ["id", "name", "size", "pos", "notes", "slain", "externalKey"] as const;
+export const MONSTER_FIELDS = ["id", "name", "size", "pos", "notes", "slain", "slainBy", "externalKey"] as const;
 export const HERO_FIELDS = ["id", "name", "class", "mini", "targets", "pos"] as const;
 
 /** Stringify options shared by every write. `lineWidth: 0` stops long lines being folded. */
@@ -61,6 +61,7 @@ export function monstersFromDoc(doc: Document, problems: string[] = []): Monster
     if (notes !== undefined) monster.notes = notes;
     const slain = str(m.slain);
     if (slain !== undefined) monster.slain = slain;
+    if (Array.isArray(m.slainBy)) monster.slainBy = m.slainBy.map(String);
     const externalKey = str(m.externalKey);
     if (externalKey !== undefined) monster.externalKey = externalKey;
     return monster;
@@ -97,10 +98,13 @@ function notesNode(doc: Document, value: string): Scalar {
   return node;
 }
 
+/** Fields holding a list of ids, written as flow sequences (`[a, b]`). */
+const ID_LISTS = new Set(["targets", "slainBy"]);
+
 /** Builds the YAML node for one field of a new item, or for a replaced field. */
 function fieldNode(doc: Document, key: string, value: unknown, flow = true) {
   if (key === "pos") return doc.createNode(value, { flow: true });
-  if (key === "targets") {
+  if (ID_LISTS.has(key)) {
     const seq = doc.createNode(value) as YAMLSeq;
     seq.flow = flow;
     return seq;
@@ -160,12 +164,12 @@ function syncItem(doc: Document, node: YAMLMap, entity: Entity, fields: readonly
       continue;
     }
 
-    if (key === "targets") {
-      const targets = value as string[];
-      if (!isSeq(current) || !sameArray(current.toJSON(), targets)) {
-        const seq = fieldNode(doc, key, targets, isSeq(current) ? !!current.flow : true);
+    if (ID_LISTS.has(key)) {
+      const ids = value as string[];
+      if (!isSeq(current) || !sameArray(current.toJSON(), ids)) {
+        const seq = fieldNode(doc, key, ids, isSeq(current) ? !!current.flow : true);
         if (isSeq(current)) seq.comment = current.comment;
-        node.set(key, seq);
+        setField(doc, node, key, seq, fields);
         changed = true;
       }
       continue;
@@ -253,10 +257,10 @@ export function syncDoc(doc: Document, entities: readonly Entity[], fields: read
 /**
  * Serializes a document. The seed files write single-line flow sequences
  * without inner padding (`[a, b]`) but flow maps with it (`{ x: 1, y: 2 }`);
- * `yaml` only has one global padding switch, so unpad `targets:` lines here.
+ * `yaml` only has one global padding switch, so unpad `targets:` and `slainBy:` lines here.
  */
 export function stringifyDoc(doc: Document): string {
   return doc
     .toString(STRINGIFY_OPTIONS)
-    .replace(/^(\s*(?:- )?targets: )\[ ([^\n]*?) \]([ \t]*(?:#[^\n]*)?)$/gm, "$1[$2]$3");
+    .replace(/^(\s*(?:- )?(?:targets|slainBy): )\[ ([^\n]*?) \]([ \t]*(?:#[^\n]*)?)$/gm, "$1[$2]$3");
 }
