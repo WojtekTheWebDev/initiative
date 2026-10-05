@@ -17,7 +17,8 @@ It is a tool for one person (an engineering manager) to use in daily work. It is
 | Home      | A stored `pos`: where a monster or an idle hero is held, loosely. The figure is drawn near it, not always on it |
 | Target arrow | An arrow from a hero to each of its targets: solid for the main target, dashed for secondary ones |
 | Unfought  | A living monster that no hero targets. It pulses red                     |
-| Slain     | Done. It leaves the map and goes into the trophies strip                 |
+| Slain     | Done. It leaves the map and becomes a trophy: a bronzed mini on the trophy shelf and a plaque in the trophy hall |
+| HUD       | Everything drawn over the table: floating clusters, the figure card, dialogs, toasts. Dark glass in every theme |
 
 ## Data model
 
@@ -32,6 +33,7 @@ Plain YAML files in `data/`. The folder is **gitignored**, so it has no history 
   notes: |                  # optional, free text
     Next step: spike on Meilisearch
   slain: 2026-10-14         # optional; absent = alive
+  slainBy: [ana, bartek]    # optional; the heroes targeting it when it was slain
   externalKey: SRCH-12      # optional; reserved for a future Jira import
 
 # data/heroes.yaml
@@ -53,6 +55,9 @@ Rules worked out from the data, not stored:
   - Clusters push other figures aside, so no mini or name tag covers another one (see Force layout).
   - The layout is pure and deterministic: the same files always give the same picture, in whatever order they list things. The tuning constants are exported from `lib/map/layout.ts`.
 - **Target arrows** come from the layout: one per hero and living target, from the edge of the hero's base ellipse toward the monster's. They are never stored, so anything that moves a figure moves its arrows too.
+
+What is stored because it can't be worked out later:
+- **`slainBy`** records who fought a monster. Slaying removes the monster from every hero's `targets`, so afterwards nothing else says who fought it. It lists the heroes that had the monster in `targets` at that moment, those with it as their main target first, then the others, each group by id. It is left out when nobody fought it. It keeps ids, not names, so a rename shows up in the trophy hall; an id whose hero was deleted is skipped when shown.
 
 Rules for writing:
 - Use the [`yaml`](https://eemeli.org/yaml/) package's Document API, so hand-written comments are kept.
@@ -88,11 +93,11 @@ Rules for writing:
   - **Draw order:** target arrows, then contact shadows, then the minis sorted by their drawn y, so nearer minis overlap farther ones. The figure being dragged is always on top.
   - **Hit areas:** a figure is hit on its base ellipse or on the body of its mini (the box around the model's silhouette, without the base), never on the empty corners of its image. Dropping a hero on a dragon's wing or on the top of a tall mini counts as dropping on that monster. Where figures overlap, the one drawn in front wins.
   - **Target arrows** are gold cords with a thin dark edge, so they read on every shade of felt, laid on the table with a soft shadow below the figures. Each runs from the hero's base ellipse toward its target's and stops at whatever it meets first: the base, the monster's mini or the monster's name tag, so the arrowhead always shows. An arrow that would start under the hero's own tag starts past it. The main arrow is solid, secondary arrows are thinner and dashed. Line widths and heads keep the same screen size at any zoom. Selecting a hero turns its arrows amber and fades the rest; selecting a monster does the same for the arrows pointing at it.
-  - The table looks the same in light and dark mode; only the UI around it follows the theme.
+  - The table and the HUD look the same in light and dark mode.
 
 ## Table
 
-The map is drawn on a felt wargame table that someone took time to dress. It is a physical object, so it looks the same in light and dark mode; only the UI around it follows the theme.
+The map is drawn on a felt wargame table that someone took time to dress. It is a physical object, so it looks the same in light and dark mode.
 
 - **Felt:** two seamless tiles laid over the ground colour as SVG patterns that scale with the zoom: the nap of the cloth (fading out when zoomed far out, where it would only shimmer) and a much larger, soft dye mottle so the repeat never shows. The tiles are made by `npm run make:felt` (`scripts/make-felt.mjs`) and committed in `public/terrain/`.
 - **Grid:** a faint chalk grid (100 units, every fifth line stronger) so distances still read. It fades out between zoom 0.6 and 0.45.
@@ -105,41 +110,71 @@ The map is drawn on a felt wargame table that someone took time to dress. It is 
 - **Art:** scatter, raised pieces and bridges are baked 3D models, made by the same bake as the minis (same camera and light), each with its own shadow on the felt; see Art below. Every piece has three variants (and woods one set per biome), named by art key (`rock-1`, `woods-marsh-2`, `camp-0`). The marsh woods are painted in light olive, so they read on the dark marsh felt under the lamp. `components/map/TableArt.tsx` reads `public/terrain/manifest.json` and draws each key as one `<image>` anchored on its footprint centre; scatter is scaled a little per piece. A bridge is baked lying at every 15 degrees on screen (`bridge-0` to `bridge-11`, made with the bake's `along`); `bridgeArt` picks the turn nearest to its road and turns the image the last few degrees (at most 7.5), so a bridge on a steep road keeps its 3D shape and light. Leaf litter and puddles are flat marks with no model, so they are SVG symbols placed with `<use>`. Baked art is never mirrored, because its light would then come from the wrong side. `PIECE_SIZE` in `lib/map/terrain.ts` (the footprint and height used for placement and for the fading box) leaves room for the largest baked variant of each kind, which a test checks against the manifest. A figure's fading box covers its shape from the layout (its mini with its base, and its name tag).
 - **Level of detail and speed:** only chunks in view (plus a small margin) are drawn, each layer of each chunk is memoised, and generated chunks are cached; the ring just outside the view is generated while the browser is idle, so nothing pops in while panning. Below zoom 0.4 the scatter is left out, and below 0.2 the contour lines too; ground features and raised pieces stay. No SVG filters are used; shadows are baked into the art.
 
+## HUD
+
+Everything drawn over the table is the HUD. The table fills the whole window and the HUD floats on top of it in small clusters, the way a video game draws its interface over the world.
+
+- **Skin: obsidian glass.** Every HUD surface is translucent dark glass (`rgba(14, 16, 20, .74)` with a 10 px backdrop blur) with a thin gold hairline edge, gold for the accent and red for danger. Headings and the wordmark are gold Cinzel small capitals, matching the name tags on the table; body text is Barlow. Radii are generous (about 12 px on surfaces). Without backdrop-filter support the glass is drawn opaque. The colours are CSS tokens in `app/globals.css`.
+- **One look in every theme.** Like the table, the HUD looks the same in light and dark mode.
+- **Icons** are one inline SVG set (`components/ui/icons.tsx`), drawn with `currentColor`. No emoji in the UI.
+- **Layout:**
+  - Top left: the wordmark, with the muster tokens hanging below it (see Unfought alarm).
+  - Top right: **+ Monster** and **+ Hero**.
+  - Bottom centre: the trophy shelf.
+  - Bottom right: the map controls.
+  - Toasts appear at the bottom centre, just above the trophy shelf.
+  - The figure card floats next to the selected figure. Dialogs sit in the middle of the screen over a dimmed table.
+  - Any drop of a dragged figure onto a HUD surface does nothing, except a monster dropped on the trophy shelf.
+- **Figure card:** clicking a figure opens a compact card beside it, on the right of its base with a small pointer, flipped to the left near the right edge of the screen and kept inside the screen. It lives in the canvas' screen-space overlay, so it follows the figure while you pan, zoom or while figures glide, and it hides while a figure is dragged.
+  - **Monster:** portrait, name, size and creature, key, notes clipped to three lines with **more** to expand them in place, fighters as overlapping portraits (a click selects that hero), then **Edit**, **Slay** and a **⋯** menu with **Delete**.
+  - **Hero:** portrait, name, class and mini, targets in order with main marked by a crown (a click flies to that monster), then **Edit** and a **⋯** menu with **Delete**.
+  - Esc, a click on empty table or selecting another figure closes it.
+- **Dialogs:** create and edit open centred dialogs over the dimmed table. They trap focus, Esc closes them (after a popover or a drag claims Esc first) and a click on the dim closes them when nothing has been typed.
+  - **Monster dialog** ("Summon a monster" or "Edit monster"): a large preview of the mini above a size slider with four stops, S spider, M orc, L mushroom king and XL dragon, the preview swapping as the slider moves (arrow keys work); then name and notes, and **Summon** or **Save**.
+  - **Hero dialog** ("Recruit a hero" or "Edit hero"), laid out like a game's character screen: the chosen mini large on the left with arrows to flip through the roster (Neutral first, arrow keys work, a count such as "4 of 8"), and name and class on the right. Under the class field, the classes other heroes already have are offered as chips; class stays free text. A pick that isn't in the roster shows as missing, with Neutral shown, so you can choose again.
+  - A save sends only the fields that changed, so untouched YAML keeps its formatting.
+- **Trophy shelf:** a small glass shelf where the latest slain monsters stand as bronzed minis, newest on the left, with the trophy count; hovering a mini shows its name and slain date, and the rest shows as "+N". A click on the shelf opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).
+- **Trophy hall:** a full-screen glass overlay, every slain monster as a plaque, grouped by month of `slain`, newest first. A plaque shows the bronzed portrait, the name, the slain date, the first line of the notes and who fought it ("by Ana, Bartek", from `slainBy`). Esc or the close button returns to the table.
+- **Map controls:** a small vertical cluster: zoom in and zoom out (around the middle of the screen, gliding like a fly-to), fit everything (the opening view), and **?** for the shortcuts sheet.
+- **Shortcuts sheet:** a glass card listing every gesture and key: drag, Shift+drop, wheel or pinch to zoom, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet. Keys are ignored while typing in a field.
+- **Toasts:** one at a time, bottom centre. A failed save says what failed and that the change was undone, and hides after 6 seconds. A slay says "Search Rewrite slain" with **Undo** for 8 seconds.
+- Portraits (card, muster tokens, dialogs, shelf, hall) are the baked minis on a disc of felt; trophies are tinted bronze.
+
 ## Interactions
 
 **Monsters**
 - **Drag** to move it. While dragging, the monster stays under the cursor and the map lays itself out around it: its fighters come along, monsters that share them are pulled after it, and anything in the way is nudged aside.
 - On drop, its home moves by as much as the monster was dragged (`newHome = oldHome + (drop - press)`, measured between drawn positions), and that is saved as `pos`. A monster whose heroes fight nothing else settles exactly where it was let go; one that shares heroes with other monsters eases back toward them a little.
-- **Click** to open the side panel, which has notes, fighters, edit, slay and delete.
+- **Click** to open its figure card.
 
 **Heroes**
 - A **plain drop on a monster** sets `targets` to just that monster. A plain drop back on the current main target changes nothing, so the secondary targets stay.
 - **Shift+drop on a monster** adds it to the end of `targets` as a secondary target. The hero stays closest to its main target, the new target is pulled toward it more weakly, and it gets a dashed arrow. If the monster is already a target, nothing happens. An idle hero gets it as the main target.
 - A **drop on empty ground** clears `targets` and saves `pos`. An idle hero's home moves by the drag offset, like a monster's; an engaged hero stays where it was let go.
 - While a hero is dragged, nothing else moves until the drop, so monsters never slide out from under the cursor.
-- A drop over the side panel, or off the map, does nothing and the hero snaps back.
+- A drop on a HUD surface, or off the map, does nothing and the hero snaps back.
 - While dragging, the monster under the cursor is highlighted: green for a plain drop, purple with Shift.
-- **Clicking a target arrow** opens a popover at its midpoint, worded as "Ana → Search Rewrite", with **Make main** (only on a secondary arrow) and **Remove target**. Esc or a click outside closes it.
-- Changes show at once and are saved in the background. If saving fails, the change is undone and the error is shown.
+- **Clicking a target arrow** pops two round glass buttons out at its midpoint, with a small label above naming the pair ("Ana → Search Rewrite"): a gold crown, **Make main** (only on a secondary arrow), and red shears, **Remove target**. Each has its name as a tooltip and accessible label. Esc or a click outside closes them.
+- Changes show at once and are saved in the background. If saving fails, the change is undone and a toast says so.
 
 **Unfought alarm**
-- The monster pulses red.
-- A header counter (e.g. "⚠ 3 unfought") lists them. Clicking one pans and zooms to it.
-- Off-screen unfought monsters show as red arrows pinned to the edge of the view.
+- The monster pulses red on the table.
+- **Muster tokens** hang down the left edge of the screen below the wordmark: a red count ("2 unfought") and one red-ringed portrait per unfought monster with its name beside it, largest first. Clicking one pans and zooms to it. Past six, the rest fold into "+N", which opens the full list. When every monster is engaged, a small "All engaged" seal sits under the wordmark instead.
+- Off-screen unfought monsters also show as red arrows pinned to the edge of the view.
 
-**Slay or delete a monster**
-- Slay sets `slain: <today>` (local date) and moves the monster to the trophies strip, which sits below the canvas, newest first. Clicking a trophy shows it read-only. Slaying a monster that is already slain changes nothing. To revive one, delete its `slain` line by hand.
+**Slay, undo and delete**
+- A monster is slain by dropping it on the trophy shelf, or with **Slay** on its figure card. Both set `slain: <today>` (local date) and `slainBy`, and the monster leaves the table for the shelf and the hall. Slaying a monster that is already slain changes nothing.
 - Slay and delete clean up the same way. The monster is removed from every hero's `targets`.
   - If it was a hero's main target, the next target becomes main.
   - If the hero has no targets left, they go idle at the monster's home, and `pos` is saved. The figure walks there.
-- Delete needs a second click on a button that says it can't be undone. That is the only safeguard, since there is no backup. Deleting a hero works the same way.
+- **Undo** on the slay toast revives the monster: `slain` and `slainBy` are removed and each hero the slay changed gets back the `targets` (and the idle `pos`) it had, unless that hero was changed again since, in which case it is left alone. After the toast has gone, revive a monster by deleting its `slain` and `slainBy` lines by hand.
+- **Delete** sits in the figure card's ⋯ menu and needs a second click on a button that says it can't be undone. That is the only safeguard, since there is no backup. Deleting a hero works the same way.
 
-**Create, edit, delete** (side-panel forms)
-- The side panel is an overlay on the right edge of the map. The map keeps its size underneath. Esc leaves an edit form first, then closes the panel.
-- **Monster form:** name, size and notes. A new monster spawns at the center of the visible map (not counting the area under the panel).
-- **Hero form:** name, class and mini. Class is plain free text. The mini picker is a grid of baked portraits with the current pick ringed and "Neutral" first. A pick that isn't in the roster shows as missing, with Neutral ringed, so you can choose again. Changing only the mini writes only `mini` to the YAML. A new hero spawns idle at the center of the view.
-- The side panel, the unfought alarm and the trophies show each figure's mini as a small portrait.
-- A new monster or hero is selected and the view flies to it. A rename never changes the id.
+**Create and edit**
+- **+ Monster** (or `N`) opens the monster dialog. A new monster spawns at the centre of the view.
+- **+ Hero** (or `H`) opens the hero dialog. A new hero spawns idle at the centre of the view. Changing only the mini writes only `mini` to the YAML.
+- **Edit** on a figure card opens the same dialog, filled in.
+- A new monster or hero is selected, its card opens and the view flies to it. A rename never changes the id.
 
 ## Art
 
@@ -169,7 +204,7 @@ Use Vitest unit tests on the pure functions that change data:
 - the terrain: the same chunk gives the same terrain, roads and rivers meet at chunk borders, raised pieces are rare and apart, every biome appears near the origin, a chunk is fast to generate, and how raised pieces fade among the figures
 - the home after a drag, and a monster drag laid out frame by frame from the frame before
 - target arrows that stop before name tags and minis, and the bridge picked for a road
-- slay and delete cleanup
+- slay and delete cleanup, `slainBy` on slay, and revive (restoring only the heroes left unchanged since the slay)
 - comments kept on write
 - seeding from `data.example/`
 
