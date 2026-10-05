@@ -7,6 +7,7 @@ import { miniBodyRect, monsterMini } from "@/lib/map/minis";
 import { makeWorld } from "@/lib/domain/test-fixtures";
 import {
   applyOp,
+  dropAction,
   heroHomeAfterDrag,
   hitTestMonster,
   homeAfterDrag,
@@ -168,10 +169,58 @@ describe("applyOp mirrors the Server Actions", () => {
     expect(applyOp(once, op)).toEqual(once);
   });
 
+  it("slay and revive, each safe to re-apply", () => {
+    const before = makeWorld();
+    const slain = applyOp(before, { kind: "slay", id: "m1", today: "2026-10-05" });
+    expect(monster(slain, "m1")).toMatchObject({ slain: "2026-10-05", slainBy: ["ana", "bob"] });
+    expect(hero(slain, "bob")).toMatchObject({ targets: [], pos: { x: -100, y: 10 } });
+    expect(applyOp(slain, { kind: "slay", id: "m1", today: "2026-10-06" })).toBe(slain);
+
+    const op: WorldOp = {
+      kind: "revive",
+      id: "m1",
+      before: [
+        { id: "ana", targets: ["m1", "m2"] },
+        { id: "bob", targets: ["m1"] },
+      ],
+    };
+    const revived = applyOp(slain, op);
+    expect(monster(revived, "m1").slain).toBeUndefined();
+    expect(revived.heroes).toEqual(before.heroes);
+    expect(applyOp(revived, op)).toBe(revived);
+  });
+
   it("leaves the world unchanged instead of throwing when the op no longer fits", () => {
     const before = makeWorld();
     expect(applyOp(before, { kind: "makeMain", heroId: "bob", monsterId: "m3" })).toBe(before);
     expect(applyOp(before, { kind: "moveMonster", id: "gone", pos: { x: 0, y: 0 } })).toBe(before);
+  });
+});
+
+describe("dropAction", () => {
+  const shelf = { left: 400, top: 700, right: 600, bottom: 760 };
+
+  it("slays a monster let go over the trophy shelf, edges included", () => {
+    expect(dropAction("monster", { x: 500, y: 730 }, false, shelf)).toBe("slay");
+    expect(dropAction("monster", { x: 400, y: 700 }, false, shelf)).toBe("slay");
+    expect(dropAction("monster", { x: 600, y: 760 }, false, shelf)).toBe("slay");
+  });
+
+  it("only moves a monster let go just short of the shelf", () => {
+    expect(dropAction("monster", { x: 500, y: 699 }, true, shelf)).toBe("place");
+    expect(dropAction("monster", { x: 399, y: 730 }, true, shelf)).toBe("place");
+  });
+
+  it("snaps a hero let go over the shelf back", () => {
+    expect(dropAction("hero", { x: 500, y: 730 }, false, shelf)).toBe("none");
+    expect(dropAction("hero", { x: 500, y: 730 }, true, shelf)).toBe("none");
+  });
+
+  it("places either figure on the map and snaps either back over another HUD surface", () => {
+    expect(dropAction("hero", { x: 100, y: 100 }, true, shelf)).toBe("place");
+    expect(dropAction("monster", { x: 100, y: 100 }, true, null)).toBe("place");
+    expect(dropAction("monster", { x: 10, y: 10 }, false, shelf)).toBe("none");
+    expect(dropAction("hero", { x: 10, y: 10 }, false, null)).toBe("none");
   });
 });
 

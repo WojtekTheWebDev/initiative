@@ -24,7 +24,7 @@ import { FigureCard } from "@/components/card/FigureCard";
 import { useSelection, type Selection } from "@/components/card/useSelection";
 import { useDialogs } from "@/components/dialogs/useDialogs";
 import { FigureDialogs } from "@/components/dialogs/FigureDialogs";
-import { Trophies } from "@/components/Trophies";
+import { TrophyShelf } from "@/components/trophies/TrophyShelf";
 import { Hud, Wordmark } from "@/components/Hud";
 
 /** Flies the view to where a figure is drawn. `fallback` is used until the figure is on the map (e.g. just created). */
@@ -104,9 +104,7 @@ export function Board({ world }: { world: World }) {
           </>
         }
         topRight={<CreateButtons onCreate={dialogs.openCreate} />}
-        bottomCenter={
-          <Trophies monsters={drag.world.monsters} openId={null} onOpen={() => {}} />
-        }
+        bottomCenter={<TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} />}
         bottomRight={
           <MapControls
             map={map}

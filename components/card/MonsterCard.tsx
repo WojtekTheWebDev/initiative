@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import type { Hero, Monster, World } from "@/lib/types";
 import { creatureOf, fightersOf } from "@/lib/domain";
 import { heroMini, monsterMini } from "@/lib/map/minis";
-import { deleteMonster, slayMonster } from "@/app/actions";
+import { deleteMonster } from "@/app/actions";
 import { unwrap } from "@/lib/action-result";
 import { Portrait } from "@/components/ui/Portrait";
 import { Button } from "@/components/ui/Button";
@@ -23,6 +23,7 @@ export function MonsterCard({
   monster,
   onSelectHero,
   onClose,
+  onSlay,
   onEdit,
 }: {
   world: World;
@@ -30,6 +31,8 @@ export function MonsterCard({
   onSelectHero: (id: string) => void;
   /** Closes the card (the monster is leaving the table). */
   onClose: () => void;
+  /** Slays it, with the slay toast and its Undo. */
+  onSlay: () => void;
   /** Opens the edit dialog; without it there is no Edit button. */
   onEdit?: () => void;
 }) {
@@ -79,7 +82,10 @@ export function MonsterCard({
           tone="primary"
           icon="swords"
           className="h-8"
-          onClick={() => act("slay the monster", () => unwrap(slayMonster(monster.id)), onClose)}
+          onClick={() => {
+            onClose();
+            onSlay();
+          }}
         >
           Slay
         </Button>

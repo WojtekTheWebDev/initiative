@@ -95,13 +95,6 @@ async function act<T>(fn: () => Promise<T>): Promise<ActionResult<T>> {
   return { ok: true, value };
 }
 
-/** Local calendar date as YYYY-MM-DD (not UTC). */
-function localToday(): string {
-  const d = new Date();
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
 export async function moveMonster(id: string, pos: Pos): Promise<ActionResult> {
   return act(async () => {
     const monsterId = checkId(id, "Monster id");
@@ -202,7 +195,7 @@ export async function updateMonster(
 export async function slayMonster(id: string): Promise<ActionResult<HeroBefore[]>> {
   return act(async () => {
     const monsterId = checkId(id, "Monster id");
-    const today = localToday();
+    const today = domain.localToday();
     let changed: HeroBefore[] = [];
     await updateWorld((w) => {
       const next = domain.slay(w, monsterId, today);

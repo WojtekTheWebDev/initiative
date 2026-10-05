@@ -35,6 +35,12 @@ function fightersOf(world: World, monsterId: string): string[] {
   return [...main.sort(byId), ...secondary.sort(byId)];
 }
 
+/** The local calendar date of `now` as 'YYYY-MM-DD' (not UTC), the form `slain` takes. */
+export function localToday(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
 /**
  * Sets `slain: today` ('YYYY-MM-DD') and `slainBy` (absent when nobody fought it),
  * then cleans up targets. Already slain: no-op.

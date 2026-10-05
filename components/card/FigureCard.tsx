@@ -77,6 +77,7 @@ export function FigureCard({ view, drag, selection, onSelect, onFlyTo, onEdit }:
           monster={placed.monster}
           onSelectHero={(id) => onSelect({ kind: "hero", id })}
           onClose={close}
+          onSlay={() => drag.slay(placed.monster.id)}
           onEdit={onEdit && (() => onEdit(selection))}
         />
       </CardFrame>

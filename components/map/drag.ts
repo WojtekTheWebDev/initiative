@@ -1,5 +1,6 @@
 import type { Pos, World } from "@/lib/types";
 import * as domain from "@/lib/domain";
+import type { HeroBefore } from "@/lib/domain";
 import { idleHome, layoutWorld, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
 import { hitsMini, monsterMini } from "@/lib/map/minis";
 
@@ -22,7 +23,9 @@ export type WorldOp =
   | { kind: "moveMonster"; id: string; pos: Pos }
   | { kind: "dropHero"; heroId: string; drop: HeroDrop }
   | { kind: "makeMain"; heroId: string; monsterId: string }
-  | { kind: "removeTarget"; heroId: string; monsterId: string };
+  | { kind: "removeTarget"; heroId: string; monsterId: string }
+  | { kind: "slay"; id: string; today: string }
+  | { kind: "revive"; id: string; before: HeroBefore[] };
 
 /**
  * Applies an op with the same lib/domain rules the server uses (see app/actions.ts).
@@ -38,6 +41,10 @@ export function applyOp(world: World, op: WorldOp): World {
         return domain.makeMain(world, op.heroId, op.monsterId);
       case "removeTarget":
         return domain.removeTarget(world, op.heroId, op.monsterId);
+      case "slay":
+        return domain.slay(world, op.id, op.today);
+      case "revive":
+        return domain.revive(world, op.id, op.before);
       case "dropHero": {
         const { heroId, drop } = op;
         if ("pos" in drop) return domain.setIdle(world, heroId, drop.pos);
@@ -50,6 +57,30 @@ export function applyOp(world: World, op: WorldOp): World {
   } catch {
     return world;
   }
+}
+
+/** A box on the screen in client px, as `getBoundingClientRect()` gives it. */
+export type ScreenRect = { left: number; top: number; right: number; bottom: number };
+
+/** What letting go of a dragged figure does. */
+export type DropAction = "slay" | "place" | "none";
+
+/**
+ * What a drop at `client` does. `onMap` says the point shows the map (not a
+ * HUD surface over it); `shelf` is the trophy shelf's box, if it is on screen.
+ * - A monster let go over the shelf is slain; anywhere else on the map it is
+ *   placed (its home moves). Only the shelf's own box counts, so a drop just
+ *   short of it only moves the monster.
+ * - A hero is placed on the map (see resolveHeroDrop); over the shelf it snaps back.
+ * - Either let go over any other HUD surface snaps back.
+ */
+export function dropAction(kind: "monster" | "hero", client: Pos, onMap: boolean, shelf: ScreenRect | null): DropAction {
+  if (shelf && within(shelf, client)) return kind === "monster" ? "slay" : "none";
+  return onMap ? "place" : "none";
+}
+
+function within(r: ScreenRect, p: Pos): boolean {
+  return p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom;
 }
 
 /**
