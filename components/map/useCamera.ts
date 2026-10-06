@@ -116,13 +116,13 @@ export function useCamera(initial: InitialCamera) {
     [commit, stopAnimation],
   );
 
-  /** Centers on a world point at a readable zoom (see `flyTarget`). */
+  /** Brings a world point to the middle of the screen, or to `at`, at a readable zoom (see `flyTarget`). */
   const flyTo = useCallback(
-    (point: Pos) => {
+    (point: Pos, at?: Pos) => {
       const cam = cameraRef.current;
       const vp = viewportRef.current;
       if (!cam || !vp) return;
-      animateTo(flyTarget(cam, point, vp));
+      animateTo(flyTarget(cam, point, vp, at));
     },
     [animateTo],
   );

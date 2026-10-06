@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CARD_GAP, CARD_MARGIN, POINTER_INSET, placeCard } from "./placeCard";
+import { CARD_GAP, CARD_MARGIN, POINTER_INSET, placeCard, revealAbove } from "./placeCard";
 
 const viewport = { width: 1000, height: 700 };
 const card = { width: 280, height: 200 };
@@ -56,5 +56,25 @@ describe("placeCard", () => {
     const p = placeCard({ x: 100, y: 100, reach: 30 }, card, { width: 200, height: 150 });
     expect(p.left).toBe(CARD_MARGIN);
     expect(p.top).toBe(CARD_MARGIN);
+  });
+});
+
+describe("revealAbove", () => {
+  const phone = { width: 390, height: 660 };
+  const sheet = { width: 366, height: 220 };
+  const bottom = phone.height - CARD_MARGIN - sheet.height - CARD_GAP;
+
+  it("leaves a figure that already shows between the HUD and the card", () => {
+    expect(revealAbove({ x: 200, y: 300, reach: 20 }, sheet, phone, 110)).toBeNull();
+  });
+
+  it("brings a figure under the card up into the clear space, centred across", () => {
+    const at = revealAbove({ x: 200, y: 500, reach: 20 }, sheet, phone, 110);
+    expect(at).toEqual({ x: 195, y: 110 + (bottom - 110) * 0.6 });
+  });
+
+  it("brings in a figure under the top HUD or off the side", () => {
+    expect(revealAbove({ x: 200, y: 120, reach: 20 }, sheet, phone, 110)).not.toBeNull();
+    expect(revealAbove({ x: 380, y: 300, reach: 20 }, sheet, phone, 110)).not.toBeNull();
   });
 });

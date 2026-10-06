@@ -32,6 +32,7 @@ import { useSettings, useTutorial } from "@/components/game/GameProvider";
 import { ExampleBanner } from "@/components/game/ExampleBanner";
 import type { GameFiles } from "@/components/game/useGameFiles";
 import { tutorialStage } from "@/components/tutorial/stage";
+import { useNarrow } from "@/components/ui/useNarrow";
 import { Coach, type CoachedStage } from "@/components/tutorial/Coach";
 import { AssignPath } from "@/components/tutorial/AssignPath";
 import { useSkipTutorial } from "@/components/tutorial/TutorialDialogs";
@@ -79,14 +80,22 @@ export function Board({ files }: { files: GameFiles }) {
   // The monster and hero dialogs: `dialogs.openCreate(kind)` and `dialogs.openEdit(kind, id)`.
   const dialogs = useDialogs();
 
-  // While the tutorial runs, its coach card sits beside the control it points at, which glows.
+  // While the tutorial runs, its coach card sits beside the control it points at, which glows;
+  // on a phone it folds while the figure card is docked, so one bottom sheet shows at a time.
+  const narrow = useNarrow();
   const tutorial = useTutorial();
   const skipTutorial = useSkipTutorial();
   const stage = useMemo(() => tutorialStage(drag.world), [drag.world]);
   const coached: CoachedStage | null =
     tutorial.status === "playing" && !tutorial.welcome && stage.step !== "victory" ? stage : null;
   const coach = coached && (
-    <Coach key={coached.step} stage={coached} dialogOpen={dialogs.open !== null} onSkip={skipTutorial} />
+    <Coach
+      key={coached.step}
+      stage={coached}
+      dialogOpen={dialogs.open !== null}
+      cardDocked={narrow && selection !== null}
+      onSkip={skipTutorial}
+    />
   );
   const coachAt = (...steps: CoachedStage["step"][]) => (coached && steps.includes(coached.step) ? coach : null);
 
@@ -157,6 +166,7 @@ export function Board({ files }: { files: GameFiles }) {
               onSelect={select}
               onFlyTo={flyTo}
               onEdit={(s) => dialogs.openEdit(s.kind, s.id)}
+              onReveal={(pos, at) => map.current?.flyTo(pos, at)}
             />
             <DragOverlay drag={drag} view={view} />
           </>

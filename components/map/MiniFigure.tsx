@@ -219,7 +219,7 @@ export function FigureDefs() {
 }
 
 const FIGURE_CSS = `
-[data-figure]:focus-visible { outline: none; }
+[data-figure]:focus { outline: none; }
 .initiative-focus-ring { display: none; }
 [data-figure]:focus-visible .initiative-focus-ring { display: inline; }
 @keyframes initiative-unfought-pulse {

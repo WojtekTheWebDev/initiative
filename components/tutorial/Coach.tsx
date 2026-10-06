@@ -16,24 +16,30 @@ export type CoachedStage = Exclude<TutorialStage, { step: "victory" }>;
  * control it points at, which glows. While a monster or hero dialog is open
  * it folds into a slim bar at the top, over the dim, and the dialog opens
  * below it; on a phone it is a bottom sheet, lifted clear of the trophy shelf
- * while it is about slaying, that can be folded into that bar by hand.
+ * while it is about slaying, that folds into the bar under the top clusters
+ * while the figure card is docked as the bottom sheet, or by hand. Wherever
+ * the bar shows, its bottom edge is published as `--coach-bar`.
  */
 export function Coach({
   stage,
   dialogOpen,
+  cardDocked,
   onSkip,
 }: {
   stage: CoachedStage;
   /** A monster or hero dialog is open. */
   dialogOpen: boolean;
+  /** The figure card is docked as a bottom sheet (on a phone). */
+  cardDocked: boolean;
   onSkip: () => void;
 }) {
   const [folded, setFolded] = useState(false);
+  const asBar = dialogOpen || cardDocked || folded;
   const bar = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const el = bar.current;
-    if (!dialogOpen || !el) return;
-    // Dialogs read where the bar ends (`--coach-bar`), so they open below it.
+    if (!asBar || !el) return;
+    // Dialogs open below the bar, and the docked figure card keeps its figure below it.
     const root = document.documentElement.style;
     const ro = new ResizeObserver(() => root.setProperty("--coach-bar", `${el.getBoundingClientRect().bottom}px`));
     ro.observe(el);
@@ -41,7 +47,7 @@ export function Coach({
       ro.disconnect();
       root.removeProperty("--coach-bar");
     };
-  }, [dialogOpen]);
+  }, [asBar, dialogOpen]);
   const copy = coachCopy(stage);
   const number = COACHED_STEPS.indexOf(stage.step) + 1;
   const eyebrow = (
@@ -60,7 +66,7 @@ export function Coach({
     </button>
   );
 
-  if (dialogOpen || folded) {
+  if (asBar) {
     return createPortal(
       <div
         ref={bar}
@@ -77,7 +83,7 @@ export function Coach({
           <span className="min-w-40 flex-1">{copy.short}</span>
           <span className="max-sm:hidden">{pips}</span>
           {skip}
-          {!dialogOpen && (
+          {!dialogOpen && !cardDocked && (
             <IconButton
               label="Open the tutorial card"
               icon="chevronDown"

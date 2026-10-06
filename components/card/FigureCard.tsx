@@ -1,20 +1,24 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import type { Monster } from "@/lib/types";
+import { createPortal } from "react-dom";
+import type { Monster, Pos } from "@/lib/types";
 import { worldToScreen } from "@/lib/map/camera";
 import { HERO_BASE_RADIUS } from "@/lib/map/rings";
 import type { MapView } from "@/components/map/MapCanvas";
 import type { FigureDrag } from "@/components/map/useFigureDrag";
 import { useGlide } from "@/components/map/useGlide";
 import { Glass } from "@/components/ui/Glass";
-import { placeCard, type CardSize } from "./placeCard";
+import { useNarrow } from "@/components/ui/useNarrow";
+import { DOCK_CLEAR_TOP, placeCard, revealAbove, type CardSize } from "./placeCard";
 import type { Selection } from "./useSelection";
 import { MonsterCard } from "./MonsterCard";
 import { HeroCard } from "./HeroCard";
 
 /** Card width in screen px (narrower when the window is). */
 const CARD_WIDTH = 288;
+/** Screen px kept between the lowest HUD edge and a figure brought up above the docked card. */
+const CARD_MARGIN_TOP = 12;
 /** The pointer's size in screen px: how far it reaches out of the card, and its height. */
 const POINTER_REACH = 10;
 const POINTER_HEIGHT = 18;
@@ -27,6 +31,8 @@ type Props = {
   onFlyTo: (monster: Monster) => void;
   /** Opens the edit dialog for the selected figure; without it the cards have no Edit button. */
   onEdit?: (selection: NonNullable<Selection>) => void;
+  /** Glides the map to bring the world point `pos` to the screen point `at`. */
+  onReveal: (pos: Pos, at: Pos) => void;
 };
 
 /**
@@ -36,10 +42,13 @@ type Props = {
  * glide to a new layout. It hides while any figure is dragged, and while its
  * figure's base is out of view.
  *
+ * In a window too narrow for that (`useNarrow`) it docks as a bottom sheet
+ * over the HUD instead, and the map glides so the figure shows above it.
+ *
  * Esc closes it, unless something else claimed that Esc first with
  * `preventDefault()` (a drag, the arrow buttons, a dialog, the card's own menu).
  */
-export function FigureCard({ view, drag, selection, onSelect, onFlyTo, onEdit }: Props) {
+export function FigureCard({ view, drag, selection, onSelect, onFlyTo, onEdit, onReveal }: Props) {
   // Always follows the layout, even with nothing selected, so a card opened mid-glide starts where its figure is drawn.
   const layout = useGlide(drag.layout, drag.lifted);
   const hidden = drag.lifted !== null;
@@ -78,6 +87,7 @@ export function FigureCard({ view, drag, selection, onSelect, onFlyTo, onEdit }:
         pos={placed.pos}
         radius={placed.radius}
         label={placed.monster.name}
+        onReveal={onReveal}
         figure={`[data-figure][data-monster="${CSS.escape(selection.id)}"]`}
       >
         <MonsterCard
@@ -100,6 +110,7 @@ export function FigureCard({ view, drag, selection, onSelect, onFlyTo, onEdit }:
       pos={placed.pos}
       radius={HERO_BASE_RADIUS}
       label={placed.hero.name}
+      onReveal={onReveal}
       figure={`[data-figure][data-hero="${CSS.escape(selection.id)}"]`}
     >
       <HeroCard
@@ -118,6 +129,8 @@ export function FigureCard({ view, drag, selection, onSelect, onFlyTo, onEdit }:
  * units, and its `radius`). Opened from the keyboard (a figure has visible
  * focus), it takes the focus; closed while it holds the focus, it hands it
  * back to its figure (`figure`, a selector for the figure's element).
+ * Docked on a narrow window, it has no pointer, and once measured it asks
+ * the map to bring the figure into the clear space above it (`onReveal`).
  */
 function CardFrame({
   view,
@@ -125,15 +138,18 @@ function CardFrame({
   radius,
   label,
   figure,
+  onReveal,
   children,
 }: {
   view: MapView;
-  pos: { x: number; y: number };
+  pos: Pos;
   radius: number;
   label: string;
   figure: string;
+  onReveal: (pos: Pos, at: Pos) => void;
   children: ReactNode;
 }) {
+  const docked = useNarrow();
   const ref = useRef<HTMLElement>(null);
   const [size, setSize] = useState<CardSize | null>(null);
   useEffect(() => {
@@ -165,20 +181,48 @@ function CardFrame({
 
   const { camera, viewport } = view;
   const base = worldToScreen(camera, pos);
-  const place = size && placeCard({ ...base, reach: radius * camera.scale }, size, viewport);
+  const anchor = { ...base, reach: radius * camera.scale };
+  const place = size && !docked ? placeCard(anchor, size, viewport) : null;
   // A card whose figure is panned out of view would point at nothing, so it waits, hidden, until it is back.
   const inView = base.x >= 0 && base.y >= 0 && base.x <= viewport.width && base.y <= viewport.height;
+
+  // Docked, the card shows the figure once: where it opened, or after the glide that brings it up.
+  const revealed = useRef(false);
+  useEffect(() => {
+    if (!docked || !size || revealed.current) return;
+    revealed.current = true;
+    // The tutorial's coach bar, when it shows under the top clusters, is the lowest HUD edge.
+    const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--coach-bar")) || 0;
+    const at = revealAbove(anchor, size, viewport, Math.max(DOCK_CLEAR_TOP, bar) + CARD_MARGIN_TOP);
+    if (at) onReveal(pos, at);
+  });
 
   // Read while rendering, before anything moves the focus. The card stays
   // hidden until it is measured and placed, so it takes the focus then.
   const [takeFocus] = useState(() => Boolean(document.activeElement?.matches("[data-figure]:focus-visible")));
-  const placed = place !== null && inView;
+  const placed = docked ? size !== null : place !== null && inView;
   const tookFocus = useRef(false);
   useEffect(() => {
     if (!takeFocus || !placed || tookFocus.current) return;
     tookFocus.current = true;
     ref.current?.querySelector("button")?.focus();
   }, [takeFocus, placed]);
+
+  if (docked) {
+    // Over the HUD's bottom clusters, under dialogs.
+    return createPortal(
+      <Glass
+        as="section"
+        ref={ref}
+        aria-label={label}
+        className="pointer-events-auto fixed inset-x-3 bottom-3 z-40 max-h-[55dvh] overflow-y-auto p-3.5 text-hud-fg motion-safe:animate-hud-rise"
+        style={{ visibility: size ? undefined : "hidden" }}
+      >
+        {children}
+      </Glass>,
+      document.body,
+    );
+  }
 
   return (
     <Glass

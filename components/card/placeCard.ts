@@ -47,3 +47,26 @@ export function placeCard(anchor: CardAnchor, card: CardSize, viewport: Viewport
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
+
+/** Below this window width the card can't stand beside a figure without covering it, so it docks as a bottom sheet. */
+export const DOCK_BELOW = 640;
+/** Screen px the HUD's top clusters take on a phone (the wordmark, and the create buttons stacked). */
+export const DOCK_CLEAR_TOP = 108;
+
+/**
+ * Where a figure's base should be brought on screen so it shows above the
+ * docked card: centred across, and a little below the middle of the space
+ * between `top` (the lowest HUD edge) and the card, since the mini rises
+ * above its base. `null` when the whole figure already shows there.
+ */
+export function revealAbove(anchor: CardAnchor, card: CardSize, viewport: ViewportSize, top: number): Pos | null {
+  const bottom = viewport.height - CARD_MARGIN - card.height - CARD_GAP;
+  const shows =
+    anchor.x - anchor.reach >= 0 &&
+    anchor.x + anchor.reach <= viewport.width &&
+    // The mini stands about two base half-widths tall.
+    anchor.y - 2 * anchor.reach >= top &&
+    anchor.y + anchor.reach <= bottom;
+  if (shows) return null;
+  return { x: viewport.width / 2, y: top + (bottom - top) * 0.6 };
+}

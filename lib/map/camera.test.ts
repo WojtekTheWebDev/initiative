@@ -138,6 +138,11 @@ describe("flyTarget", () => {
   it("keeps a closer zoom", () => {
     expect(flyTarget({ x: 0, y: 0, scale: 2.5 }, { x: 0, y: 0 }, vp).scale).toBe(2.5);
   });
+  it("brings the point to a given screen position", () => {
+    const cam = flyTarget({ x: 0, y: 0, scale: 2 }, { x: 500, y: 500 }, vp, { x: 100, y: 50 });
+    expect(cam.scale).toBe(2);
+    expect(screenToWorld(cam, { x: 100, y: 50 })).toEqual({ x: 500, y: 500 });
+  });
 });
 
 describe("centerOn / lerpCamera", () => {

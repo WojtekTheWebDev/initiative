@@ -34,8 +34,8 @@ export type MapHandle = {
   clientToWorld(clientX: number, clientY: number): Pos;
   /** The client point shows the map: inside the canvas and not under something drawn over it (a HUD surface). */
   isOnMap(clientX: number, clientY: number): boolean;
-  /** Animates (about 300ms) to center `point` at a readable zoom. */
-  flyTo(point: Pos): void;
+  /** Animates (about 300ms) to bring `point` to the middle of the screen, or to the screen point `at`, at a readable zoom. */
+  flyTo(point: Pos, at?: Pos): void;
   /** Zooms by `factor` around the middle of the screen, gliding like `flyTo`. */
   zoomBy(factor: number): void;
   /** Glides back to the opening view (`initialCamera`), worked out for the current viewport. */

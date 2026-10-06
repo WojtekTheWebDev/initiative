@@ -115,9 +115,15 @@ export function fitBounds(points: Pos[], viewport: ViewportSize, padding = 80): 
   return centerOn(center, scale, viewport);
 }
 
-/** Centers on `point` at a readable zoom: keeps the current zoom if it is already closer. */
-export function flyTarget(camera: Camera, point: Pos, viewport: ViewportSize): Camera {
-  return centerOn(point, Math.max(camera.scale, READABLE_SCALE), viewport);
+/**
+ * Brings `point` to the screen position `at` (the middle of the viewport
+ * unless given) at a readable zoom: keeps the current zoom if it is already closer.
+ */
+export function flyTarget(camera: Camera, point: Pos, viewport: ViewportSize, at?: Pos): Camera {
+  const centred = centerOn(point, Math.max(camera.scale, READABLE_SCALE), viewport);
+  if (!at) return centred;
+  const s = centred.scale;
+  return { x: point.x - at.x / s, y: point.y - at.y / s, scale: s };
 }
 
 /** Linear interpolation between cameras; zoom interpolates geometrically. */
