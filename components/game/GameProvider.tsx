@@ -4,9 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useState, useSyncExt
 import type { World } from "@/lib/types";
 import { createGameStore, STORAGE_KEY, type GameState, type GameStore } from "@/lib/save/game";
 import { createSettingsStore, DEFAULT_SETTINGS, SETTINGS_KEY, type Settings, type SettingsStore } from "@/lib/save/settings";
+import { createTutorialStore, TUTORIAL_KEY, type TutorialState, type TutorialStore } from "@/lib/save/tutorial";
 import { useToast } from "@/components/ui/Toast";
 
-type GameContextValue = { store: GameStore; example: World; settings: SettingsStore } | null;
+type GameStores = { store: GameStore; example: World; settings: SettingsStore; tutorial: TutorialStore };
+type GameContextValue = GameStores | null;
 
 const GameContext = createContext<GameContextValue>(null);
 
@@ -20,17 +22,19 @@ function localStorageOrNull(): Storage | null {
 }
 
 /**
- * Holds the game and the settings in the browser's local storage (see
- * `createGameStore` and `createSettingsStore`). The server has no game, so it
- * renders the children without one; the browser reads the stored game, or
- * deals `example`, once it hydrates. A game or settings stored by another tab
- * are taken in through the `storage` event.
+ * Holds the game, the settings and the tutorial's status in the browser's
+ * local storage (see `createGameStore`, `createSettingsStore` and
+ * `createTutorialStore`). The server has no game, so it renders the children
+ * without one; the browser reads the stored game, or deals `example`, once it
+ * hydrates. Whatever another tab stores is taken in through the `storage` event.
  */
 export function GameProvider({ example, children }: { example: World; children: ReactNode }) {
   const [value] = useState<GameContextValue>(() => {
     if (typeof window === "undefined") return null;
     const storage = localStorageOrNull();
-    return { store: createGameStore(storage, example), example, settings: createSettingsStore(storage) };
+    // The tutorial store reads first: it looks for a stored game, which the game store stores once it changes.
+    const tutorial = createTutorialStore(storage);
+    return { store: createGameStore(storage, example), example, settings: createSettingsStore(storage), tutorial };
   });
 
   useEffect(() => {
@@ -38,6 +42,7 @@ export function GameProvider({ example, children }: { example: World; children: 
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) value.store.external(e.newValue);
       if (e.key === SETTINGS_KEY) value.settings.external(e.newValue);
+      if (e.key === TUTORIAL_KEY) value.tutorial.external(e.newValue);
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -78,8 +83,21 @@ export function useSettings(): Settings {
   );
 }
 
-/** The game store and the example table, for code that changes the game. */
-export function useGameStore(): { store: GameStore; example: World; settings: SettingsStore } {
+const NO_TUTORIAL: TutorialState = { status: null, welcome: false };
+const noTutorial = () => NO_TUTORIAL;
+
+/** Where this browser stands with the tutorial (nothing open on the server). */
+export function useTutorial(): TutorialState {
+  const value = useContext(GameContext);
+  return useSyncExternalStore(
+    value?.tutorial.subscribe ?? noSubscribe,
+    value?.tutorial.getState ?? noTutorial,
+    noTutorial,
+  );
+}
+
+/** The game, settings and tutorial stores and the example table, for code that changes them. */
+export function useGameStore(): GameStores {
   const value = useContext(GameContext);
   if (!value) throw new Error("useGameStore() needs a <GameProvider> in the browser");
   return value;

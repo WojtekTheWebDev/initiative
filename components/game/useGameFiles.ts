@@ -30,10 +30,11 @@ function download(text: string, name: string) {
  * Save game, Load game and New game. Loading is two steps: `open` reads the
  * file into `pending`, which the load dialog shows, and `replace` puts it on
  * the table. New game opens its dialog (`newGameOpen`), and `startNew` deals
- * an empty or example table.
+ * an empty or example table. Replacing the table while the tutorial runs, or
+ * while its welcome dialog is open, skips the tutorial.
  */
 export function useGameFiles() {
-  const { store, example } = useGameStore();
+  const { store, example, tutorial } = useGameStore();
   const toast = useToast();
   const [pending, setPending] = useState<PendingLoad | null>(null);
   const [newGameOpen, setNewGameOpen] = useState(false);
@@ -68,22 +69,29 @@ export function useGameFiles() {
     input.click();
   }, [open]);
 
+  const leaveTutorial = useCallback(() => {
+    const { status, welcome } = tutorial.getState();
+    if (status === "playing" || welcome) tutorial.set("skipped");
+  }, [tutorial]);
+
   const replace = useCallback(
     (load: { name: string; save: LoadedSave }) => {
       const { world, savedAt } = load.save;
       store.replace(matchesFile(newGame(world, false), savedAt ?? new Date()));
+      leaveTutorial();
       setPending(null);
       toast.show({ tone: "done", message: `Loaded ${load.name}` });
     },
-    [store, toast],
+    [store, toast, leaveTutorial],
   );
 
   const startNew = useCallback(
     (table: "empty" | "example") => {
       store.replace(table === "empty" ? newGame(EMPTY_WORLD, false) : newGame(example, true));
+      leaveTutorial();
       setNewGameOpen(false);
     },
-    [store, example],
+    [store, example, leaveTutorial],
   );
 
   return useMemo(

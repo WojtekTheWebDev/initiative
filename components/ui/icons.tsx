@@ -24,6 +24,7 @@ export type IconName =
   | "load"
   | "newGame"
   | "file"
+  | "book"
   | "info"
   | "settings";
 
@@ -165,6 +166,10 @@ export const Icon: Record<IconName, IconComponent> = {
       <path d="M6 3h8l4 4v14H6V3Z" />
       <path d="M14 3v4h4M9 13h6M9 17h6" />
     </>,
+  ),
+  book: icon(
+    "book",
+    <path d="M4 5h6a2 2 0 0 1 2 2v12a2 2 0 0 0-2-2H4ZM20 5h-6a2 2 0 0 0-2 2v12a2 2 0 0 1 2-2h6Z" />,
   ),
   info: icon(
     "info",

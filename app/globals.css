@@ -52,6 +52,10 @@
   --animate-hud-fade: hud-fade 160ms ease-out;
   --animate-hud-pop: hud-pop 180ms ease-out;
   --animate-hud-rise: hud-rise 200ms ease-out;
+  /* The tutorial's beckoning glow around the control the coach card points at. */
+  --animate-hud-beckon: hud-beckon 1.6s ease-in-out infinite;
+  /* The tutorial's dashed path, marching from the hero to the monster by one dash period (--hud-march). */
+  --animate-hud-march: hud-march 900ms linear infinite;
 
   @keyframes hud-fade {
     from {
@@ -68,6 +72,20 @@
     from {
       opacity: 0;
       transform: translateY(8px);
+    }
+  }
+  @keyframes hud-beckon {
+    0%,
+    100% {
+      box-shadow: 0 0 0 3px rgba(217, 180, 95, 0.25), 0 0 14px rgba(217, 180, 95, 0.45);
+    }
+    50% {
+      box-shadow: 0 0 0 7px rgba(217, 180, 95, 0.08), 0 0 32px rgba(217, 180, 95, 0.9);
+    }
+  }
+  @keyframes hud-march {
+    to {
+      stroke-dashoffset: var(--hud-march, -20);
     }
   }
 }

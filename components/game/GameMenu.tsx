@@ -6,7 +6,7 @@ import { Glass } from "@/components/ui/Glass";
 import { Icon, type IconName } from "@/components/ui/icons";
 import { AboutDialog } from "./AboutDialog";
 import { SettingsDialog } from "./SettingsDialog";
-import { useGame } from "./GameProvider";
+import { useGame, useGameStore } from "./GameProvider";
 import type { GameFiles } from "./useGameFiles";
 
 /** "⌘" on a Mac, "Ctrl" elsewhere, for the menu's key hints. */
@@ -16,15 +16,17 @@ function modKey(): string {
 
 /**
  * The wordmark in the top-left corner, which opens the game menu: Save game
- * to file, Load game from file, New game, Settings and About, over a line saying where the
- * table is kept and when it was last saved to a file. After `BACKUP_DAYS` of
- * unsaved changes an amber dot sits on the wordmark.
+ * to file, Load game from file, New game, Play the tutorial, Settings and
+ * About, over a line saying where the table is kept and when it was last
+ * saved to a file. After `BACKUP_DAYS` of unsaved changes an amber dot sits
+ * on the wordmark.
  *
  * It also binds ⌘S (Ctrl+S) and ⌘O (Ctrl+O), in place of the browser's own
  * save and open, while no dialog is open.
  */
 export function GameMenu({ files }: { files: GameFiles }) {
   const state = useGame();
+  const { tutorial } = useGameStore();
   const [open, setOpen] = useState(false);
   const [about, setAbout] = useState(false);
   const [settings, setSettings] = useState(false);
@@ -113,6 +115,9 @@ export function GameMenu({ files }: { files: GameFiles }) {
           <hr className="mx-1.5 my-1 border-hud-line" />
           <Item icon="newGame" onClick={choose(files.openNewGame)}>
             New game…
+          </Item>
+          <Item icon="book" onClick={choose(tutorial.openWelcome)}>
+            Play the tutorial
           </Item>
           <Item icon="settings" onClick={choose(() => setSettings(true))}>
             Settings

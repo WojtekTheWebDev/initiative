@@ -21,7 +21,9 @@ const FOCUSABLE =
  * - A click on the dim closes it only when nothing has been typed (`!dirty`).
  *
  * The close button and Esc are the only ways out besides the dialog's own
- * actions, so a dialog has no Cancel button.
+ * actions, so a dialog has no Cancel button. A dialog without `onClose` has
+ * no close button, and Esc and the dim do nothing: one of its own actions
+ * must answer it (the tutorial's welcome).
  *
  * The panel is `role="dialog"` with `aria-modal="true"`, which is how other
  * HUD code (keyboard shortcuts) can tell a dialog is open.
@@ -36,7 +38,8 @@ export function Dialog({
 }: {
   title: ReactNode;
   open: boolean;
-  onClose: () => void;
+  /** Absent when the dialog must be answered by one of its own actions. */
+  onClose?: () => void;
   /** Something has been typed, so a stray click on the dim must not throw it away. */
   dirty?: boolean;
   /** Extra classes for the panel, e.g. its width. */
@@ -60,7 +63,7 @@ function DialogPanel({
   children,
 }: {
   title: ReactNode;
-  onClose: () => void;
+  onClose?: () => void;
   dirty: boolean;
   className: string;
   children: ReactNode;
@@ -90,7 +93,7 @@ function DialogPanel({
     if (e.key === "Escape") {
       if (e.defaultPrevented) return;
       e.preventDefault();
-      onClose();
+      onClose?.();
       return;
     }
     if (e.key !== "Tab" || !panel.current) return;
@@ -121,7 +124,7 @@ function DialogPanel({
         if (e.target === e.currentTarget) e.preventDefault();
       }}
       onClick={(e) => {
-        if (pressedDim.current && e.target === e.currentTarget && !dirty) onClose();
+        if (pressedDim.current && e.target === e.currentTarget && !dirty) onClose?.();
         pressedDim.current = false;
       }}
     >
@@ -137,14 +140,16 @@ function DialogPanel({
         <h2 id={titleId} className="font-display shrink-0 px-5 pt-5 pr-10 text-lg tracking-[0.08em] text-hud-gold uppercase">
           {title}
         </h2>
-        <IconButton
-          label="Close"
-          title="Close (Esc)"
-          icon="close"
-          data-dialog-close=""
-          className="absolute top-3 right-3 border-transparent bg-transparent"
-          onClick={onClose}
-        />
+        {onClose && (
+          <IconButton
+            label="Close"
+            title="Close (Esc)"
+            icon="close"
+            data-dialog-close=""
+            className="absolute top-3 right-3 border-transparent bg-transparent"
+            onClick={onClose}
+          />
+        )}
         <div className="mt-4 min-h-0 overflow-y-auto px-5 pb-5">{children}</div>
       </div>
     </div>

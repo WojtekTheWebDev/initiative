@@ -28,9 +28,13 @@ import { FigureDialogs } from "@/components/dialogs/FigureDialogs";
 import { TrophyShelf } from "@/components/trophies/TrophyShelf";
 import { Hud } from "@/components/Hud";
 import { GameMenu } from "@/components/game/GameMenu";
-import { useSettings } from "@/components/game/GameProvider";
+import { useSettings, useTutorial } from "@/components/game/GameProvider";
 import { ExampleBanner } from "@/components/game/ExampleBanner";
 import type { GameFiles } from "@/components/game/useGameFiles";
+import { tutorialStage } from "@/components/tutorial/stage";
+import { Coach, type CoachedStage } from "@/components/tutorial/Coach";
+import { AssignPath } from "@/components/tutorial/AssignPath";
+import { useSkipTutorial } from "@/components/tutorial/TutorialDialogs";
 
 /** Flies the view to where a figure is drawn. `fallback` is used until the figure is on the map (e.g. just created). */
 type FlyToFigure = (kind: "monster" | "hero", id: string, fallback: Pos) => void;
@@ -75,6 +79,17 @@ export function Board({ files }: { files: GameFiles }) {
   // The monster and hero dialogs: `dialogs.openCreate(kind)` and `dialogs.openEdit(kind, id)`.
   const dialogs = useDialogs();
 
+  // While the tutorial runs, its coach card sits beside the control it points at, which glows.
+  const tutorial = useTutorial();
+  const skipTutorial = useSkipTutorial();
+  const stage = useMemo(() => tutorialStage(drag.world), [drag.world]);
+  const coached: CoachedStage | null =
+    tutorial.status === "playing" && !tutorial.welcome && stage.step !== "victory" ? stage : null;
+  const coach = coached && (
+    <Coach key={coached.step} stage={coached} dialogOpen={dialogs.open !== null} onSkip={skipTutorial} />
+  );
+  const coachAt = (...steps: CoachedStage["step"][]) => (coached && steps.includes(coached.step) ? coach : null);
+
   // The opening view, worked out from the figures; "fit everything" returns to it.
   const initialCamera = (viewport: ViewportSize) =>
     fitBounds(openingPoints(layout), viewport, OPENING_PADDING);
@@ -84,7 +99,7 @@ export function Board({ files }: { files: GameFiles }) {
       <FigureStyles />
       {/* Before the map in the DOM, so Tab reaches the HUD before the figures on the table. */}
       <Hud
-        top={<ExampleBanner files={files} />}
+        top={coachAt("assign") ?? <ExampleBanner files={files} />}
         topLeft={
           <>
             <GameMenu files={files} />
@@ -93,7 +108,11 @@ export function Board({ files }: { files: GameFiles }) {
         }
         topRight={
           <>
-            <CreateButtons onCreate={dialogs.openCreate} />
+            <CreateButtons
+              onCreate={dialogs.openCreate}
+              beckon={coached?.step === "monster" || coached?.step === "hero" ? coached.step : null}
+            />
+            {coachAt("monster", "hero")}
             <PartyRoster
               world={drag.world}
               selectedId={selection?.kind === "hero" ? selection.id : null}
@@ -101,9 +120,18 @@ export function Board({ files }: { files: GameFiles }) {
             />
           </>
         }
-        bottomLeft={(
-          <TrophyShelf world={drag.world} shelfRef={drag.shelfRef} hint={drag.shelfHint} onRevive={drag.revive} />
-        )}
+        bottomLeft={
+          <>
+            {coachAt("slay")}
+            <TrophyShelf
+              world={drag.world}
+              shelfRef={drag.shelfRef}
+              hint={drag.shelfHint}
+              beckon={coached?.step === "slay"}
+              onRevive={drag.revive}
+            />
+          </>
+        }
         bottomRight={
           <MapControls
             map={map}
@@ -135,7 +163,17 @@ export function Board({ files }: { files: GameFiles }) {
         )}
       >
         {({ camera }) => (
-          <Figures drag={drag} scale={camera.scale} selection={selection} onSelect={select} />
+          <>
+            {coached?.step === "assign" && !drag.lifted && (
+              <AssignPath
+                layout={layout}
+                scale={camera.scale}
+                heroId={coached.hero.id}
+                monsterId={coached.monster.id}
+              />
+            )}
+            <Figures drag={drag} scale={camera.scale} selection={selection} onSelect={select} />
+          </>
         )}
       </MapCanvas>
 

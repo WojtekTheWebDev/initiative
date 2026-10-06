@@ -4,6 +4,7 @@ import { useMemo, useState, type RefObject } from "react";
 import type { World } from "@/lib/types";
 import type { ShelfHint } from "@/components/map/useFigureDrag";
 import { Icon } from "@/components/ui/icons";
+import { BECKON } from "@/components/CreateButtons";
 import { trophiesOf } from "./trophies";
 import { TrophyHall } from "./TrophyHall";
 
@@ -16,17 +17,20 @@ const GLOW: Record<ShelfHint, string> = {
  * The trophy shelf in the bottom-left corner of the HUD: a trophy icon and
  * the trophy count. A click opens the trophy hall. It is also the drop target for slaying: `shelfRef` lets the drag
  * hit-test it, and while a monster is dragged (`hint`) it glows gold,
- * brighter while the monster is over it.
+ * brighter while the monster is over it. `beckon` makes it glow while the
+ * tutorial points at it.
  */
 export function TrophyShelf({
   world,
   shelfRef,
   hint,
+  beckon = false,
   onRevive,
 }: {
   world: World;
   shelfRef: RefObject<HTMLElement | null>;
   hint: ShelfHint | null;
+  beckon?: boolean;
   /** Revive on a plaque in the trophy hall. */
   onRevive: (monsterId: string) => void;
 }) {
@@ -40,7 +44,7 @@ export function TrophyShelf({
         ref={(el) => {
           shelfRef.current = el;
         }}
-        className={`hud-glass relative origin-bottom-left rounded-hud motion-safe:transition-[box-shadow,transform,background-color] ${hint ? GLOW[hint] : ""}`}
+        className={`hud-glass relative origin-bottom-left rounded-hud motion-safe:transition-[box-shadow,transform,background-color] ${hint ? GLOW[hint] : beckon ? BECKON : ""}`}
       >
         {hint && (
           <span className="pointer-events-none absolute bottom-full left-0 mb-2 text-sm font-semibold whitespace-nowrap text-hud-gold [text-shadow:0_1px_3px_rgba(0,0,0,0.9)]">

@@ -16,13 +16,16 @@ export function Hud({
   bottomLeft,
   bottomRight,
 }: {
-  /** The first-visit banner, centred along the top edge; on a phone, across the window under the top clusters. */
+  /**
+   * The first-visit banner, or the tutorial's coach card while it is about the map itself, centred along the
+   * top edge; on a phone, across the window under the top clusters.
+   */
   top?: ReactNode;
   /** The wordmark and its game menu, with the muster tokens hanging below it. */
   topLeft?: ReactNode;
-  /** The create buttons, with the party roster hanging below them. */
+  /** The create buttons, with the tutorial's coach card and the party roster hanging below them. */
   topRight?: ReactNode;
-  /** The trophy shelf. */
+  /** The trophy shelf, with the tutorial's coach card above it while it is about slaying. */
   bottomLeft?: ReactNode;
   /** The map controls. */
   bottomRight?: ReactNode;
@@ -33,7 +36,7 @@ export function Hud({
         {top && <Slot className="top-0 left-1/2 -translate-x-1/2 justify-center compact:top-16 max-sm:top-26! compact:right-0 compact:left-0 compact:translate-x-0">{top}</Slot>}
         {topLeft && <Slot className="top-0 left-0 flex-col items-start">{topLeft}</Slot>}
         {topRight && <Slot className="top-0 right-0 flex-col items-end">{topRight}</Slot>}
-        {bottomLeft && <Slot className="bottom-0 left-0 items-end">{bottomLeft}</Slot>}
+        {bottomLeft && <Slot className="bottom-0 left-0 flex-col items-start">{bottomLeft}</Slot>}
         {bottomRight && <Slot className="right-0 bottom-0 flex-col items-end">{bottomRight}</Slot>}
       </div>
     </div>

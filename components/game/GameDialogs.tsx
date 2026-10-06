@@ -138,7 +138,8 @@ function Side({ label, world, file, savedAt }: { label: string; world: World; fi
   );
 }
 
-function UnsavedWarning({ children }: { children: ReactNode }) {
+/** The amber warning that the table has changes no save file holds; `children` says what the action does to them. */
+export function UnsavedWarning({ children }: { children: ReactNode }) {
   return (
     <Callout tone="warn">
       Your table has changes that aren&apos;t in a save file. {children} Save the current game first if you may want it
@@ -167,7 +168,7 @@ function Callout({ tone, children }: { tone: "warn" | "danger"; children: ReactN
 }
 
 /** A dialog's buttons, at its bottom right; in a narrow window they stack full width. */
-function Actions({ children }: { children: ReactNode }) {
+export function Actions({ children }: { children: ReactNode }) {
   return <div className="mt-5 flex flex-wrap justify-end gap-2 max-sm:flex-col">{children}</div>;
 }
 
