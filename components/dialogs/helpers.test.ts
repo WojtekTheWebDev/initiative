@@ -29,7 +29,8 @@ describe("monsterPatch", () => {
   });
 
   it("sends only the changed fields", () => {
-    expect(monsterPatch(monster, { ...monsterFields(monster), size: "XL" })).toEqual({ size: "XL" });
+    const orc = { ...monster, mini: "orc" };
+    expect(monsterPatch(orc, { ...monsterFields(orc), size: "XL" })).toEqual({ size: "XL" });
     expect(monsterPatch(monster, { ...monsterFields(monster), name: " CI " })).toEqual({ name: "CI" });
     expect(monsterPatch(monster, { ...monsterFields(monster), notes: "" })).toEqual({ notes: "" });
   });
@@ -43,12 +44,21 @@ describe("monsterPatch", () => {
     expect(monsterPatch(bare, monsterFields(bare))).toEqual({});
   });
 
-  it("writes a picked mini, and no mini as empty", () => {
-    expect(monsterFields(monster).mini).toBe("");
+  it("starts a new monster on the first mini in the bestiary", () => {
+    expect(monsterFields(undefined).mini).toBe(MONSTER_MINIS[0].id);
+  });
+
+  it("starts a monster with no pick on the mini for its size, and writes it once flipped or resized", () => {
+    expect(monsterFields(monster).mini).toBe(SIZE_MINI.M);
     expect(monsterPatch(monster, { ...monsterFields(monster), mini: "mimic" })).toEqual({ mini: "mimic" });
+    expect(monsterPatch(monster, { ...monsterFields(monster), size: "XL" })).toEqual({ size: "XL", mini: SIZE_MINI.M });
+  });
+
+  it("writes a picked mini only when it changed", () => {
     const mimic = { ...monster, mini: "mimic" };
     expect(monsterPatch(mimic, monsterFields(mimic))).toEqual({});
-    expect(monsterPatch(mimic, { ...monsterFields(mimic), mini: "" })).toEqual({ mini: "" });
+    expect(monsterPatch(mimic, { ...monsterFields(mimic), size: "S" })).toEqual({ size: "S" });
+    expect(monsterPatch(mimic, { ...monsterFields(mimic), mini: "orc" })).toEqual({ mini: "orc" });
   });
 });
 

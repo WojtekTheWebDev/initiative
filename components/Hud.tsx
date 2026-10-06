@@ -33,7 +33,7 @@ export function Hud({
   return (
     <div className="pointer-events-none fixed inset-0 z-30" style={{ padding: EDGE }}>
       <div className="relative h-full w-full">
-        {top && <Slot className="top-0 left-1/2 -translate-x-1/2 justify-center compact:top-16 max-sm:top-26! compact:right-0 compact:left-0 compact:translate-x-0">{top}</Slot>}
+        {top && <Slot className="top-0 left-1/2 -translate-x-1/2 justify-center compact:top-16 max-sm:top-26! compact:right-0 compact:left-0 compact:translate-none">{top}</Slot>}
         {topLeft && <Slot className="top-0 left-0 flex-col items-start">{topLeft}</Slot>}
         {topRight && <Slot className="top-0 right-0 flex-col items-end">{topRight}</Slot>}
         {bottomLeft && <Slot className="bottom-0 left-0 flex-col items-start">{bottomLeft}</Slot>}

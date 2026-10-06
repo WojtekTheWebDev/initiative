@@ -11,7 +11,8 @@ const FOCUSABLE =
  * A centred glass dialog over the dimmed table, rendered into `document.body`.
  * Its panel is dense glass without the backdrop blur (`hud-glass-dense`).
  * On a screen too short for it, the body scrolls under the title and the
- * close button, which stay in view.
+ * close button, which stay in view. While the tutorial's coach bar shows
+ * over the dim, the dialog keeps below it (`--coach-bar`, where the bar ends).
  *
  * - Focus moves into it on open (to an `autoFocus` field, else the first
  *   control), Tab stays inside it, and focus returns to where it was on close.
@@ -115,7 +116,7 @@ function DialogPanel({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 motion-safe:animate-hud-fade"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 pt-[calc(var(--coach-bar,0.5rem)+0.5rem)] motion-safe:animate-hud-fade"
       onPointerDown={(e) => {
         pressedDim.current = e.target === e.currentTarget;
       }}

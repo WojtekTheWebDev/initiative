@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Glass } from "@/components/ui/Glass";
 import { IconButton } from "@/components/ui/Button";
@@ -14,8 +14,9 @@ export type CoachedStage = Exclude<TutorialStage, { step: "victory" }>;
  * The tutorial's coach card: the step ("Step 2 of 4"), what it is about, what
  * to do, progress pips and **Skip tutorial**. The board places it beside the
  * control it points at, which glows. While a monster or hero dialog is open
- * it folds into a slim bar at the top, over the dim, so the dialog has room;
- * on a phone it is a bottom sheet that can be folded into that bar by hand.
+ * it folds into a slim bar at the top, over the dim, and the dialog opens
+ * below it; on a phone it is a bottom sheet, lifted clear of the trophy shelf
+ * while it is about slaying, that can be folded into that bar by hand.
  */
 export function Coach({
   stage,
@@ -28,6 +29,19 @@ export function Coach({
   onSkip: () => void;
 }) {
   const [folded, setFolded] = useState(false);
+  const bar = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = bar.current;
+    if (!dialogOpen || !el) return;
+    // Dialogs read where the bar ends (`--coach-bar`), so they open below it.
+    const root = document.documentElement.style;
+    const ro = new ResizeObserver(() => root.setProperty("--coach-bar", `${el.getBoundingClientRect().bottom}px`));
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.removeProperty("--coach-bar");
+    };
+  }, [dialogOpen]);
   const copy = coachCopy(stage);
   const number = COACHED_STEPS.indexOf(stage.step) + 1;
   const eyebrow = (
@@ -49,6 +63,7 @@ export function Coach({
   if (dialogOpen || folded) {
     return createPortal(
       <div
+        ref={bar}
         className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${
           dialogOpen ? "top-4 z-60" : "top-4 z-30 compact:top-16 max-sm:top-26!"
         }`}
@@ -56,7 +71,7 @@ export function Coach({
         <Glass
           role="region"
           aria-label="Tutorial"
-          className="pointer-events-auto flex max-w-xl flex-wrap items-center gap-x-3 gap-y-1 rounded-full! py-1 pr-1.5 pl-4 text-sm motion-safe:animate-hud-rise"
+          className="pointer-events-auto flex max-w-xl flex-wrap items-center gap-x-3 gap-y-1 py-1.5 pr-1.5 pl-4 text-sm motion-safe:animate-hud-rise"
         >
           {eyebrow}
           <span className="min-w-40 flex-1">{copy.short}</span>
@@ -81,7 +96,9 @@ export function Coach({
     <Glass
       role="region"
       aria-label="Tutorial"
-      className="grid w-[22rem] gap-2.5 px-4.5 pt-4 pb-1.5 motion-safe:animate-hud-rise compact:fixed compact:inset-x-3 compact:bottom-3 compact:z-10 compact:w-auto compact:rounded-2xl"
+      className={`grid w-[22rem] gap-2.5 px-4.5 pt-4 pb-1.5 motion-safe:animate-hud-rise compact:fixed compact:inset-x-3 compact:z-10 compact:w-auto ${
+        stage.step === "slay" ? "compact:bottom-28" : "compact:bottom-3"
+      }`}
     >
       <div className="flex items-center justify-between">
         {eyebrow}
@@ -128,6 +145,11 @@ function Key({ children }: { children: ReactNode }) {
   );
 }
 
+/** Keyboard help, left out on a touch screen. */
+function KeyHint({ children }: { children: ReactNode }) {
+  return <span className="pointer-coarse:hidden">{children}</span>;
+}
+
 type CoachCopy = {
   title: ReactNode;
   /** What the step is about; left out on a phone. */
@@ -152,7 +174,12 @@ function coachCopy(stage: CoachedStage): CoachCopy {
         ),
         todo: (
           <>
-            Click <b>+ Monster</b> (or press <Key>N</Key>), give it a name and press <b>Summon</b>.
+            Click <b>+ Monster</b>
+            <KeyHint>
+              {" "}
+              (or press <Key>N</Key>)
+            </KeyHint>
+            , give it a name and press <b>Summon</b>.
           </>
         ),
         icon: "plus",
@@ -176,7 +203,12 @@ function coachCopy(stage: CoachedStage): CoachCopy {
         ),
         todo: (
           <>
-            Click <b>+ Hero</b> (or press <Key>H</Key>), pick a mini, give them a name and class and press{" "}
+            Click <b>+ Hero</b>
+            <KeyHint>
+              {" "}
+              (or press <Key>H</Key>)
+            </KeyHint>
+            , pick a mini, give them a name and class and press{" "}
             <b>Recruit</b>.
           </>
         ),
@@ -198,8 +230,11 @@ function coachCopy(stage: CoachedStage): CoachCopy {
         ),
         todo: (
           <>
-            Drag <b>{stage.hero.name}</b> onto <b>{stage.monster.name}</b> and let go. Hold <Key>Shift</Key> while
-            dropping to add a second target instead.
+            Drag <b>{stage.hero.name}</b> onto <b>{stage.monster.name}</b> and let go.
+            <KeyHint>
+              {" "}
+              Hold <Key>Shift</Key> while dropping to add a second target instead.
+            </KeyHint>
           </>
         ),
         icon: "swords",

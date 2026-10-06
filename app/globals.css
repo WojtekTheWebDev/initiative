@@ -125,6 +125,8 @@
     background: var(--hud-ground);
     color: var(--hud-fg);
     font-family: var(--font-sans);
+    /* A tap shows the control's own state (a ring, a card), never the browser's grey box. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Every control shows a gold ring when reached with the keyboard. */

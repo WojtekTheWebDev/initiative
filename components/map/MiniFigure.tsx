@@ -12,6 +12,8 @@ import { tagFont, tagRect } from "@/lib/map/tags";
  */
 
 export const SELECTED = "#f59e0b";
+/** The keyboard focus ring, the HUD's gold; see FIGURE_CSS. */
+export const FOCUS_RING = "#d9b45f";
 const UNFOUGHT = "#ff3b2f";
 /** Drop highlights while a hero is dragged over a monster: plain drop vs Shift+drop. */
 const DROP_ASSIGN = "#16a34a";
@@ -51,7 +53,8 @@ export function ContactShadow({ pos, radius }: { pos: Pos; radius: number }) {
 /**
  * One mini standing at `pos` on a base of `radius`. It is hit on its base
  * ellipse and on its body, never on the empty corners of its image. It is a
- * button in the Tab order, named by `title`.
+ * button in the Tab order, named by `title`, and reached with the keyboard it
+ * shows a gold ring around its base.
  */
 export function MiniFigure(
   props: FigureHandlers & {
@@ -86,6 +89,7 @@ export function MiniFigure(
       {rings.map((ring) => (
         <Ring key={ring} kind={ring} pos={pos} radius={radius} scale={scale} />
       ))}
+      <Ring kind="focus" pos={pos} radius={radius} scale={scale} />
       <image
         href={mini.image}
         x={image.x}
@@ -102,7 +106,7 @@ export function MiniFigure(
   );
 }
 
-function Ring({ kind, pos, radius, scale }: { kind: BaseRing; pos: Pos; radius: number; scale: number }) {
+function Ring({ kind, pos, radius, scale }: { kind: BaseRing | "focus"; pos: Pos; radius: number; scale: number }) {
   const px = 1 / scale;
   const pad = (world: number, screen: number) => Math.max(world, screen * px);
   const ellipse = (grow: number) => ({
@@ -124,6 +128,17 @@ function Ring({ kind, pos, radius, scale }: { kind: BaseRing; pos: Pos; radius: 
       );
     case "selected":
       return <ellipse {...ellipse(pad(9, 7))} fill="none" stroke={SELECTED} strokeWidth={pad(3.5, 2.5)} />;
+    case "focus":
+      return (
+        <ellipse
+          className="initiative-focus-ring"
+          {...ellipse(pad(14, 11))}
+          fill="none"
+          stroke={FOCUS_RING}
+          strokeWidth={pad(2.5, 2)}
+          strokeDasharray={`${pad(6, 5)} ${pad(4, 3)}`}
+        />
+      );
     case "assign":
     case "secondary": {
       const color = kind === "assign" ? DROP_ASSIGN : DROP_SECONDARY;
@@ -204,6 +219,9 @@ export function FigureDefs() {
 }
 
 const FIGURE_CSS = `
+[data-figure]:focus-visible { outline: none; }
+.initiative-focus-ring { display: none; }
+[data-figure]:focus-visible .initiative-focus-ring { display: inline; }
 @keyframes initiative-unfought-pulse {
   0%, 100% { opacity: 0.95; transform: scale(1); }
   50% { opacity: 0.25; transform: scale(1.15); }

@@ -1,6 +1,6 @@
 import type { WorldLayout } from "@/lib/map/layout";
 import { linksOf, type PlacedLink } from "@/lib/map/links";
-import { SELECTED, type FigureHandlers } from "./MiniFigure";
+import { FOCUS_RING, SELECTED, type FigureHandlers } from "./MiniFigure";
 
 /** Screen-px sizes, kept the same at any zoom. */
 const MAIN = { width: 3.4, head: 14, headWidth: 13, opacity: 1 };
@@ -29,7 +29,8 @@ type Props = {
 /**
  * An arrow from every hero to each of its targets, like a gold cord laid on the
  * table: solid for the main target, dashed for secondary ones. Drawn in world
- * space below the figures. Each arrow is a button in the Tab order.
+ * space below the figures. Each arrow is a button in the Tab order, and
+ * reached with the keyboard it shows a gold halo along its length.
  */
 export function TargetArrows({ layout, scale, focus, bindLink }: Props) {
   const names = new Map<string, string>([
@@ -97,6 +98,18 @@ function Arrow({
       onKeyDown={onKeyDown}
     >
       <title>{title}</title>
+      <line
+        className="initiative-focus-ring"
+        x1={from.x}
+        y1={from.y}
+        x2={to.x}
+        y2={to.y}
+        stroke={FOCUS_RING}
+        strokeOpacity={0.45}
+        strokeWidth={HIT_WIDTH * px}
+        strokeLinecap="round"
+        style={{ pointerEvents: "none" }}
+      />
       <g opacity={opacity} strokeLinecap="round" style={{ pointerEvents: "none" }}>
         <g opacity={SHADOW.opacity} transform={`translate(${SHADOW.dx * px} ${SHADOW.dy * px})`}>
           <line

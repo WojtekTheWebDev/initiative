@@ -15,9 +15,9 @@ import { isDirty, monsterFields, monsterPatch, rosterIndex, type MonsterFields }
 /**
  * "Summon a monster" (create) or "Edit monster" (with `monster`), laid out
  * like the hero dialog: the mini carousel on the left, flipping through the
- * bestiary, and the size slider, name and notes on the right. Until a mini is
- * picked, the carousel shows the mini for the size and follows the slider;
- * a pick that isn't in the bestiary shows as missing, with that mini on show.
+ * bestiary, and the size slider, name and notes on the right. A new monster
+ * starts on the first mini, and the slider never flips it. A pick that isn't
+ * in the bestiary shows as missing, with the mini for the size on show.
  * Mount it to open it; it calls `onClose` when done.
  */
 export function MonsterDialog({
@@ -57,7 +57,7 @@ export function MonsterDialog({
         const created = createMonster(w, {
           name: fields.name.trim(),
           size: fields.size,
-          mini: fields.mini || undefined,
+          mini: fields.mini,
           notes: fields.notes || undefined,
           pos,
         });
@@ -84,13 +84,11 @@ export function MonsterDialog({
           name={MONSTER_MINIS[index].name}
           onFlip={(mini) => set({ mini: mini.id })}
           note={
-            missing ? (
+            missing && (
               <MissingNote>
                 &ldquo;{fields.mini}&rdquo; is missing, so this monster stands as the mini for its size. Flip to choose
                 again.
               </MissingNote>
-            ) : (
-              fields.mini === "" && <p className="mt-2 text-xs text-hud-muted">Follows the size until you pick one</p>
             )
           }
         />

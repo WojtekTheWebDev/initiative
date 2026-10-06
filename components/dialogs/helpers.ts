@@ -1,26 +1,35 @@
 import type { Hero, Monster, Pos, Size } from "@/lib/types";
 import { viewBoxOf, type Camera, type ViewportSize } from "@/lib/map/camera";
-import { NEUTRAL_MINI, type Mini } from "@/lib/map/minis";
+import { MONSTER_MINIS, NEUTRAL_MINI, SIZE_MINI, type Mini } from "@/lib/map/minis";
 
 /** The size slider's stops, smallest first. */
 export const SIZES: readonly Size[] = ["S", "M", "L", "XL"];
 
-/** `mini` is "" for none, which draws the mini for the size. */
+/** `mini` is the mini on show in the carousel; the slider never changes it. */
 export type MonsterFields = { name: string; size: Size; mini: string; notes: string };
 export type MonsterPatch = Partial<MonsterFields>;
 
-/** The fields of a monster as the dialog edits them. */
+/**
+ * The fields of a monster as the dialog edits them. A new monster starts on
+ * the first mini in the bestiary; one with no pick starts on the mini for its
+ * size, the one it stands as.
+ */
 export function monsterFields(monster: Monster | undefined): MonsterFields {
-  return { name: monster?.name ?? "", size: monster?.size ?? "M", mini: monster?.mini ?? "", notes: monster?.notes ?? "" };
+  const mini = monster ? (monster.mini ?? SIZE_MINI[monster.size]) : MONSTER_MINIS[0].id;
+  return { name: monster?.name ?? "", size: monster?.size ?? "M", mini, notes: monster?.notes ?? "" };
 }
 
-/** Only the fields that changed. */
+/**
+ * Only the fields that changed. A monster with no pick gets one when its mini
+ * is flipped or its size changes, so it keeps the mini it showed.
+ */
 export function monsterPatch(monster: Monster, fields: MonsterFields): MonsterPatch {
   const patch: MonsterPatch = {};
   const name = fields.name.trim();
   if (name !== monster.name) patch.name = name;
   if (fields.size !== monster.size) patch.size = fields.size;
-  if (fields.mini !== (monster.mini ?? "")) patch.mini = fields.mini;
+  const shown = monster.mini ?? SIZE_MINI[monster.size];
+  if (fields.mini !== shown || (monster.mini === undefined && patch.size)) patch.mini = fields.mini;
   if (fields.notes !== (monster.notes ?? "")) patch.notes = fields.notes;
   return patch;
 }
