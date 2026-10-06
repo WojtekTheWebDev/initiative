@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Hero, Monster } from "@/lib/types";
-import { HERO_MINIS } from "@/lib/map/minis";
+import { HERO_MINIS, MONSTER_MINIS, NEUTRAL_MINI, SIZE_MINI } from "@/lib/map/minis";
 import {
   SPAWN_JITTER,
   heroFields,
+  heroMiniValue,
   heroPatch,
   isDirty,
-  miniValue,
   monsterFields,
   monsterPatch,
   rosterIndex,
@@ -41,6 +41,14 @@ describe("monsterPatch", () => {
   it("treats absent notes as empty", () => {
     const bare = { ...monster, notes: undefined };
     expect(monsterPatch(bare, monsterFields(bare))).toEqual({});
+  });
+
+  it("writes a picked mini, and no mini as empty", () => {
+    expect(monsterFields(monster).mini).toBe("");
+    expect(monsterPatch(monster, { ...monsterFields(monster), mini: "mimic" })).toEqual({ mini: "mimic" });
+    const mimic = { ...monster, mini: "mimic" };
+    expect(monsterPatch(mimic, monsterFields(mimic))).toEqual({});
+    expect(monsterPatch(mimic, { ...monsterFields(mimic), mini: "" })).toEqual({ mini: "" });
   });
 });
 
@@ -81,22 +89,27 @@ describe("isDirty", () => {
 });
 
 describe("rosterIndex", () => {
-  it("puts no pick on Neutral", () => {
-    expect(rosterIndex(HERO_MINIS, "")).toEqual({ index: 0, missing: false });
+  const at = (id: string) => MONSTER_MINIS.findIndex((m) => m.id === id);
+
+  it("puts no pick on the fallback: Neutral for a hero, the mini for its size for a monster", () => {
+    expect(rosterIndex(HERO_MINIS, "", NEUTRAL_MINI)).toEqual({ index: 0, missing: false });
+    expect(rosterIndex(MONSTER_MINIS, "", SIZE_MINI.L)).toEqual({ index: at("mushroom-king"), missing: false });
   });
 
   it("finds a pick in the roster", () => {
     const pick = HERO_MINIS[2];
-    expect(rosterIndex(HERO_MINIS, pick.id)).toEqual({ index: 2, missing: false });
-    expect(miniValue(HERO_MINIS[rosterIndex(HERO_MINIS, pick.id).index])).toBe(pick.id);
+    expect(rosterIndex(HERO_MINIS, pick.id, NEUTRAL_MINI)).toEqual({ index: 2, missing: false });
+    expect(heroMiniValue(HERO_MINIS[rosterIndex(HERO_MINIS, pick.id, NEUTRAL_MINI).index])).toBe(pick.id);
+    expect(rosterIndex(MONSTER_MINIS, "mimic", SIZE_MINI.XL)).toEqual({ index: at("mimic"), missing: false });
   });
 
-  it("shows a pick that isn't in the roster as missing, on Neutral", () => {
-    expect(rosterIndex(HERO_MINIS, "retired-wizard")).toEqual({ index: 0, missing: true });
+  it("shows a pick that isn't in the roster as missing, on the fallback", () => {
+    expect(rosterIndex(HERO_MINIS, "retired-wizard", NEUTRAL_MINI)).toEqual({ index: 0, missing: true });
+    expect(rosterIndex(MONSTER_MINIS, "knight", SIZE_MINI.S)).toEqual({ index: at("spider"), missing: true });
   });
 
-  it("writes Neutral as no pick", () => {
-    expect(miniValue(HERO_MINIS[0])).toBe("");
+  it("writes Neutral as no pick for a hero", () => {
+    expect(heroMiniValue(HERO_MINIS[0])).toBe("");
   });
 });
 

@@ -7,13 +7,18 @@ import { useGameStore } from "@/components/game/GameProvider";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { ErrorNote, Field, inputClass, useAction } from "./form";
+import { MONSTER_MINIS, SIZE_MINI } from "@/lib/map/minis";
+import { MiniCarousel, MissingNote } from "./MiniCarousel";
 import { SizeSlider } from "./SizeSlider";
-import { isDirty, monsterFields, monsterPatch, type MonsterFields } from "./helpers";
+import { isDirty, monsterFields, monsterPatch, rosterIndex, type MonsterFields } from "./helpers";
 
 /**
- * "Summon a monster" (create) or "Edit monster" (with `monster`): a large
- * preview of the mini above the size slider, then name and notes. Mount it
- * to open it; it calls `onClose` when done.
+ * "Summon a monster" (create) or "Edit monster" (with `monster`), laid out
+ * like the hero dialog: the mini carousel on the left, flipping through the
+ * bestiary, and the size slider, name and notes on the right. Until a mini is
+ * picked, the carousel shows the mini for the size and follows the slider;
+ * a pick that isn't in the bestiary shows as missing, with that mini on show.
+ * Mount it to open it; it calls `onClose` when done.
  */
 export function MonsterDialog({
   monster,
@@ -33,6 +38,7 @@ export function MonsterDialog({
   const set = (patch: Partial<MonsterFields>) => setFields((f) => ({ ...f, ...patch }));
   const { store } = useGameStore();
   const { error, run, clearError } = useAction();
+  const { index, missing } = rosterIndex(MONSTER_MINIS, fields.mini, SIZE_MINI[fields.size]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -51,6 +57,7 @@ export function MonsterDialog({
         const created = createMonster(w, {
           name: fields.name.trim(),
           size: fields.size,
+          mini: fields.mini || undefined,
           notes: fields.notes || undefined,
           pos,
         });
@@ -68,36 +75,61 @@ export function MonsterDialog({
       title={monster ? "Edit monster" : "Summon a monster"}
       onClose={onClose}
       dirty={isDirty(start, fields)}
+      className="max-w-2xl!"
     >
-      <form onSubmit={submit}>
-        <SizeSlider value={fields.size} onChange={(size) => set({ size })} />
+      <form onSubmit={submit} className="grid gap-5 sm:grid-cols-[auto_1fr]">
+        <MiniCarousel
+          roster={MONSTER_MINIS}
+          index={index}
+          name={MONSTER_MINIS[index].name}
+          onFlip={(mini) => set({ mini: mini.id })}
+          note={
+            missing ? (
+              <MissingNote>
+                &ldquo;{fields.mini}&rdquo; is missing, so this monster stands as the mini for its size. Flip to choose
+                again.
+              </MissingNote>
+            ) : (
+              fields.mini === "" && <p className="mt-2 text-xs text-hud-muted">Follows the size until you pick one</p>
+            )
+          }
+        />
 
-        <Field label="Name">
-          <input
-            className={inputClass}
-            value={fields.name}
-            onChange={(e) => set({ name: e.target.value })}
-            required
-            autoFocus
-            placeholder="e.g. Flaky CI"
-          />
-        </Field>
+        <div className="flex min-w-0 flex-col">
+          <Field label="Name">
+            <input
+              className={inputClass}
+              value={fields.name}
+              onChange={(e) => set({ name: e.target.value })}
+              required
+              autoFocus
+              placeholder="e.g. Flaky CI"
+            />
+          </Field>
 
-        <Field label="Notes">
-          <textarea
-            className={`${inputClass} min-h-24 resize-y`}
-            value={fields.notes}
-            onChange={(e) => set({ notes: e.target.value })}
-            rows={4}
-          />
-        </Field>
+          <div className="mt-3">
+            <span className="mb-1 block text-xs font-semibold tracking-wide text-hud-muted uppercase" aria-hidden="true">
+              Size
+            </span>
+            <SizeSlider value={fields.size} onChange={(size) => set({ size })} />
+          </div>
 
-        <div className="mt-5 flex justify-end gap-2 max-sm:flex-col">
-          <Button type="submit" tone="primary" disabled={fields.name.trim() === ""}>
-            {monster ? "Save" : "Summon"}
-          </Button>
+          <Field label="Notes">
+            <textarea
+              className={`${inputClass} min-h-24 resize-y`}
+              value={fields.notes}
+              onChange={(e) => set({ notes: e.target.value })}
+              rows={4}
+            />
+          </Field>
+
+          <div className="mt-auto flex justify-end gap-2 pt-5 max-sm:flex-col">
+            <Button type="submit" tone="primary" disabled={fields.name.trim() === ""}>
+              {monster ? "Save" : "Summon"}
+            </Button>
+          </div>
+          <ErrorNote error={error} onDismiss={clearError} />
         </div>
-        <ErrorNote error={error} onDismiss={clearError} />
       </form>
     </Dialog>
   );

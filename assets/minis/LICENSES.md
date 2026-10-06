@@ -26,12 +26,33 @@ projects." See also <https://kaylousberg.itch.io/kaykit-adventurers>.
 
 ## Monsters
 
-| File | Size | Model | Author | Source | Licence | Changes |
-| ---- | ---- | ----- | ------ | ------ | ------- | ------- |
-| `spider.glb` | S | Spider, from the Animated Enemies bundle | Quaternius | <https://poly.pizza/m/yRYJiAJyiM> | CC0 1.0 | None besides the common ones. |
-| `orc.glb` | M | Orc | Quaternius | <https://poly.pizza/m/5vO2YJsPEf> | CC0 1.0 | None besides the common ones. |
-| `mushroom-king.glb` | L | Mushroom King, from the Ultimate Monsters bundle | Quaternius | <https://poly.pizza/m/grnFTziU8u> | CC0 1.0 | None besides the common ones. |
-| `dragon.glb` | XL | Dragon Evolved | Quaternius | <https://poly.pizza/m/LlwD0QNUPj> | CC0 1.0 | Posed with its `Flying_Idle` clip. |
+| File | Model | Author | Source | Licence | Changes |
+| ---- | ----- | ------ | ------ | ------- | ------- |
+| `spider.glb` | Spider, from the Animated Enemies bundle | Quaternius | <https://poly.pizza/m/yRYJiAJyiM> | CC0 1.0 | None besides the common ones. |
+| `orc.glb` | Orc | Quaternius | <https://poly.pizza/m/5vO2YJsPEf> | CC0 1.0 | None besides the common ones. |
+| `mushroom-king.glb` | Mushroom King, from the Ultimate Monsters bundle | Quaternius | <https://poly.pizza/m/grnFTziU8u> | CC0 1.0 | None besides the common ones. |
+| `dragon.glb` | Dragon Evolved | Quaternius | <https://poly.pizza/m/LlwD0QNUPj> | CC0 1.0 | Posed with its `Flying_Idle` clip. |
+| `drake.glb` | Dragon | Quaternius | <https://poly.pizza/m/VBvzjFIYws> | CC0 1.0 | Has no idle clip, so it stands in its rest pose; every clip was removed. |
+| `skeleton.glb` | Skeleton | Quaternius | <https://poly.pizza/m/yq5ATpujSt> | CC0 1.0 | None besides the common ones. |
+| `zombie.glb` | Zombie | Quaternius | <https://poly.pizza/m/VlXjG0N8Eg> | CC0 1.0 | None besides the common ones. |
+| `cursed-tome.glb` | Evil Book | Quaternius | <https://poly.pizza/m/8b1pEj17PF> | CC0 1.0 | None besides the common ones. |
+| `mimic.glb` | Mimic | Quaternius | <https://poly.pizza/m/B8HrWzkuNp> | CC0 1.0 | None besides the common ones. |
+| `tentacle.glb` | Tentacle | Quaternius | <https://poly.pizza/m/BR1vpIvvvv> | CC0 1.0 | Posed with its `Tentacle_Idle` clip. |
+| `ooze.glb` | Green Blob | Quaternius | <https://poly.pizza/m/y4kJh8EeYS> | CC0 1.0 | None besides the common ones. |
+| `snow-ape.glb` | Yeti | Quaternius | <https://poly.pizza/m/ceRHrn8HHE> | CC0 1.0 | None besides the common ones. |
+| `demon.glb` | Demon | Quaternius | <https://poly.pizza/m/LnfIziKv4o> | CC0 1.0 | None besides the common ones. |
+| `blue-imp.glb` | Blue Demon | Quaternius | <https://poly.pizza/m/S7jYW6Amye> | CC0 1.0 | None besides the common ones. |
+| `tribal-mask.glb` | Tribal | Quaternius | <https://poly.pizza/m/t91lDHaqRW> | CC0 1.0 | Posed with its `Flying_Idle` clip. |
+| `bat.glb` | Bat | Quaternius | <https://poly.pizza/m/hNO9XvjlKa> | CC0 1.0 | Has no idle clip, so it stands in its rest pose; every clip was removed. |
+| `wolf.glb` | Wolf | Quaternius | <https://poly.pizza/m/P1gU3Qkr9r> | CC0 1.0 | None besides the common ones. |
+| `rat.glb` | Rat | Quaternius | <https://poly.pizza/m/iltq5bVNaV> | CC0 1.0 | Posed with its `Rat_Idle` clip. |
+| `snake.glb` | Snake | Quaternius | <https://poly.pizza/m/x9x0viZs8V> | CC0 1.0 | Posed with its `Snake_Idle` clip. |
+| `toad.glb` | Frog | Quaternius | <https://poly.pizza/m/37wofOCOzG> | CC0 1.0 | None besides the common ones. |
+| `landshark.glb` | Fish | Quaternius | <https://poly.pizza/m/7V4gaDMQV8> | CC0 1.0 | None besides the common ones. |
+| `raptor.glb` | Dino | Quaternius | <https://poly.pizza/m/wuerCFCWNR> | CC0 1.0 | None besides the common ones. |
+| `void-stalker.glb` | Alien | Quaternius | <https://poly.pizza/m/RRliSQBP7r> | CC0 1.0 | None besides the common ones. |
+| `mushnub.glb` | Mushnub | Quaternius | <https://poly.pizza/m/LWKmS30Xxl> | CC0 1.0 | None besides the common ones. |
+| `armabee.glb` | Armabee | Quaternius | <https://poly.pizza/m/42djT5zJnx> | CC0 1.0 | Posed with its `Flying_Idle` clip. |
 
 Each poly.pizza page lists the licence as "CC0 1.0". More of Quaternius's free
 packs: <https://quaternius.com>.

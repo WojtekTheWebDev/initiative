@@ -5,7 +5,9 @@ initiative: 1
 monsters:
   # Monsters: anything to deal with. pos is its home: the figure is drawn near it,
   # pulled toward the monsters that share its heroes.
-  # size: S | M | L | XL  ->  spider | orc | mushroom king | dragon
+  # size: S | M | L | XL (small, medium, large, extra large) sets the base.
+  # mini: which painted miniature stands for the monster (see
+  # public/minis/manifest.json); leave it out for the mini for its size.
   # slain: the date it was slain; absent = alive. slainBy: the heroes that were
   # targeting it then, main fighters first; left out when nobody fought it.
 
@@ -21,17 +23,20 @@ monsters:
   - id: flaky-ci # fails about once a day
     name: Flaky CI
     size: M
+    mini: blue-imp
     pos: { x: -180, y: -120 }
 
   - id: payments-incident
     name: Payments Incident
     size: L
+    mini: demon
     pos: { x: -620, y: -260 }
 
   # Nobody is on this one yet, so it should pulse red.
   - id: legacy-api-sunset
     name: Legacy API Sunset
     size: L
+    mini: skeleton
     pos: { x: -300, y: 420 }
 
   - id: hire-backend-engineer
@@ -43,11 +48,13 @@ monsters:
   - id: quarterly-roadmap
     name: Quarterly Roadmap Ask
     size: S
+    mini: tribal-mask
     pos: { x: 420, y: 200 }
 
   - id: onboarding-docs
     name: Onboarding Docs
     size: S
+    mini: cursed-tome
     pos: { x: -80, y: 300 }
     slain: 2026-09-28
     slainBy: [dmitri, ana]

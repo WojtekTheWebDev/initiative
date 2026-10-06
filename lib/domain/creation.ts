@@ -35,9 +35,12 @@ function withNotes(monster: Monster, notes: string | undefined): Monster {
   return next;
 }
 
-/** Set or remove a hero's mini: "" / whitespace removes it, so the hero is drawn as the neutral adventurer. */
-function withMini(hero: Hero, mini: string | undefined): Hero {
-  const next = { ...hero };
+/**
+ * Set or remove a figure's mini: "" / whitespace removes it, so a hero is
+ * drawn as the neutral adventurer and a monster as the mini for its size.
+ */
+function withMini<F extends Hero | Monster>(figure: F, mini: string | undefined): F {
+  const next = { ...figure };
   if (mini === undefined || mini.trim() === "") delete next.mini;
   else next.mini = mini.trim();
   return next;
@@ -51,12 +54,12 @@ function withGuild(hero: Hero, guild: string | undefined): Hero {
   return next;
 }
 
-export type CreateMonsterInput = { name: string; size: Size; notes?: string; pos: Pos };
+export type CreateMonsterInput = { name: string; size: Size; mini?: string; notes?: string; pos: Pos };
 
 export function createMonster(world: World, input: CreateMonsterInput): { world: World; id: string } {
   const id = idFor(input.name, "monster", world.monsters);
   const monster = withNotes(
-    { id, name: input.name, size: input.size, pos: { x: input.pos.x, y: input.pos.y } },
+    withMini({ id, name: input.name, size: input.size, pos: { x: input.pos.x, y: input.pos.y } }, input.mini),
     input.notes,
   );
   return { world: { ...world, monsters: [...world.monsters, monster] }, id };
@@ -73,13 +76,14 @@ export function createHero(world: World, input: CreateHeroInput): { world: World
   return { world: { ...world, heroes: [...world.heroes, hero] }, id };
 }
 
-export type MonsterPatch = { name?: string; size?: Size; notes?: string };
+export type MonsterPatch = { name?: string; size?: Size; mini?: string; notes?: string };
 
-/** Absent keys stay unchanged; `notes: ""` removes notes. The id never changes. */
+/** Absent keys stay unchanged; `mini: ""` removes the pick and `notes: ""` the notes. The id never changes. */
 export function updateMonster(world: World, monsterId: string, patch: MonsterPatch): World {
   let monster = { ...getMonster(world, monsterId) };
   if (patch.name !== undefined) monster.name = patch.name;
   if (patch.size !== undefined) monster.size = patch.size;
+  if ("mini" in patch) monster = withMini(monster, patch.mini);
   if ("notes" in patch) monster = withNotes(monster, patch.notes);
   return replaceMonster(world, monster);
 }

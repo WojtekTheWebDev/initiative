@@ -95,7 +95,7 @@ function MemberContent({ member: { hero, main, secondary } }: { member: PartyMem
       {main ? (
         <>
           <span className="flex max-w-36 min-w-0 items-center gap-1.5 rounded-full bg-white/[0.06] py-0.5 pr-2 pl-0.5 text-[13px] text-hud-muted">
-            <Portrait mini={monsterMini(main.size)} size={20} />
+            <Portrait mini={monsterMini(main)} size={20} />
             <span className="min-w-0 truncate">{main.name}</span>
             <Icon.crown className="size-3.5 shrink-0 text-hud-gold" />
           </span>

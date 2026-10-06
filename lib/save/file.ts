@@ -22,7 +22,7 @@ import type { Hero, Monster, Pos, World } from "@/lib/types";
 export const SAVE_VERSION = 1;
 
 /** Field order of each item, matching `data.example/initiative.yaml`. */
-export const MONSTER_FIELDS = ["id", "name", "size", "pos", "notes", "slain", "slainBy", "externalKey"] as const;
+export const MONSTER_FIELDS = ["id", "name", "size", "mini", "pos", "notes", "slain", "slainBy", "externalKey"] as const;
 export const HERO_FIELDS = ["id", "name", "class", "guild", "mini", "targets", "pos"] as const;
 
 const HEADER = " Initiative save. Open it with Load game in the wordmark menu.";
@@ -127,6 +127,8 @@ function readMonsters(list: unknown, problems: string[]): Monster[] {
       pos: toPos(m.pos) ?? { x: 0, y: 0 },
     };
     if (m.pos === undefined) problems.push(`Monster "${monster.id}" has no pos, so it stands at the centre`);
+    const mini = str(m.mini);
+    if (mini !== undefined) monster.mini = mini;
     const notes = str(m.notes);
     if (notes !== undefined) monster.notes = notes;
     const slain = str(m.slain);

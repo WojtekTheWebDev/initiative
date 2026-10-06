@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { alive, creatureOf, fightersOf, roleOf, unfought } from "./derived";
+import { alive, fightersOf, roleOf, sizeName, unfought } from "./derived";
 import { makeWorld } from "./test-fixtures";
 
 describe("alive", () => {
@@ -49,13 +49,8 @@ describe("roleOf", () => {
   });
 });
 
-describe("creatureOf", () => {
-  it("maps sizes to creatures", () => {
-    expect(["S", "M", "L", "XL"].map((s) => creatureOf(s as never))).toEqual([
-      "spider",
-      "orc",
-      "mushroom king",
-      "dragon",
-    ]);
+describe("sizeName", () => {
+  it("names each size in words", () => {
+    expect(["S", "M", "L", "XL"].map((s) => sizeName(s as never))).toEqual(["small", "medium", "large", "extra large"]);
   });
 });

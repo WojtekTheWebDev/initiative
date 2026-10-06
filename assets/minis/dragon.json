@@ -1,5 +1,4 @@
 {
   "name": "Dragon",
-  "kind": "monster",
-  "size": "XL"
+  "kind": "monster"
 }

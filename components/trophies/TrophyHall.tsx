@@ -82,7 +82,7 @@ function PlaqueView({
   return (
     <article className="flex h-full gap-3 rounded-hud border border-hud-line bg-linear-to-b from-[#3a2a17]/50 to-black/20 p-3">
       <span className="block h-fit shrink-0 rounded-full ring-1 ring-[#a7804a]/70">
-        <Portrait mini={monsterMini(monster.size)} size={56} bronze />
+        <Portrait mini={monsterMini(monster)} size={56} bronze />
       </span>
       <div className="flex min-w-0 flex-1 flex-col">
         <h4 className="font-display text-sm leading-tight break-words text-hud-gold">{monster.name}</h4>

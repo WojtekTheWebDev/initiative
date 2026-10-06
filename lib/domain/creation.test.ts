@@ -60,6 +60,13 @@ describe("createMonster", () => {
     expectValid(b.world);
   });
 
+  it("stores a picked mini on create, and none for a blank pick", () => {
+    const picked = createMonster(makeWorld(), { name: "Docs", size: "S", mini: " cursed-tome ", pos: { x: 0, y: 0 } });
+    expect(picked.world.monsters.at(-1)?.mini).toBe("cursed-tome");
+    const blank = createMonster(makeWorld(), { name: "Docs", size: "S", mini: "", pos: { x: 0, y: 0 } });
+    expect("mini" in blank.world.monsters.at(-1)!).toBe(false);
+  });
+
   it("uses a namespace separate from heroes", () => {
     const { id } = createMonster(makeWorld(), { name: "Ana", size: "S", pos: { x: 0, y: 0 } });
     expect(id).toBe("ana");
@@ -104,6 +111,15 @@ describe("updateMonster", () => {
     expect("notes" in w.monsters[0]).toBe(false);
     w = updateMonster(makeWorld(), "m2", { notes: undefined });
     expect("notes" in w.monsters[1]).toBe(false);
+  });
+
+  it("sets, keeps and removes the mini on update, whatever the size", () => {
+    let w = updateMonster(makeWorld(), "m1", { mini: " mimic " });
+    expect(w.monsters[0].mini).toBe("mimic");
+    w = updateMonster(w, "m1", { size: "XL" });
+    expect(w.monsters[0].mini).toBe("mimic");
+    w = updateMonster(w, "m1", { mini: "" });
+    expect("mini" in w.monsters[0]).toBe(false);
   });
 
   it("throws on an unknown monster", () => {

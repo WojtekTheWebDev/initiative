@@ -43,6 +43,15 @@ describe("validateWorld", () => {
     expect(validateWorld(w)).toEqual(['Hero "cid" has a mini that is not text']);
   });
 
+  it("accepts any text as a monster mini, and flags one that is not text", () => {
+    const w = makeWorld();
+    w.monsters[0].mini = "mimic";
+    w.monsters[1].mini = "not-a-real-mini";
+    expect(validateWorld(w)).toEqual([]);
+    w.monsters[0].mini = 7 as never;
+    expect(validateWorld(w)).toEqual([`Monster "${w.monsters[0].id}" has a mini that is not text`]);
+  });
+
   it("accepts slainBy only as a list of hero ids", () => {
     const w = makeWorld();
     w.monsters[3].slainBy = ["ana", "gone"];

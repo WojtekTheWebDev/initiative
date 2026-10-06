@@ -111,7 +111,7 @@ export function figureShape(
 
 /** A monster's shape where it is placed. */
 export function monsterShape(m: PlacedMonster, scale?: number): FigureShape {
-  return figureShape(monsterMini(m.monster.size), m.pos, m.radius, { text: m.monster.name, size: MONSTER_TAG_FONT }, scale);
+  return figureShape(monsterMini(m.monster), m.pos, m.radius, { text: m.monster.name, size: MONSTER_TAG_FONT }, scale);
 }
 
 /** A hero's shape where it is placed. Its tag reads "· idle" while it has no targets. */

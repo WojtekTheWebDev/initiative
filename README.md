@@ -9,7 +9,7 @@
 
 ![The Initiative map: work as monsters and people as heroes on a felt tabletop, with gold arrows showing who fights what](app/opengraph-image.jpg)
 
-A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** (bigger scope means a bigger creature) and the people dealing with them are **heroes**. You plan by dragging heroes onto monsters on an infinite map. Monsters nobody is fighting pulse red, so gaps are easy to spot.
+A personal progress tracker shaped like a tabletop RPG battlefield. Work items are **monsters** (bigger scope means a bigger base, and you pick the creature) and the people dealing with them are **heroes**. You plan by dragging heroes onto monsters on an infinite map. Monsters nobody is fighting pulse red, so gaps are easy to spot.
 
 It is for one user and keeps everything in your browser. It is a static page, so it runs on your machine or on any static host such as Vercel. Save files are plain YAML that you or an agent can edit by hand. The full spec is in [`docs/DESIGN.md`](docs/DESIGN.md).
 
@@ -56,7 +56,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - The browser copy has no history and can be cleared with the site data, so **Save game to file** now and then. After a week of unsaved changes, an amber dot on the wordmark reminds you.
 - A save file is one YAML file, `initiative-<date>.yaml`. You can edit it by hand and load it back with **Load game**. Save files hold real names and people topics: keep them out of git (`/data/` and `initiative-*.yaml` are gitignored for that).
 - A first visit opens a short tutorial on an empty table: summon a monster, recruit a hero, assign the hero and slay the monster. Skipping it deals the example table, `data.example/initiative.yaml`. **Play the tutorial** in the menu runs it again, and **New game** starts over with an empty table or the example.
-- The format is described in [`docs/DESIGN.md`](docs/DESIGN.md#data-model). Anything that can be worked out (who fights what, the creature type) is not stored.
+- The format is described in [`docs/DESIGN.md`](docs/DESIGN.md#data-model). Anything that can be worked out (who fights what, the mini of a monster that has no pick) is not stored.
 
 ## Minis
 
@@ -69,8 +69,8 @@ To add a model:
    ```json
    { "name": "Paladin", "kind": "hero" }
    ```
-   A monster also needs its size, e.g. `{ "name": "Dragon", "kind": "monster", "size": "XL" }`; the size picks which monster mini is used. Optional keys: `pose` (`{ "clip": "Idle", "time": 0.5 }`), `height` (in base radii, default 2.2), `footprint`, `rotate` (degrees), `hide` (node names), `colors` (material name to colour) and `primer` (one flat colour). They are described in `scripts/bake-minis.ts`.
-3. Run `npm run bake:minis` and commit the changed files in `public/minis/`. A new hero mini shows up in the hero form's picker.
+   A monster mini is `{ "name": "Mimic", "kind": "monster" }`; it can stand on a base of any size. Optional keys: `pose` (`{ "clip": "Idle", "time": 0.5 }`), `height` (in base radii, default 2.2), `footprint`, `rotate` (degrees), `hide` (node names), `colors` (material name to colour) and `primer` (one flat colour). They are described in `scripts/bake-minis.ts`.
+3. Run `npm run bake:minis` and commit the changed files in `public/minis/`. A new hero mini shows up in the hero form's picker, and a new monster mini in the monster form's bestiary.
 
 The bake renders with three.js in headless Chromium (installed by the script through Playwright on first run), with a fixed camera and lights, so rerunning it gives the same files. `npm run bake:minis -- knight` rebakes only some ids.
 

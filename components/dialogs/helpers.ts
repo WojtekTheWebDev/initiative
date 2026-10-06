@@ -1,16 +1,17 @@
 import type { Hero, Monster, Pos, Size } from "@/lib/types";
 import { viewBoxOf, type Camera, type ViewportSize } from "@/lib/map/camera";
-import { NEUTRAL_MINI, isHeroMini, type Mini } from "@/lib/map/minis";
+import { NEUTRAL_MINI, type Mini } from "@/lib/map/minis";
 
 /** The size slider's stops, smallest first. */
 export const SIZES: readonly Size[] = ["S", "M", "L", "XL"];
 
-export type MonsterFields = { name: string; size: Size; notes: string };
+/** `mini` is "" for none, which draws the mini for the size. */
+export type MonsterFields = { name: string; size: Size; mini: string; notes: string };
 export type MonsterPatch = Partial<MonsterFields>;
 
 /** The fields of a monster as the dialog edits them. */
 export function monsterFields(monster: Monster | undefined): MonsterFields {
-  return { name: monster?.name ?? "", size: monster?.size ?? "M", notes: monster?.notes ?? "" };
+  return { name: monster?.name ?? "", size: monster?.size ?? "M", mini: monster?.mini ?? "", notes: monster?.notes ?? "" };
 }
 
 /** Only the fields that changed. */
@@ -19,6 +20,7 @@ export function monsterPatch(monster: Monster, fields: MonsterFields): MonsterPa
   const name = fields.name.trim();
   if (name !== monster.name) patch.name = name;
   if (fields.size !== monster.size) patch.size = fields.size;
+  if (fields.mini !== (monster.mini ?? "")) patch.mini = fields.mini;
   if (fields.notes !== (monster.notes ?? "")) patch.notes = fields.notes;
   return patch;
 }
@@ -51,16 +53,19 @@ export function isDirty<F extends Record<string, string>>(start: F, now: F): boo
 }
 
 /**
- * Where the carousel stands for a hero's `mini`: its index in the roster, and
- * whether the pick is missing from it (then Neutral, index 0, is shown).
+ * Where the carousel stands for a figure's `mini`: its index in the roster,
+ * and whether the pick is missing from it. With no pick, or a missing one,
+ * it stands on `fallback`, the mini the figure is drawn as then (Neutral for
+ * a hero, the mini for its size for a monster).
  */
-export function rosterIndex(roster: readonly Mini[], mini: string): { index: number; missing: boolean } {
-  if (mini === "" || !isHeroMini(mini)) return { index: 0, missing: mini !== "" };
-  return { index: Math.max(0, roster.findIndex((m) => m.id === mini)), missing: false };
+export function rosterIndex(roster: readonly Mini[], mini: string, fallback: string): { index: number; missing: boolean } {
+  const picked = mini === "" ? -1 : roster.findIndex((m) => m.id === mini);
+  if (picked >= 0) return { index: picked, missing: false };
+  return { index: Math.max(0, roster.findIndex((m) => m.id === fallback)), missing: mini !== "" };
 }
 
-/** The `mini` value for a roster entry: "" for Neutral. */
-export function miniValue(mini: Mini): string {
+/** The `mini` value of a hero for a roster entry: "" for Neutral. */
+export function heroMiniValue(mini: Mini): string {
   return mini.id === NEUTRAL_MINI ? "" : mini.id;
 }
 

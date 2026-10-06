@@ -4,7 +4,8 @@ export type Size = "S" | "M" | "L" | "XL";
 export type Monster = {
   id: string;
   name: string;
-  size: Size;
+  size: Size; // sets the base; S small, M medium, L large, XL extra large
+  mini?: string; // id of a baked monster mini; absent or unknown = the mini for its size
   pos: Pos;
   notes?: string;
   slain?: string; // 'YYYY-MM-DD', kept as a string, never a Date

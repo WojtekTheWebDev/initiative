@@ -89,7 +89,7 @@ export function hitTestMonster(monsters: PlacedMonster[], point: Pos): PlacedMon
   let best: PlacedMonster | null = null;
   let bestDist = Infinity;
   for (const m of monsters) {
-    if (!hitsMini(monsterMini(m.monster.size), m.pos, m.radius, point)) continue;
+    if (!hitsMini(monsterMini(m.monster), m.pos, m.radius, point)) continue;
     const d = Math.hypot(point.x - m.pos.x, point.y - m.pos.y);
     if (!best || m.pos.y > best.pos.y || (m.pos.y === best.pos.y && d < bestDist)) {
       best = m;

@@ -276,7 +276,7 @@ describe("figureShape", () => {
   it("covers the mini and its whole base", () => {
     const m = placed("Dragon");
     const { body } = monsterShape(m);
-    const model = miniBodyRect(monsterMini("XL"), m.pos, m.radius);
+    const model = miniBodyRect(monsterMini(m.monster), m.pos, m.radius);
     expect(body.x).toBeLessThanOrEqual(Math.min(model.x, -m.radius));
     expect(body.y).toBeLessThanOrEqual(model.y);
     expect(body.x + body.width).toBeGreaterThanOrEqual(Math.max(model.x + model.width, m.radius));

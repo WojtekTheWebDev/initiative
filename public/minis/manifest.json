@@ -1,4 +1,21 @@
 {
+  "armabee": {
+    "name": "Armabee",
+    "kind": "monster",
+    "image": "/minis/armabee.webp",
+    "width": 2.04,
+    "height": 1.629,
+    "anchor": {
+      "x": 1.002,
+      "y": 0.951
+    },
+    "body": {
+      "x": 0.243,
+      "y": 0,
+      "width": 1.798,
+      "height": 1.081
+    }
+  },
   "barbarian": {
     "name": "Barbarian",
     "kind": "hero",
@@ -16,10 +33,77 @@
       "height": 2.182
     }
   },
+  "bat": {
+    "name": "Bat",
+    "kind": "monster",
+    "image": "/minis/bat.webp",
+    "width": 2.004,
+    "height": 2.202,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.524
+    },
+    "body": {
+      "x": 0.147,
+      "y": 0,
+      "width": 1.776,
+      "height": 1.357
+    }
+  },
+  "blue-imp": {
+    "name": "Blue Imp",
+    "kind": "monster",
+    "image": "/minis/blue-imp.webp",
+    "width": 2.048,
+    "height": 2.096,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.415
+    },
+    "body": {
+      "x": 0.195,
+      "y": 0,
+      "width": 1.853,
+      "height": 1.636
+    }
+  },
+  "cursed-tome": {
+    "name": "Cursed Tome",
+    "kind": "monster",
+    "image": "/minis/cursed-tome.webp",
+    "width": 2.004,
+    "height": 2.566,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.888
+    },
+    "body": {
+      "x": 0.29,
+      "y": 0,
+      "width": 1.445,
+      "height": 1.868
+    }
+  },
+  "demon": {
+    "name": "Demon",
+    "kind": "monster",
+    "image": "/minis/demon.webp",
+    "width": 2.063,
+    "height": 1.982,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.303
+    },
+    "body": {
+      "x": 0.107,
+      "y": 0,
+      "width": 1.956,
+      "height": 1.5
+    }
+  },
   "dragon": {
     "name": "Dragon",
     "kind": "monster",
-    "size": "XL",
     "image": "/minis/dragon.webp",
     "width": 2.085,
     "height": 2.037,
@@ -32,6 +116,23 @@
       "y": 0,
       "width": 1.835,
       "height": 1.585
+    }
+  },
+  "drake": {
+    "name": "Drake",
+    "kind": "monster",
+    "image": "/minis/drake.webp",
+    "width": 2.004,
+    "height": 1.592,
+    "anchor": {
+      "x": 1.002,
+      "y": 0.912
+    },
+    "body": {
+      "x": 0.04,
+      "y": 0,
+      "width": 1.798,
+      "height": 0.934
     }
   },
   "hooded-rogue": {
@@ -68,6 +169,23 @@
       "height": 2.114
     }
   },
+  "landshark": {
+    "name": "Landshark",
+    "kind": "monster",
+    "image": "/minis/landshark.webp",
+    "width": 2.004,
+    "height": 2.393,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.713
+    },
+    "body": {
+      "x": 0.055,
+      "y": 0,
+      "width": 1.787,
+      "height": 2.081
+    }
+  },
   "mage": {
     "name": "Mage",
     "kind": "hero",
@@ -85,22 +203,55 @@
       "height": 2.114
     }
   },
+  "mimic": {
+    "name": "Mimic",
+    "kind": "monster",
+    "image": "/minis/mimic.webp",
+    "width": 2.004,
+    "height": 2.702,
+    "anchor": {
+      "x": 1.002,
+      "y": 2.024
+    },
+    "body": {
+      "x": 0.257,
+      "y": 0,
+      "width": 1.511,
+      "height": 2.033
+    }
+  },
+  "mushnub": {
+    "name": "Mushnub",
+    "kind": "monster",
+    "image": "/minis/mushnub.webp",
+    "width": 2.004,
+    "height": 2.599,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.921
+    },
+    "body": {
+      "x": 0.066,
+      "y": 0,
+      "width": 1.871,
+      "height": 2.015
+    }
+  },
   "mushroom-king": {
     "name": "Mushroom King",
     "kind": "monster",
-    "size": "L",
     "image": "/minis/mushroom-king.webp",
-    "width": 2.043,
-    "height": 2.351,
+    "width": 2.044,
+    "height": 2.349,
     "anchor": {
-      "x": 0.999,
-      "y": 1.672
+      "x": 1.002,
+      "y": 1.669
     },
     "body": {
-      "x": 0.168,
+      "x": 0.169,
       "y": 0,
       "width": 1.875,
-      "height": 1.788
+      "height": 1.787
     }
   },
   "neutral": {
@@ -120,22 +271,72 @@
       "height": 2.114
     }
   },
+  "ooze": {
+    "name": "Ooze",
+    "kind": "monster",
+    "image": "/minis/ooze.webp",
+    "width": 2.004,
+    "height": 2.213,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.535
+    },
+    "body": {
+      "x": 0.055,
+      "y": 0,
+      "width": 1.805,
+      "height": 1.702
+    }
+  },
   "orc": {
     "name": "Orc",
     "kind": "monster",
-    "size": "M",
     "image": "/minis/orc.webp",
     "width": 2.044,
-    "height": 2.138,
+    "height": 2.136,
     "anchor": {
-      "x": 1.003,
-      "y": 1.459
+      "x": 1.002,
+      "y": 1.458
     },
     "body": {
-      "x": 0.156,
+      "x": 0.158,
       "y": 0,
-      "width": 1.888,
-      "height": 1.669
+      "width": 1.886,
+      "height": 1.665
+    }
+  },
+  "raptor": {
+    "name": "Raptor",
+    "kind": "monster",
+    "image": "/minis/raptor.webp",
+    "width": 2.004,
+    "height": 2.121,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.442
+    },
+    "body": {
+      "x": 0.147,
+      "y": 0,
+      "width": 1.824,
+      "height": 1.438
+    }
+  },
+  "rat": {
+    "name": "Rat",
+    "kind": "monster",
+    "image": "/minis/rat.webp",
+    "width": 2.004,
+    "height": 1.404,
+    "anchor": {
+      "x": 1.002,
+      "y": 0.724
+    },
+    "body": {
+      "x": 0.654,
+      "y": 0,
+      "width": 0.548,
+      "height": 1.103
     }
   },
   "rogue": {
@@ -155,22 +356,174 @@
       "height": 2.034
     }
   },
+  "skeleton": {
+    "name": "Skeleton",
+    "kind": "monster",
+    "image": "/minis/skeleton.webp",
+    "width": 2.125,
+    "height": 2.625,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.946
+    },
+    "body": {
+      "x": 0.243,
+      "y": 0,
+      "width": 1.879,
+      "height": 2.099
+    }
+  },
+  "snake": {
+    "name": "Snake",
+    "kind": "monster",
+    "image": "/minis/snake.webp",
+    "width": 2.004,
+    "height": 2.232,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.553
+    },
+    "body": {
+      "x": 0.559,
+      "y": 0,
+      "width": 0.919,
+      "height": 1.57
+    }
+  },
+  "snow-ape": {
+    "name": "Snow Ape",
+    "kind": "monster",
+    "image": "/minis/snow-ape.webp",
+    "width": 2.004,
+    "height": 1.956,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.279
+    },
+    "body": {
+      "x": 0.147,
+      "y": 0,
+      "width": 1.824,
+      "height": 1.276
+    }
+  },
   "spider": {
     "name": "Spider",
     "kind": "monster",
-    "size": "S",
     "image": "/minis/spider.webp",
-    "width": 2.032,
-    "height": 1.524,
+    "width": 2.037,
+    "height": 1.522,
     "anchor": {
-      "x": 1.001,
-      "y": 0.841
+      "x": 1.002,
+      "y": 0.843
     },
     "body": {
-      "x": 0.032,
+      "x": 0.029,
       "y": 0,
-      "width": 2,
-      "height": 1.347
+      "width": 2.004,
+      "height": 1.353
+    }
+  },
+  "tentacle": {
+    "name": "Tentacle",
+    "kind": "monster",
+    "image": "/minis/tentacle.webp",
+    "width": 2.004,
+    "height": 2.518,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.84
+    },
+    "body": {
+      "x": 0.706,
+      "y": 0,
+      "width": 0.504,
+      "height": 1.996
+    }
+  },
+  "toad": {
+    "name": "Toad",
+    "kind": "monster",
+    "image": "/minis/toad.webp",
+    "width": 2.004,
+    "height": 1.923,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.243
+    },
+    "body": {
+      "x": 0.162,
+      "y": 0,
+      "width": 1.824,
+      "height": 1.213
+    }
+  },
+  "tribal-mask": {
+    "name": "Tribal Mask",
+    "kind": "monster",
+    "image": "/minis/tribal-mask.webp",
+    "width": 2.004,
+    "height": 2.518,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.84
+    },
+    "body": {
+      "x": 0.173,
+      "y": 0,
+      "width": 1.717,
+      "height": 2.07
+    }
+  },
+  "void-stalker": {
+    "name": "Void Stalker",
+    "kind": "monster",
+    "image": "/minis/void-stalker.webp",
+    "width": 2.004,
+    "height": 2.224,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.545
+    },
+    "body": {
+      "x": 0.136,
+      "y": 0,
+      "width": 1.827,
+      "height": 1.559
+    }
+  },
+  "wolf": {
+    "name": "Wolf",
+    "kind": "monster",
+    "image": "/minis/wolf.webp",
+    "width": 2.004,
+    "height": 1.713,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.034
+    },
+    "body": {
+      "x": 0.625,
+      "y": 0,
+      "width": 0.699,
+      "height": 1.301
+    }
+  },
+  "zombie": {
+    "name": "Zombie",
+    "kind": "monster",
+    "image": "/minis/zombie.webp",
+    "width": 2.004,
+    "height": 2.154,
+    "anchor": {
+      "x": 1.002,
+      "y": 1.475
+    },
+    "body": {
+      "x": 0.154,
+      "y": 0,
+      "width": 1.805,
+      "height": 1.5
     }
   }
 }

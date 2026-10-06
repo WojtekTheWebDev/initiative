@@ -47,7 +47,7 @@ export function linksOf(layout: WorldLayout, scale: number = TAG_ROOM_SCALE): Pl
       const own = crossing(along(start), along(end), heroTag);
       if (own) start += own[1] * (end - start);
       // Of the monster's tag and its model, the arrow stops at whichever it reaches first.
-      const model = miniBodyRect(monsterMini(m.monster.size), m.pos, m.radius);
+      const model = miniBodyRect(monsterMini(m.monster), m.pos, m.radius);
       let reach = 1;
       for (const box of [monsterShape(m, scale).tag, model]) {
         const hit = crossing(along(start), along(end), grow(box, LINK_GAP));

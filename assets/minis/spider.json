@@ -1,5 +1,4 @@
 {
   "name": "Spider",
-  "kind": "monster",
-  "size": "S"
+  "kind": "monster"
 }

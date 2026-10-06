@@ -15,7 +15,7 @@ const world: World = {
       notes: "Next step: spike\nOwner: product",
       externalKey: "SRCH-12",
     },
-    { id: "flaky-ci", name: "Flaky CI", size: "M", pos: { x: -180, y: -120 }, notes: "Once a day" },
+    { id: "flaky-ci", name: "Flaky CI", size: "M", mini: "blue-imp", pos: { x: -180, y: -120 }, notes: "Once a day" },
     { id: "docs", name: "Docs", size: "S", pos: { x: 0, y: 0 }, slain: "2026-09-28", slainBy: ["dmitri"] },
   ],
   heroes: [
@@ -69,6 +69,9 @@ describe("stringifySave", () => {
     expect(ana.indexOf("class:")).toBeLessThan(ana.indexOf("guild:"));
     expect(ana.indexOf("guild:")).toBeLessThan(ana.indexOf("mini:"));
     expect(ana.indexOf("mini:")).toBeLessThan(ana.indexOf("targets:"));
+    const ci = text.split("- id: flaky-ci")[1].split("\n\n")[0];
+    expect(ci.indexOf("size:")).toBeLessThan(ci.indexOf("mini:"));
+    expect(ci.indexOf("mini:")).toBeLessThan(ci.indexOf("pos:"));
   });
 
   it("writes an empty table", () => {

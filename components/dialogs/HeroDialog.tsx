@@ -7,13 +7,16 @@ import { useGameStore } from "@/components/game/GameProvider";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { ErrorNote, Field, inputClass, useAction } from "./form";
-import { MiniCarousel } from "./MiniCarousel";
-import { heroFields, heroPatch, isDirty, type HeroFields } from "./helpers";
+import { HERO_MINIS, NEUTRAL_MINI } from "@/lib/map/minis";
+import { MiniCarousel, MissingNote } from "./MiniCarousel";
+import { heroFields, heroMiniValue, heroPatch, isDirty, rosterIndex, type HeroFields } from "./helpers";
 
 /**
  * "Recruit a hero" (create) or "Edit hero" (with `hero`), laid out like a
- * game's character screen: the mini carousel on the left, name, class and
- * guild on the right. Mount it to open it; it calls `onClose` when done.
+ * game's character screen: the mini carousel on the left (Neutral first, then
+ * the roster by name; a pick that isn't in the roster shows as missing, with
+ * Neutral on show), name, class and guild on the right. Mount it to open it;
+ * it calls `onClose` when done.
  */
 export function HeroDialog({
   hero,
@@ -33,6 +36,7 @@ export function HeroDialog({
   const set = (patch: Partial<HeroFields>) => setFields((f) => ({ ...f, ...patch }));
   const { store } = useGameStore();
   const { error, run, clearError } = useAction();
+  const { index, missing } = rosterIndex(HERO_MINIS, fields.mini, NEUTRAL_MINI);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -69,10 +73,22 @@ export function HeroDialog({
       title={hero ? "Edit hero" : "Recruit a hero"}
       onClose={onClose}
       dirty={isDirty(start, fields)}
-      className="max-w-2xl"
+      className="max-w-2xl!"
     >
       <form onSubmit={submit} className="grid gap-5 sm:grid-cols-[auto_1fr]">
-        <MiniCarousel value={fields.mini} onChange={(mini) => set({ mini })} />
+        <MiniCarousel
+          roster={HERO_MINIS}
+          index={index}
+          name={index === 0 ? "Neutral" : HERO_MINIS[index].name}
+          onFlip={(mini) => set({ mini: heroMiniValue(mini) })}
+          note={
+            missing && (
+              <MissingNote>
+                &ldquo;{fields.mini}&rdquo; is missing, so this hero stands as Neutral. Flip to choose again.
+              </MissingNote>
+            )
+          }
+        />
 
         <div className="flex min-w-0 flex-col">
           <Field label="Name">

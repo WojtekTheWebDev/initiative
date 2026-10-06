@@ -2,18 +2,13 @@
 
 import { useRef, type KeyboardEvent, type PointerEvent } from "react";
 import type { Size } from "@/lib/types";
-import { creatureOf } from "@/lib/domain";
-import { monsterMini } from "@/lib/map/minis";
-import { Portrait } from "@/components/ui/Portrait";
+import { sizeName } from "@/lib/domain";
 import { SIZES } from "./helpers";
 
-/** Diameter of the preview above the slider, in px; half that on a phone (`compact`). */
-const PREVIEW = 176;
-
 /**
- * The monster's size: a large preview of its mini above a slider with four
- * labelled stops (S spider, M orc, L mushroom king, XL dragon). Arrow keys,
- * Home and End move it, and so do a click or a drag along the track.
+ * The monster's size, which sets its base: a slider with four labelled stops
+ * (S small, M medium, L large, XL extra large). Arrow keys, Home and End move
+ * it, and so do a click or a drag along the track.
  */
 export function SizeSlider({ value, onChange }: { value: Size; onChange: (size: Size) => void }) {
   const track = useRef<HTMLDivElement>(null);
@@ -47,9 +42,6 @@ export function SizeSlider({ value, onChange }: { value: Size; onChange: (size: 
 
   return (
     <div>
-      <div className="flex justify-center" aria-hidden="true">
-        <Portrait mini={monsterMini(value)} size={PREVIEW} ring="gold" className="compact:[zoom:0.5]" />
-      </div>
       <div
         role="slider"
         tabIndex={0}
@@ -57,7 +49,7 @@ export function SizeSlider({ value, onChange }: { value: Size; onChange: (size: 
         aria-valuemin={0}
         aria-valuemax={last}
         aria-valuenow={index}
-        aria-valuetext={`${value}, ${creatureOf(value)}`}
+        aria-valuetext={`${value}, ${sizeName(value)}`}
         onKeyDown={onKeyDown}
         onPointerDown={(e) => {
           e.currentTarget.setPointerCapture(e.pointerId);
@@ -66,7 +58,7 @@ export function SizeSlider({ value, onChange }: { value: Size; onChange: (size: 
         onPointerMove={(e) => {
           if (e.currentTarget.hasPointerCapture(e.pointerId)) follow(e);
         }}
-        className="mt-4 cursor-pointer touch-none rounded-[10px] px-[12.5%] py-2 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hud-gold"
+        className="cursor-pointer touch-none rounded-[10px] px-[12.5%] py-2 select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hud-gold"
       >
         <div ref={track} className="relative h-1.5 rounded-full bg-white/10">
           <div
@@ -94,7 +86,7 @@ export function SizeSlider({ value, onChange }: { value: Size; onChange: (size: 
             onClick={() => onChange(s)}
           >
             <span className="block font-semibold">{s}</span>
-            <span className="block">{creatureOf(s)}</span>
+            <span className="block">{sizeName(s)}</span>
           </span>
         ))}
       </div>

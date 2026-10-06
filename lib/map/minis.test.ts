@@ -5,11 +5,14 @@ import type { Size } from "@/lib/types";
 import manifest from "@/public/minis/manifest.json";
 import {
   HERO_MINIS,
+  MONSTER_MINIS,
   NEUTRAL_MINI,
+  SIZE_MINI,
   depthOrder,
   heroMini,
   hitsMini,
   isHeroMini,
+  isMonsterMini,
   miniBodyRect,
   miniImageRect,
   monsterMini,
@@ -22,12 +25,23 @@ const publicFile = (url: string) => path.join(__dirname, "../../public", url);
 const entries = manifest as Record<string, { kind: string; image: string }>;
 
 describe("the baked minis", () => {
-  it("give every monster size its own mini, with a manifest entry and an image", () => {
-    const ids = SIZES.map((s) => monsterMini(s).id);
+  it("give every monster size its own mini from the bestiary", () => {
+    const ids = SIZES.map((size) => monsterMini({ size }).id);
     expect(ids).toEqual(["spider", "orc", "mushroom-king", "dragon"]);
-    for (const id of ids) {
-      expect(entries[id].kind).toBe("monster");
-      expect(existsSync(publicFile(entries[id].image))).toBe(true);
+    expect(SIZES.map((s) => SIZE_MINI[s])).toEqual(ids);
+    for (const id of ids) expect(isMonsterMini(id)).toBe(true);
+  });
+
+  it("list every monster mini in the bestiary, by name, each with an image", () => {
+    const monsterIds = Object.entries(entries)
+      .filter(([, e]) => e.kind === "monster")
+      .map(([id]) => id);
+    expect(MONSTER_MINIS.map((m) => m.id).sort()).toEqual(monsterIds.sort());
+    const names = MONSTER_MINIS.map((m) => m.name);
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+    for (const m of MONSTER_MINIS) {
+      expect(entries[m.id].image).toBe(m.image);
+      expect(existsSync(publicFile(m.image))).toBe(true);
     }
   });
 
@@ -44,7 +58,7 @@ describe("the baked minis", () => {
   });
 
   it("have anchors and bodies inside their images", () => {
-    for (const m of [...HERO_MINIS, ...SIZES.map(monsterMini)]) {
+    for (const m of [...HERO_MINIS, ...MONSTER_MINIS]) {
       expect(m.anchor.x).toBeGreaterThan(0);
       expect(m.anchor.x).toBeLessThan(m.width);
       expect(m.anchor.y).toBeGreaterThan(0);
@@ -57,6 +71,26 @@ describe("the baked minis", () => {
       // The figure stands up from its base.
       expect(m.body.y).toBeLessThan(m.anchor.y);
     }
+  });
+});
+
+describe("monsterMini", () => {
+  it("returns the picked mini, whatever the size", () => {
+    const mimic = MONSTER_MINIS.find((m) => m.id === "mimic")!;
+    for (const size of SIZES) expect(monsterMini({ size, mini: "mimic" })).toBe(mimic);
+  });
+
+  it("returns the mini for the size for a missing or unknown id", () => {
+    expect(monsterMini({ size: "S" }).id).toBe("spider");
+    expect(monsterMini({ size: "XL", mini: "unicorn" }).id).toBe("dragon");
+    expect(monsterMini({ size: "M", mini: "" }).id).toBe("orc");
+    expect(isMonsterMini("unicorn")).toBe(false);
+    expect(isMonsterMini(undefined)).toBe(false);
+  });
+
+  it("never returns a hero", () => {
+    expect(monsterMini({ size: "L", mini: "knight" }).id).toBe("mushroom-king");
+    expect(isMonsterMini("knight")).toBe(false);
   });
 });
 

@@ -49,7 +49,7 @@ describe("hitTestMonster", () => {
 
   it("hits the body of a tall mini, up to the top of its head and out to its wings", () => {
     const m3 = monsters.find((m) => m.monster.id === "m3")!;
-    const king = miniBodyRect(monsterMini("L"), m3.pos, m3.radius);
+    const king = miniBodyRect(monsterMini({ size: "L" }), m3.pos, m3.radius);
     expect(hitTestMonster(monsters, { x: m3.pos.x, y: king.y + 1 })?.monster.id).toBe("m3");
     expect(hitTestMonster(monsters, { x: m3.pos.x, y: king.y - 1 })).toBeNull();
 
@@ -57,7 +57,7 @@ describe("hitTestMonster", () => {
       monsters: [{ id: "d", name: "D", size: "XL", pos: { x: 0, y: 0 } }],
       heroes: [],
     }).monsters;
-    const wings = miniBodyRect(monsterMini("XL"), dragon[0].pos, dragon[0].radius);
+    const wings = miniBodyRect(monsterMini({ size: "XL" }), dragon[0].pos, dragon[0].radius);
     expect(hitTestMonster(dragon, { x: wings.x + 2, y: wings.y + wings.height * 0.4 })?.monster.id).toBe("d");
     expect(hitTestMonster(dragon, { x: wings.x - 2, y: wings.y + wings.height * 0.4 })).toBeNull();
   });

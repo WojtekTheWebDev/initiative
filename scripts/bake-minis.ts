@@ -20,7 +20,6 @@ import { readFile, readdir, writeFile, mkdir, unlink } from "node:fs/promises";
 import path from "node:path";
 import { chromium, type Page } from "playwright";
 import { HERO_BASE_RADIUS, MONSTER_BASE_RADIUS } from "../lib/map/rings";
-import type { Size } from "../lib/types";
 
 /** Output pixels per world unit: sharp at zoom 2 on a high-density screen. */
 const PX_PER_WORLD_UNIT = 4;
@@ -49,12 +48,12 @@ type ModelSpec = {
   /** Display name, e.g. in the hero form's picker. */
   name: string;
   kind: "hero" | "monster" | "terrain";
-  /** Monsters only: the size this model stands for. */
-  size?: Size;
   /**
-   * World units per model unit. Defaults to the base radius of the kind (and
-   * size). Required for terrain, which keeps the size it has in its files (one
-   * unit of the file is one model unit) rather than being fitted to a base.
+   * World units per model unit. Defaults to the base radius of the kind: a
+   * hero's, or for a monster the largest (XL), since it can stand on a base of
+   * any size and must be sharp on every one. Required for terrain, which
+   * keeps the size it has in its files (one unit of the file is one model
+   * unit) rather than being fitted to a base.
    */
   radius?: number;
   /** Stand it on a round black flocked base. Default: true, except for terrain, which casts its shadow on the table instead. */
@@ -88,7 +87,6 @@ type ModelSpec = {
 export type ManifestEntry = {
   name: string;
   kind: ModelSpec["kind"];
-  size?: Size;
   /** Terrain only: world units per model unit. */
   radius?: number;
   /** Public URL of the image. */
@@ -126,10 +124,8 @@ function args(argv: string[]) {
 function radiusOf(id: string, spec: ModelSpec): number {
   if (spec.radius !== undefined) return spec.radius;
   if (spec.kind === "hero") return HERO_BASE_RADIUS;
-  if (spec.kind === "monster" && spec.size && spec.size in MONSTER_BASE_RADIUS) {
-    return MONSTER_BASE_RADIUS[spec.size];
-  }
-  throw new Error(`${id}.json: needs "radius" (or kind "hero", or kind "monster" with a size)`);
+  if (spec.kind === "monster") return MONSTER_BASE_RADIUS.XL;
+  throw new Error(`${id}.json: needs "radius" (or kind "hero" or "monster")`);
 }
 
 /** The public URL prefix for files in `out`, which must be inside `public/`. */
@@ -185,7 +181,7 @@ const PAGE_HTML = `<!doctype html><html><head><meta charset="utf-8">
 <script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script>
 <script type="module" src="/page.mjs"></script></head><body></body></html>`;
 
-type BakeResult = Omit<ManifestEntry, "name" | "kind" | "size" | "image"> & { dataUrl: string };
+type BakeResult = Omit<ManifestEntry, "name" | "kind" | "image"> & { dataUrl: string };
 
 async function main() {
   const { src, out, only } = args(process.argv.slice(2));
@@ -230,7 +226,6 @@ async function main() {
       manifest[id] = {
         name: spec.name,
         kind: spec.kind,
-        ...(spec.size ? { size: spec.size } : {}),
         ...(spec.kind === "terrain" ? { radius } : {}),
         image: `${prefix}${id}.webp`,
         width: geometry.width,

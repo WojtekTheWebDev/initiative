@@ -146,8 +146,8 @@ function coachCopy(stage: CoachedStage): CoachCopy {
         title: "Summon a monster",
         about: (
           <p>
-            A monster is anything you have to deal with: an initiative, an incident, tech debt, a hire. Its size shows
-            how big it is, from a spider to a dragon.
+            A monster is anything you have to deal with: an initiative, an incident, tech debt, a hire. Its size, from
+            small to extra large, shows how big it is, and you pick the creature that stands for it.
           </p>
         ),
         todo: (

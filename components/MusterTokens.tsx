@@ -57,7 +57,7 @@ export function MusterTokens({ monsters, onPick }: Props) {
               className={TOKEN}
               onClick={() => onPick(m)}
             >
-              <Portrait mini={monsterMini(m.size)} size={28} ring="red" />
+              <Portrait mini={monsterMini(m)} size={28} ring="red" />
               <span className="min-w-0 truncate">{m.name}</span>
             </button>
           </li>
@@ -72,7 +72,7 @@ export function MusterTokens({ monsters, onPick }: Props) {
                 title: m.name,
                 content: (
                   <>
-                    <Portrait mini={monsterMini(m.size)} size={24} ring="red" />
+                    <Portrait mini={monsterMini(m)} size={24} ring="red" />
                     <span className="min-w-0 flex-1 truncate">{m.name}</span>
                   </>
                 ),

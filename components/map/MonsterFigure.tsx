@@ -21,7 +21,7 @@ export function MonsterFigure({ placed, scale, selected, dropHint, onPointerDown
   if (selected) rings.push("selected");
   return (
     <MiniFigure
-      mini={monsterMini(monster.size)}
+      mini={monsterMini(monster)}
       pos={pos}
       radius={radius}
       scale={scale}

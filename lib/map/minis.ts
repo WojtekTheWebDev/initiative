@@ -1,12 +1,13 @@
-import type { Pos, Size } from "@/lib/types";
+import type { Monster, Pos, Size } from "@/lib/types";
 import manifest from "@/public/minis/manifest.json";
 import { onBase } from "./rings";
 
 /*
  * The painted miniatures, baked by `npm run bake:minis` into public/minis/
- * (images plus manifest.json). A monster's size picks its mini; a hero
- * picks its own with the optional `mini` field. Every length here is in
- * base radii, so a mini scales with the base it stands on.
+ * (images plus manifest.json). Heroes and monsters pick theirs with the
+ * optional `mini` field. Every length here is in base radii, so a mini
+ * scales with the base it stands on, and a monster mini can stand on a base
+ * of any size.
  */
 
 export type Rect = { x: number; y: number; width: number; height: number };
@@ -25,7 +26,7 @@ export type Mini = {
   body: Rect;
 };
 
-type Entry = Omit<Mini, "id"> & { kind: string; size?: string };
+type Entry = Omit<Mini, "id"> & { kind: string };
 
 const ENTRIES = Object.entries(manifest as Record<string, Entry>)
   .map(([id, e]) => ({ id, ...e }))
@@ -69,16 +70,28 @@ export function heroMini(id: string | undefined): Mini {
   return (id !== undefined && heroById.get(id)) || HERO_MINIS[0];
 }
 
-const monsterBySize = new Map<string, Mini>();
-for (const e of ENTRIES) {
-  if (e.kind === "monster" && e.size && !monsterBySize.has(e.size)) monsterBySize.set(e.size, toMini(e));
+/** The bestiary, for the picker: every monster mini, by name. */
+export const MONSTER_MINIS: readonly Mini[] = ENTRIES.filter((e) => e.kind === "monster")
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .map(toMini);
+
+const monsterById = new Map(MONSTER_MINIS.map((m) => [m.id, m]));
+
+/** The mini a monster stands as when it has no pick, or one that isn't in the bestiary. */
+export const SIZE_MINI: Readonly<Record<Size, string>> = { S: "spider", M: "orc", L: "mushroom-king", XL: "dragon" };
+
+for (const id of Object.values(SIZE_MINI)) {
+  if (!monsterById.has(id)) throw new Error(`public/minis/manifest.json has no "${id}" monster mini`);
 }
 
-/** The mini for a monster of this size: S spider, M orc, L mushroom king, XL dragon. */
-export function monsterMini(size: Size): Mini {
-  const mini = monsterBySize.get(size);
-  if (!mini) throw new Error(`public/minis/manifest.json has no monster mini for size ${size}`);
-  return mini;
+/** Whether `id` names a monster mini in the bestiary. */
+export function isMonsterMini(id: string | undefined): boolean {
+  return id !== undefined && monsterById.has(id);
+}
+
+/** The mini a monster stands as: its pick, or the mini for its size for a missing or unknown id. */
+export function monsterMini(monster: Pick<Monster, "size" | "mini">): Mini {
+  return (monster.mini !== undefined && monsterById.get(monster.mini)) || monsterById.get(SIZE_MINI[monster.size])!;
 }
 
 /** Where the image of a mini standing at `pos` on a base of `radius` is drawn, in world units. */

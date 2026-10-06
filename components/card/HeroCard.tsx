@@ -62,7 +62,7 @@ export function HeroCard({
                 onClick={() => onFlyTo(m)}
                 className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-left hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-hud-gold"
               >
-                <Portrait mini={monsterMini(m.size)} size={26} className={i === 0 ? "" : "opacity-60"} />
+                <Portrait mini={monsterMini(m)} size={26} className={i === 0 ? "" : "opacity-60"} />
                 <span className={`min-w-0 flex-1 truncate ${i === 0 ? "" : "text-hud-muted"}`}>{m.name}</span>
                 {i === 0 && <Icon.crown className="size-4 shrink-0 text-hud-gold" aria-hidden="true" />}
               </button>

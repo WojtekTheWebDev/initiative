@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Hero, Monster, World } from "@/lib/types";
-import { creatureOf, deleteMonster, fightersOf } from "@/lib/domain";
+import { deleteMonster, fightersOf } from "@/lib/domain";
 import { heroMini, monsterMini } from "@/lib/map/minis";
 import { Portrait } from "@/components/ui/Portrait";
 import { Button } from "@/components/ui/Button";
@@ -12,7 +12,7 @@ import { CardHeader, CardLabel, CardMenu, EditButton, useCardAction } from "./pa
 const MAX_FIGHTERS = 8;
 
 /**
- * The figure card of a living monster: portrait, name, size and creature, key,
+ * The figure card of a living monster: portrait, name, size and mini, key,
  * notes, fighters (a click selects that hero), then Edit, Slay and the ⋯ menu
  * with Delete.
  */
@@ -47,12 +47,12 @@ export function MonsterCard({
         />
       </div>
       <CardHeader
-        portrait={<Portrait mini={monsterMini(monster.size)} size={52} ring={fighters.length ? undefined : "red"} />}
+        portrait={<Portrait mini={monsterMini(monster)} size={52} ring={fighters.length ? undefined : "red"} />}
         name={monster.name}
         facts={
           <>
             <span>
-              {monster.size} · {creatureOf(monster.size)}
+              {monster.size} · {monsterMini(monster).name}
             </span>
             {monster.externalKey && <span className="font-mono whitespace-nowrap text-hud-fg">{monster.externalKey}</span>}
           </>

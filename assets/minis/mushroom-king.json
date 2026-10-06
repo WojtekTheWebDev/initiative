@@ -1,5 +1,4 @@
 {
   "name": "Mushroom King",
-  "kind": "monster",
-  "size": "L"
+  "kind": "monster"
 }

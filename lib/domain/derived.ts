@@ -32,10 +32,9 @@ export function roleOf(hero: Hero): string {
   return hero.guild ? `${hero.class} of ${hero.guild}` : hero.class;
 }
 
-export type Creature = "spider" | "orc" | "mushroom king" | "dragon";
+const SIZE_NAMES: Record<Size, string> = { S: "small", M: "medium", L: "large", XL: "extra large" };
 
-const CREATURES: Record<Size, Creature> = { S: "spider", M: "orc", L: "mushroom king", XL: "dragon" };
-
-export function creatureOf(size: Size): Creature {
-  return CREATURES[size];
+/** A monster size in words: "small", "medium", "large" or "extra large". */
+export function sizeName(size: Size): string {
+  return SIZE_NAMES[size];
 }

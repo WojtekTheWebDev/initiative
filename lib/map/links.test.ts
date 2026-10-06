@@ -51,7 +51,7 @@ describe("linksOf", () => {
     const layout = placeAt(layoutWorld(world()), { ana: { x: 0, y: -200 }, m1: { x: 0, y: 0 } });
     const link = linksOf(layout).find((l) => l.heroId === "ana" && l.monsterId === "m1")!;
     const tag = heroShape(layout.heroes.find((h) => h.hero.id === "ana")!).tag;
-    const model = miniBodyRect(monsterMini("S"), { x: 0, y: 0 }, monsterBaseRadius("S"));
+    const model = miniBodyRect(monsterMini({ size: "S" }), { x: 0, y: 0 }, monsterBaseRadius("S"));
     expect(link.from.x).toBeCloseTo(0);
     expect(link.from.y).toBeCloseTo(tag.y + tag.height + LINK_GAP);
     expect(link.to.x).toBeCloseTo(0);

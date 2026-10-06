@@ -77,13 +77,13 @@ function WelcomeDialog({ open, files }: { open: boolean; files: GameFiles }) {
         fights what, and which monsters nobody is fighting.
       </p>
       <ul className="mt-4 grid grid-cols-2 gap-2.5 max-sm:grid-cols-1">
-        <Tile mini={monsterMini("M")} title="Monsters">
+        <Tile mini={monsterMini({ size: "M" })} title="Monsters">
           Anything to deal with: an initiative, an incident, a hire.
         </Tile>
         <Tile mini={heroMini(WELCOME_HERO)} title="Heroes">
           The people on your team, and you.
         </Tile>
-        <Tile mini={monsterMini("S")} ring="red" title="Unfought" danger>
+        <Tile mini={monsterMini({ size: "S" })} ring="red" title="Unfought" danger>
           A monster nobody fights pulses red.
         </Tile>
         <Tile icon title="Trophies">
