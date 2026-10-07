@@ -18,7 +18,7 @@ const STILL = 0.5;
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
-type Glide = {
+export type Glide = {
   /** Where each figure was drawn when the glide began (see `positions`). */
   from: Map<string, Pos>;
   to: WorldLayout;
@@ -27,7 +27,7 @@ type Glide = {
 };
 
 /** During a drag: where each figure is drawn, catching up with `to`. */
-type Follow = { at: Map<string, Pos>; to: WorldLayout; lifted: string };
+export type Follow = { at: Map<string, Pos>; to: WorldLayout; lifted: string };
 
 /**
  * The layout to draw. When `layout` changes (a drop, an edit, a change from
@@ -36,7 +36,8 @@ type Follow = { at: Map<string, Pos>; to: WorldLayout; lifted: string };
  * is drawn exactly where `layout` puts it and every other figure follows its
  * place with FOLLOW_MS of easing. With `prefers-reduced-motion`, `layout` is
  * drawn as it is. Figures that are new appear in place, and removed ones
- * disappear at once.
+ * disappear at once. A glide or follow only ever draws the layout it was
+ * started for (see `drawnFrame`).
  *
  * Only for drawing: hit-testing and drops use `layout`, never the in-between frames.
  */
@@ -94,7 +95,26 @@ export function useGlide(layout: WorldLayout, lifted: { kind: "monster" | "hero"
     return () => cancelAnimationFrame(raf);
   }, [following]);
 
-  return follow ? followFrame(follow) : glide ? frame(glide) : layout;
+  return drawnFrame(layout, liftedKey, glide, follow);
+}
+
+/**
+ * What to draw for `layout`: the follow while a figure is lifted, the glide,
+ * or `layout` itself, but only from an animation started for this very
+ * layout. The animations step their state from animation frames, and React
+ * can replay such a step over the newer state set while rendering, which
+ * would bring back a finished drag's frame (a hero standing idle inside the
+ * monster it was just dropped on). Then `layout` is drawn as it is.
+ */
+export function drawnFrame(
+  layout: WorldLayout,
+  lifted: string | null,
+  glide: Glide | null,
+  follow: Follow | null,
+): WorldLayout {
+  if (follow && lifted === follow.lifted && follow.to === layout) return followFrame(follow);
+  if (glide && glide.to === layout) return frame(glide);
+  return layout;
 }
 
 const monsterKey = (id: string) => `m:${id}`;
