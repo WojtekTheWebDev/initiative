@@ -13,8 +13,9 @@ import { HERO_TAG_FONT, HERO_TAG_MIN_SCALE, MONSTER_TAG_FONT, heroTagText, tagRe
  *   home by the same weak spring (ANCHOR), so clusters can nudge it aside and it
  *   drifts back when there is room.
  * - An engaged hero has no home. A spring to each of its targets pulls it
- *   toward them and pulls them toward it, so heroes and monsters that target
- *   each other gather into a cluster. The main target pulls harder and closer
+ *   toward them. The springs never move the monsters, so a monster stays at
+ *   its home unless something stands in its way, and assigning a hero moves
+ *   only that hero and what it bumps into. The main target pulls harder and closer
  *   than secondary ones.
  * - No figure covers another one or its name tag. Each figure takes up two
  *   boxes (figureShape): its mini with its base, and its tag. The solver keeps

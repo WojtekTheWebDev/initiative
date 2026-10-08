@@ -15,7 +15,7 @@ export const SELECTED = "#f59e0b";
 /** The keyboard focus ring, the HUD's gold; see FIGURE_CSS. */
 export const FOCUS_RING = "#d9b45f";
 const UNFOUGHT = "#ff3b2f";
-/** Drop highlights while a hero is dragged over a monster: plain drop vs Shift+drop. */
+/** Drop highlights while a hero is dragged over a monster: it would become the main target, or a secondary one. */
 const DROP_ASSIGN = "#16a34a";
 const DROP_SECONDARY = "#7c3aed";
 

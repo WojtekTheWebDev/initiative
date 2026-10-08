@@ -8,7 +8,7 @@ type Props = FigureHandlers & {
   /** Current camera scale (screen px per world unit). */
   scale: number;
   selected?: boolean;
-  /** A hero is being dragged over this monster: "assign" (plain drop) or "secondary" (Shift held). */
+  /** A hero is being dragged over this monster: "assign" (it would become the main target) or "secondary". */
   dropHint?: "assign" | "secondary" | null;
 };
 

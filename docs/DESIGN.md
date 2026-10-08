@@ -60,9 +60,9 @@ Rules worked out from the data, not stored:
 - **A hero's mini** is its `mini` pick. A hero with no `mini`, or with an id that isn't in the roster, is drawn as the neutral adventurer. `class` and `guild` never affect the art.
 - **Where figures are drawn** comes from the targets, through a force layout (`lib/map/layout.ts` on top of the solver in `lib/map/force.ts`). The drawn position is never saved.
   - A stored `pos` is a **home**. Every monster and every idle hero is held to its home by the same weak spring, so it stays near it but can be nudged aside, and drifts back when there is room.
-  - An engaged hero has no home. A spring to each of its targets pulls it toward them and pulls them toward it, so heroes and monsters that target each other gather into a cluster: a monster that shares a hero with another is drawn between its home and theirs. The main target pulls harder and holds the hero closer than secondary targets.
-  - Clusters push other figures aside, so no mini or name tag covers another one (see Force layout).
-  - The layout is pure and deterministic: the same table always gives the same picture, in whatever order they list things. The tuning constants are exported from `lib/map/layout.ts`.
+  - An engaged hero has no home. A spring to each of its targets pulls it toward them. The springs pull only the hero, never the monster, so a monster stands at its home unless another figure is in its way, and a hero with two far-apart targets stands between them, nearer its main one. The main target pulls harder and holds the hero closer than secondary targets.
+  - Figures in the way are pushed aside, so no mini or name tag covers another one (see Force layout). Only overlaps move a figure that is not being changed.
+  - The layout is pure and deterministic: the same table, laid out from the same starting picture, always gives the same picture, in whatever order they list things. A table that is opened is laid out from the homes. Every change after that (a drop, an edit, a change from another tab) lays the table out again starting from the picture before, so the figures it doesn't concern stay where they are drawn, on the same side of each other. The tuning constants are exported from `lib/map/layout.ts`.
 - **Target arrows** come from the layout: one per hero and living target, from the edge of the hero's base ellipse toward the monster's. They are never stored, so anything that moves a figure moves its arrows too.
 
 What is stored because it can't be worked out later:
@@ -84,7 +84,7 @@ How the game is kept (`lib/save/`):
 - **Room for arrows:** a hero's boxes are kept at least `ARROW_ROOM` (50 units) from those of each of its targets while the simulation runs, so every arrow shows on the felt. The last collision-only passes keep only the padding, so a crowd always settles.
 - **Springs:** a main target pulls a hero with `MAIN_PULL` toward `MAIN_GAP` between the bases, a secondary one more weakly (`SECONDARY_PULL`, `SECONDARY_GAP`). Every home holds its figure with the weak `ANCHOR`.
 - **Steps:** a full layout cools for 300 steps, settles until nothing moves (at most 200 steps) and finishes with collision-only passes that move each pair at once, so nothing is left overlapping.
-- **Dragging a monster:** every pointer move lays the map out again with the monster pinned at the cursor, starting from the previous frame with 40 cooling and 40 settling steps (`DRAG_ITERATIONS`, `DRAG_SETTLE`). While a figure is dragged, the others ease after their places (`FOLLOW_MS`, 70 ms), so a figure the cluster shoves past slides there rather than jumping. The drop lays the map out in full from the homes, and the figures glide there.
+- **Dragging a monster:** every pointer move lays the map out again with the monster pinned at the cursor, starting from the previous frame with 40 cooling and 40 settling steps (`DRAG_ITERATIONS`, `DRAG_SETTLE`). While a figure is dragged, the others ease after their places (`FOLLOW_MS`, 70 ms), so a figure the dragged one shoves past slides there rather than jumping. The drop lays the map out in full, starting from the last frame of the drag, and the figures glide there; nothing that was standing clear swaps sides.
 - **Name tags when zoomed out:** `shownTags` leaves out a tag that would cover one already shown at the current zoom. The selected or dragged figure keeps its tag, then unfought monsters, the other monsters from the largest down, and heroes, whose tags hide altogether below zoom 0.45. Zooming in brings them back.
 - **Stress test** (October 2026): a world of 40 monsters and 25 engaged heroes with 1 to 3 targets each, six monsters shared by many heroes, two idle heroes and eight trophies, in a production build in headless Chromium at 1440 x 900, twice the pixel density, with the glass HUD on screen. `layoutWorld` takes about 4 ms in Node and leaves no box overlapping. Panning costs about 5 to 6 ms of main-thread work per pointer move and dragging a monster in the busiest cluster about 14 ms, inside a 60 Hz frame, with no long tasks and at most one late frame per run. The backdrop blur on the HUD clusters makes no measurable difference. A blurred full-screen trophy hall dropped a third of the frames while the unfought pulse animated behind it, which is why dialogs have no blur; open, the hall now holds 60 frames per second. With the CPU slowed four times, a drag frame takes about 80 ms, so a slow machine lags while dragging a world this size; the layout is about a quarter of that, and the rest is React and the browser drawing every figure again. The opening view of that world is at about zoom 0.35, where the tags that would collide are left out.
 
@@ -100,7 +100,7 @@ How the game is kept (`lib/save/`):
   - Every figure is a soft contact shadow on the felt, the baked mini anchored on the centre of its round base, and a name tag. The base radius is the mini's unit, so a mini scales with its base: 22 units for a hero, and 31, 40, 52 and 68 for monsters from S to XL, so the minis, not their tags, catch the eye.
   - A monster stands as the mini it picked (`mini`) from the bestiary, on the base its size sets, so any model can be any size. With no pick it is the mini for its size.
   - Heroes stand as the mini they picked (`mini`), or as the neutral adventurer, an unpainted grey mini. Idle heroes are slightly faded.
-  - **Base rings** are ellipses squashed by `BASE_SQUASH = sin 38°` (`lib/map/rings.ts`), the way a round base looks from that angle. The unfought pulse (red), selection (amber) and the drop hints (green for a plain drop, purple with Shift) all sit around the base.
+  - **Base rings** are ellipses squashed by `BASE_SQUASH = sin 38°` (`lib/map/rings.ts`), the way a round base looks from that angle. The unfought pulse (red), selection (amber) and the drop hints (green where the hero would get its main target, purple dashed where it would get a secondary one) all sit around the base.
   - **Name tags** are slim dark tags with gold small capitals (Cinzel) just below the front of the base, red for an unfought monster, kept small next to the minis (11 units for monsters, 10 for heroes). They never shrink below 10 px on screen, and they are drawn above every mini, so no mini hides a name. Their size is worked out in `lib/map/tags.ts`, so the layout keeps room for them. When zoomed out far enough that tags would cover each other, the less important ones are left out (see Force layout), and hero names hide below zoom 0.45.
   - **Draw order:** target arrows, then contact shadows, then the minis sorted by their drawn y, so nearer minis overlap farther ones. The figure being dragged is always on top.
   - **Hit areas:** a figure is hit on its base ellipse or on the body of its mini (the box around the model's silhouette, without the base), never on the empty corners of its image. Dropping a hero on a dragon's wing or on the top of a tall mini counts as dropping on that monster. Where figures overlap, the one drawn in front wins.
@@ -153,7 +153,7 @@ Everything drawn over the table is the HUD. The table fills the whole window and
 - **Trophy shelf:** a small glass button in the bottom-left corner with a trophy icon and the trophy count ("3 trophies", or "No trophies yet"). It shows no minis. A click opens the trophy hall. While a monster is dragged, the shelf glows gold and is a drop target (see Slay).
 - **Trophy hall:** a full-screen glass overlay, every slain monster as a plaque, grouped by month of `slain`, newest first. A plaque shows the bronzed portrait, the name, the slain date, the first line of the notes, who fought it ("by Ana, Bartek", from `slainBy`) and **Revive**, which brings the monster back to the table (see Slay, undo and delete). Esc or the close button returns to the table.
 - **Map controls:** a small vertical cluster: zoom in and zoom out (around the middle of the screen, gliding like a fly-to), fit everything (the opening view), and **?** for the shortcuts sheet.
-- **Shortcuts sheet:** a glass card listing every gesture and key: drag, Shift+drop, wheel or pinch to zoom, Tab and Enter, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet, `⌘S` save game, `⌘O` load game. Letter keys are ignored while typing in a field.
+- **Shortcuts sheet:** a glass card listing every gesture and key: drag, drop a hero on a monster, wheel or pinch to zoom, Tab and Enter, Esc, `N` new monster, `H` new hero, `F` fit everything, `+` and `-` to zoom, `?` this sheet, `⌘S` save game, `⌘O` load game. Letter keys are ignored while typing in a field.
 - **Game menu:** a click on the wordmark (it has a small chevron) opens a glass menu below it, over the muster tokens: **Save game to file** (`⌘S`, Ctrl+S elsewhere), **Load game from file** (`⌘O`), **New game…**, **Play the tutorial**, **Settings** and **About Initiative**, over a footer saying "Your table is kept in this browser." and when it was last saved to a file ("Last saved to a file 9 days ago", or "Never saved to a file"). These two keys replace the browser's own save and open while no dialog is open. Esc or a click outside closes the menu. **About Initiative** opens a dialog that explains the game in a few lines (monsters, heroes, unfought, slaying, the table kept in the browser, the page views counted by Vercel Web Analytics) and ends with "Made by Wojciech Sikora. Open source on GitHub.", linking to the author's website, https://www.wojciechsikora.dev/, and to the source, https://github.com/WojtekTheWebDev/initiative, in new tabs.
 - **Settings:** a dialog with the settings of this browser. They are kept in local storage under their own key, apart from the game, and never go into a save file, because they are about how this browser shows the table, not about the table. Another tab picks up a change through the `storage` event. Its one section is **Terrain**, a single choice (a radio group) of what the table is made of: **Mixed lands** (every biome in regions across the map, the default) or one biome everywhere (Meadow, Autumn woods, Rocky highlands, Marsh). Each choice is a tile with a picture of it (`TerrainPreview` in `components/map/Table.tsx`), drawn by the map's own terrain code at the spot `terrainSpot` picks near the origin: for Mixed lands the place that shows the most biomes, for a biome one of its raised pieces. Choosing redraws the map at once; no figure moves, because terrain never affects the layout.
   - **Save game to file** downloads the whole table, trophies included, as `initiative-<local date>.yaml`, and a toast names the file.
@@ -190,17 +190,16 @@ A first visit is taught the four moves on its own empty table. Everything it doe
 ## Interactions
 
 **Monsters**
-- **Drag** to move it. While dragging, the monster stays under the cursor and the map lays itself out around it: its fighters come along, monsters that share them are pulled after it, and anything in the way is nudged aside.
-- On drop, its home moves by as much as the monster was dragged (`newHome = oldHome + (drop - press)`, measured between drawn positions), and that is saved as `pos`. A monster whose heroes fight nothing else settles exactly where it was let go; one that shares heroes with other monsters eases back toward them a little.
+- **Drag** to move it. While dragging, the monster stays under the cursor and the map lays itself out around it: its fighters come along and anything in the way is nudged aside.
+- On drop, its home moves by as much as the monster was dragged (`newHome = oldHome + (drop - press)`, measured between drawn positions), and that is saved as `pos`. Heroes never pull a monster, so it settles exactly where it was let go unless another figure is in the way.
 - **Click** to open its figure card.
 
 **Heroes**
-- A **plain drop on a monster** sets `targets` to just that monster. A plain drop back on the current main target changes nothing, so the secondary targets stay.
-- **Shift+drop on a monster** adds it to the end of `targets` as a secondary target. The hero stays closest to its main target, the new target is pulled toward it more weakly, and it gets a dashed arrow. If the monster is already a target, nothing happens. An idle hero gets it as the main target.
-- A **drop on empty ground** clears `targets` and saves `pos`. An idle hero's home moves by the drag offset, like a monster's; an engaged hero stays where it was let go.
+- A **drop on a monster** adds it to the end of `targets`. An idle hero gets it as the main target. An engaged hero keeps every target it has and gets this one as a secondary target with a dashed arrow; it stays closest to its main target and is pulled toward the new one more weakly. If the monster is already a target, nothing happens. Targets are removed or made main with the arrow buttons.
+- A **drop on empty ground** never changes `targets`. An idle hero's home moves by the drag offset, like a monster's, and is saved as `pos`. An engaged hero keeps its targets and has no `pos`; the map is laid out again from where it was let go, so it settles beside its targets on the side it was dropped.
 - While a hero is dragged, nothing else moves until the drop, so monsters never slide out from under the cursor.
 - A drop on a HUD surface, or off the map, does nothing and the hero snaps back.
-- While dragging, the monster under the cursor is highlighted: green for a plain drop, purple with Shift.
+- While dragging, the monster under the cursor is highlighted: green when it would become the main target (an idle hero), purple when it would be added as a secondary target. A monster that is already a target is not highlighted.
 - **Clicking a target arrow** pops two round glass buttons out at its midpoint, with a small label above naming the pair ("Ana → Search Rewrite"): a gold crown, **Make main** (only on a secondary arrow), and red shears, **Remove target**. Each has its name as a tooltip and accessible label. Esc or a click outside closes them.
 - Every change shows at once and is stored in the browser as it is made (see Data model).
 
@@ -246,13 +245,13 @@ A first visit is taught the four moves on its own empty table. Everything it doe
 ## Testing
 
 Use Vitest unit tests on the pure functions that change data:
-- assign, Shift-add, and promoting or removing a secondary target
+- adding a target, and promoting or removing a secondary target
 - the force solver and the layout: the user's example, separate clusters, homes, no overlapping minis or tags, sideways pushes, determinism and speed; figure shapes, which tags show when zoomed out, and the opening view
 - target arrows from the layout, trimmed to the base ellipses
 - the party roster's order and fold, and idle heroes counted from living targets
 - the mini lookup (every size and roster entry is baked, missing and unknown ids give the neutral mini), mini hit areas and draw order
 - the terrain: the same chunk gives the same terrain, roads and rivers meet at chunk borders, raised pieces are rare and apart, every biome appears near the origin, a one-biome terrain is that biome alone with the same roads and rivers, the preview spots, a chunk is fast to generate, and how raised pieces fade among the figures
-- the home after a drag, and a monster drag laid out frame by frame from the frame before
+- the home after a drag, a monster drag laid out frame by frame from the frame before, and the layout after a drop from the last frame
 - target arrows that stop before name tags and minis, and the bridge picked for a road
 - slay and delete cleanup, `slainBy` on slay, and revive (restoring only the heroes left unchanged since the slay)
 - where the figure card goes: beside the base, flipped near the right edge, kept on screen
@@ -274,7 +273,3 @@ The canvas is checked by hand, with no end-to-end tests for now.
 - Heroes in a barracks panel instead of as figures on the map.
 - A fixed-size map, a minimap, a pan/zoom library or React Flow.
 - Playwright end-to-end tests.
-
-## Open questions
-
-- A dropped monster whose heroes also fight other monsters eases back part of the way toward them after the drop, because only its own home moves. This is known behaviour; revisit it if drops should land exactly where they are let go.

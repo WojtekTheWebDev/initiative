@@ -114,14 +114,14 @@ describe("relax", () => {
   });
 
   it("settles a linked node and a weak anchor at their balance, not at the anchor", () => {
-    // A pinned node pulls an anchored one with a spring of rest length 0, and
+    // A spring of rest length 0 pulls an anchored node toward a pinned one, and
     // the anchor pulls it back: each step the spring moves it by 0.4 of the
     // gap to `pin`, the anchor by 0.03 of the gap to `home`.
     const nodes: ForceNode[] = [
       { id: "pin", boxes: square(1), start: { x: 0, y: 0 }, pinned: true },
       { id: "a", boxes: square(1), start: { x: 0, y: 0 }, anchor: { pos: { x: 500, y: 0 }, strength: 0.03 } },
     ];
-    const out = relax(nodes, [{ source: "pin", target: "a", length: 0, strength: 0.4 }]);
+    const out = relax(nodes, [{ source: "a", target: "pin", length: 0, strength: 0.4 }]);
     expect(out.get("a")!.x).toBeCloseTo((500 * 0.03) / (0.4 + 0.03), 0);
   });
 

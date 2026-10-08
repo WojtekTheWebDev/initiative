@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Pos, World } from "@/lib/types";
-import { MAIN_GAP, heroShape, layoutWorld, monsterShape } from "@/lib/map/layout";
+import { MAIN_GAP, heroShape, idleHome, layoutWorld, monsterShape, type WorldLayout } from "@/lib/map/layout";
 import { LINK_GAP, linksOf } from "@/lib/map/links";
 import { HERO_BASE_RADIUS, baseRim, monsterBaseRadius } from "@/lib/map/rings";
 import { miniBodyRect, monsterMini } from "@/lib/map/minis";
@@ -8,7 +8,6 @@ import { makeWorld } from "@/lib/domain/test-fixtures";
 import {
   applyOp,
   dropAction,
-  heroHomeAfterDrag,
   hitTestMonster,
   homeAfterDrag,
   layoutWithDrag,
@@ -97,35 +96,30 @@ describe("resolveHeroDrop", () => {
   const ground = { x: 500, y: -500 };
   const stand = { x: 490, y: -490 };
 
-  it("plain drop on another monster assigns", () => {
-    expect(resolveHeroDrop(w, monsters, "ana", onM3, stand, false)).toEqual({ monsterId: "m3", shift: false });
-    expect(resolveHeroDrop(w, monsters, "ana", onM2, stand, false)).toEqual({ monsterId: "m2", shift: false });
+  it("a drop on a new monster adds it to the targets", () => {
+    expect(resolveHeroDrop(w, monsters, "ana", onM3, stand)).toEqual({ monsterId: "m3" });
+    expect(resolveHeroDrop(w, monsters, "bob", onM2, stand)).toEqual({ monsterId: "m2" });
   });
 
-  it("plain drop on the current main target is a no-op", () => {
-    expect(resolveHeroDrop(w, monsters, "ana", onM1, stand, false)).toBeNull();
+  it("a drop on a monster that is already a target (main or secondary) is a no-op", () => {
+    expect(resolveHeroDrop(w, monsters, "ana", onM1, stand)).toBeNull();
+    expect(resolveHeroDrop(w, monsters, "ana", onM2, stand)).toBeNull();
   });
 
-  it("Shift+drop on a new monster adds a secondary target", () => {
-    expect(resolveHeroDrop(w, monsters, "bob", onM2, stand, true)).toEqual({ monsterId: "m2", shift: true });
+  it("an engaged hero dropped on empty ground keeps its targets", () => {
+    expect(resolveHeroDrop(w, monsters, "ana", ground, stand)).toBeNull();
   });
 
-  it("Shift+drop on an existing target (main or secondary) is a no-op", () => {
-    expect(resolveHeroDrop(w, monsters, "ana", onM1, stand, true)).toBeNull();
-    expect(resolveHeroDrop(w, monsters, "ana", onM2, stand, true)).toBeNull();
-  });
-
-  it("drop on empty ground idles the hero where it stands", () => {
-    expect(resolveHeroDrop(w, monsters, "ana", ground, stand, false)).toEqual({ pos: stand });
-    expect(resolveHeroDrop(w, monsters, "ana", ground, stand, true)).toEqual({ pos: stand });
+  it("an idle hero dropped on empty ground stands there", () => {
+    expect(resolveHeroDrop(w, monsters, "cid", ground, stand)).toEqual({ pos: stand });
   });
 
   it("an idle hero dropped on a monster engages it", () => {
-    expect(resolveHeroDrop(w, monsters, "cid", onM1, stand, false)).toEqual({ monsterId: "m1", shift: false });
+    expect(resolveHeroDrop(w, monsters, "cid", onM1, stand)).toEqual({ monsterId: "m1" });
   });
 
   it("an unknown hero is a no-op", () => {
-    expect(resolveHeroDrop(w, monsters, "zed", onM1, stand, false)).toBeNull();
+    expect(resolveHeroDrop(w, monsters, "zed", onM1, stand)).toBeNull();
   });
 });
 
@@ -135,20 +129,14 @@ describe("applyOp", () => {
     expect(monster(w, "m1").pos).toEqual({ x: 50, y: 60 });
   });
 
-  it("plain drop replaces targets", () => {
-    const w = applyOp(makeWorld(), { kind: "dropHero", heroId: "ana", drop: { monsterId: "m3", shift: false } });
-    expect(hero(w, "ana").targets).toEqual(["m3"]);
+  it("a drop on a monster appends a target and keeps the others", () => {
+    const w = applyOp(makeWorld(), { kind: "dropHero", heroId: "ana", drop: { monsterId: "m3" } });
+    expect(hero(w, "ana").targets).toEqual(["m1", "m2", "m3"]);
   });
 
-  it("plain drop on the current main keeps secondary targets", () => {
+  it("a drop on a monster that is already a target changes nothing", () => {
     const before = makeWorld();
-    const w = applyOp(before, { kind: "dropHero", heroId: "ana", drop: { monsterId: "m1", shift: false } });
-    expect(w).toBe(before);
-  });
-
-  it("Shift+drop appends a secondary target", () => {
-    const w = applyOp(makeWorld(), { kind: "dropHero", heroId: "bob", drop: { monsterId: "m3", shift: true } });
-    expect(hero(w, "bob").targets).toEqual(["m1", "m3"]);
+    expect(applyOp(before, { kind: "dropHero", heroId: "ana", drop: { monsterId: "m2" } })).toBe(before);
   });
 
   it("drop on ground idles", () => {
@@ -164,7 +152,7 @@ describe("applyOp", () => {
   });
 
   it("is idempotent", () => {
-    const op = { kind: "dropHero", heroId: "bob", drop: { monsterId: "m3", shift: true } } as const;
+    const op = { kind: "dropHero", heroId: "bob", drop: { monsterId: "m3" } } as const;
     const once = applyOp(makeWorld(), op);
     expect(applyOp(once, op)).toEqual(once);
   });
@@ -311,13 +299,32 @@ describe("dropping moves the home by the drag offset", () => {
     expect(dist(after.monsters.find((m) => m.monster.id === "m1")!.pos, drop)).toBeLessThan(1);
   });
 
-  it("an idle hero's home moves by the offset; an engaged hero stands where it was let go", () => {
-    const layout = layoutWorld(makeWorld());
-    const cid = layout.heroes.find((h) => h.hero.id === "cid")!; // idle, home (5, 5)
-    const ana = layout.heroes.find((h) => h.hero.id === "ana")!;
-    const press = { x: 20, y: 0 };
-    const drop = { x: 120, y: -40 };
-    expect(heroHomeAfterDrag(cid, press, drop)).toEqual({ x: 105, y: -35 });
-    expect(heroHomeAfterDrag(ana, press, drop)).toEqual(drop);
+
+  it("an idle hero's home moves by the offset", () => {
+    const cid = hero(makeWorld(), "cid"); // idle, home (5, 5)
+    expect(homeAfterDrag(idleHome(cid), { x: 20, y: 0 }, { x: 120, y: -40 })).toEqual({ x: 105, y: -35 });
+  });
+});
+
+describe("laying out after a drop, from the last frame", () => {
+  const at = (l: WorldLayout, id: string) =>
+    (l.monsters.find((m) => m.monster.id === id) ?? l.heroes.find((h) => h.hero.id === id))!.pos;
+
+  it("leaves every figure where it was when nothing changed", () => {
+    const w = makeWorld();
+    const before = layoutWorld(w);
+    const after = layoutWorld(w, { from: before });
+    for (const id of ["m1", "m2", "m3", "ana", "bob", "cid"]) expect(dist(at(after, id), at(before, id))).toBeLessThan(2);
+  });
+
+  it("an engaged hero dropped on the other side of its monster settles there", () => {
+    const w = makeWorld();
+    const before = layoutWorld(w);
+    const m1 = at(before, "m1");
+    const side = Math.sign(at(before, "bob").x - m1.x);
+    const frame = layoutWithDrag(w, before, { kind: "hero", id: "bob", pos: { x: m1.x - side * 200, y: m1.y } });
+    const after = layoutWorld(w, { from: frame });
+    expect(Math.sign(at(after, "bob").x - at(after, "m1").x)).toBe(-side);
+    expect(after.heroes.find((h) => h.hero.id === "bob")!.targets).toEqual(["m1"]);
   });
 });

@@ -236,11 +236,8 @@ function coachCopy(stage: CoachedStage): CoachCopy {
         ),
         todo: (
           <>
-            Drag <b>{stage.hero.name}</b> onto <b>{stage.monster.name}</b> and let go.
-            <KeyHint>
-              {" "}
-              Hold <Key>Shift</Key> while dropping to add a second target instead.
-            </KeyHint>
+            Drag <b>{stage.hero.name}</b> onto <b>{stage.monster.name}</b> and let go. Drop them on another monster
+            later to add a second target.
           </>
         ),
         icon: "swords",

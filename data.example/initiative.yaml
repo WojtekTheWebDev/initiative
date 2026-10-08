@@ -3,8 +3,8 @@
 initiative: 1
 
 monsters:
-  # Monsters: anything to deal with. pos is its home: the figure is drawn near it,
-  # pulled toward the monsters that share its heroes.
+  # Monsters: anything to deal with. pos is its home: the figure is drawn there,
+  # nudged aside only when another figure is in the way.
   # size: S | M | L | XL (small, medium, large, extra large) sets the base.
   # mini: which painted miniature stands for the monster (see
   # public/minis/manifest.json); leave it out for the mini for its size.

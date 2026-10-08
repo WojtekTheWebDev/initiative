@@ -45,7 +45,7 @@ export type ForceNode = {
   anchor?: { pos: Pos; strength: number };
 };
 
-/** A spring between two nodes that pulls or pushes them toward `length` apart. */
+/** A spring that pulls or pushes `source` toward `length` from `target`. It never moves `target`. */
 export type ForceLink = {
   source: string;
   target: string;
@@ -291,15 +291,18 @@ export function relax(nodes: ForceNode[], links: ForceLink[], opts: RelaxOptions
     clearForces();
 
     for (const s of springs) {
+      if (pinned[s.a]) continue;
       const dx = x[s.b] - x[s.a];
       const dy = y[s.b] - y[s.a];
       const dist = Math.sqrt(dx * dx + dy * dy);
       const pull = (s.length - dist) * s.strength * alpha;
       if (dist > 0) {
-        separate(s.a, s.b, (dx / dist) * pull, (dy / dist) * pull);
+        fx[s.a] -= (dx / dist) * pull;
+        fy[s.a] -= (dy / dist) * pull;
       } else {
         tieBreak(nodes[s.a].id, nodes[s.b].id, tie);
-        separate(s.a, s.b, tie.x * pull, tie.y * pull);
+        fx[s.a] -= tie.x * pull;
+        fy[s.a] -= tie.y * pull;
       }
     }
 

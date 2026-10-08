@@ -21,5 +21,5 @@ A personal RPG-styled tracker: monsters (work) and heroes (people) on an infinit
 - **No server state.** Every change runs a pure rule from `lib/domain` on the game store (`components/game/GameProvider.tsx`). Keep the page static, with no Server Actions or route handlers, so it can be hosted on Vercel. Keep `cacheComponents` off.
 - **Pan and zoom are hand-rolled** with an SVG viewBox and pointer events. Don't add a canvas or zoom library (d3-zoom, React Flow, etc.).
 - **Minis are baked images (`npm run bake:minis`); don't render 3D in the browser.** three.js and Playwright are dev dependencies for the bake script only.
-- **Unit-test the pure data functions with Vitest** (assign, Shift-add, secondary targets, target arrows, slay/delete cleanup, revive after a slay, save files, the stored game). The canvas is checked by hand.
+- **Unit-test the pure data functions with Vitest** (adding targets, secondary targets, target arrows, slay/delete cleanup, revive after a slay, save files, the stored game). The canvas is checked by hand.
 - **Out of scope unless the user asks:** Jira sync, a database or server storage, multiple users, auth or sync between browsers, XP or scoring of people, capacity or burndown.

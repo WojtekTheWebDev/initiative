@@ -1,18 +1,12 @@
 import type { Pos, World } from "@/lib/types";
 import { engaged, getHero, getLivingMonster, getMonster, idle, replaceHero } from "./internal";
 
-/** Plain drop: targets become just this monster; `pos` is dropped. */
-export function assign(world: World, heroId: string, monsterId: string): World {
-  const hero = getHero(world, heroId);
-  getLivingMonster(world, monsterId);
-  return replaceHero(world, engaged(hero, [monsterId]));
-}
-
 /**
- * Shift+drop: append the monster as a secondary target. No-op if already a target.
- * An idle hero gets it as main target instead.
+ * Drop on a monster: append it to the hero's targets. An idle hero gets it as
+ * main target; an engaged one keeps its targets and gains a secondary one.
+ * No-op if it is already a target.
  */
-export function addSecondary(world: World, heroId: string, monsterId: string): World {
+export function addTarget(world: World, heroId: string, monsterId: string): World {
   const hero = getHero(world, heroId);
   getLivingMonster(world, monsterId);
   if (hero.targets.includes(monsterId)) return world;
@@ -41,7 +35,7 @@ export function removeTarget(world: World, heroId: string, monsterId: string): W
   return replaceHero(world, targets.length ? engaged(hero, targets) : idle(hero, monster.pos));
 }
 
-/** Drop on empty ground: clear targets and stand at `pos`. */
+/** Clear targets and stand at `pos`, as an idle hero dropped on empty ground does. */
 export function setIdle(world: World, heroId: string, pos: Pos): World {
   return replaceHero(world, idle(getHero(world, heroId), pos));
 }

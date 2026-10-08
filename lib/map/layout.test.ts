@@ -139,8 +139,9 @@ describe("layoutWorld", () => {
     const h1 = heroAt(l, "H1");
     const h2 = heroAt(l, "H2");
 
-    it("pulls two monsters that share a hero much closer together", () => {
-      expect(dist(m1, m2)).toBeLessThan(500);
+    it("keeps both monsters at their homes: heroes go to their monsters, never the other way", () => {
+      expect(dist(m1, { x: -600, y: 0 })).toBeLessThan(1);
+      expect(dist(m2, { x: 600, y: 0 })).toBeLessThan(1);
     });
 
     it("puts H1 between them, closer to M1, its main target", () => {
@@ -152,10 +153,6 @@ describe("layoutWorld", () => {
     it("puts H2 next to M2", () => {
       expect(dist(h2, m2)).toBeLessThan(monsterBaseRadius("L") + HERO_BASE_RADIUS + MAIN_GAP + 20);
       expect(dist(h2, m2)).toBeLessThan(dist(h2, m1));
-    });
-
-    it("keeps the pair centred on the middle of their homes", () => {
-      expect(dist(centre([m1, m2]), { x: 0, y: 0 })).toBeLessThan(50);
     });
   });
 
@@ -183,10 +180,10 @@ describe("layoutWorld", () => {
   });
 
   describe("figures with a home", () => {
-    /** The user's example, plus an unfought monster and an idle hero with their homes where H1 and M2 gather. */
+    /** The user's example, plus an unfought monster and an idle hero with their homes where H1 and H2 stand. */
     const free = layoutWorld(example());
     const lone = heroAt(free, "H1");
-    const idle = monsterAt(free, "M2");
+    const idle = heroAt(free, "H2");
     function crowded(): World {
       const w = example();
       w.monsters.push(monster("lone", "M", lone.x, lone.y));
@@ -215,7 +212,8 @@ describe("layoutWorld", () => {
     it("drift back home once the cluster leaves", () => {
       const before = layoutWorld(crowded());
       const w = crowded();
-      w.heroes = w.heroes.map((h) => (h.id === "H1" ? { ...h, targets: ["M1"] } : h));
+      const away: Record<string, Pos> = { H1: { x: 0, y: 2000 }, H2: { x: 0, y: -2000 } };
+      w.heroes = w.heroes.map((h) => (away[h.id] ? { ...h, targets: [], pos: away[h.id] } : h));
       const after = layoutWorld(w);
       expect(dist(monsterAt(before, "lone"), lone)).toBeGreaterThan(10);
       expect(dist(monsterAt(after, "lone"), lone)).toBeLessThan(1);

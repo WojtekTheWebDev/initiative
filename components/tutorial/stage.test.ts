@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { World } from "@/lib/types";
-import { assign, createHero, createMonster, deleteMonster, revive, slay } from "@/lib/domain";
+import { addTarget, createHero, createMonster, deleteMonster, revive, slay } from "@/lib/domain";
 import { tutorialStage } from "./stage";
 
 const EMPTY: World = { monsters: [], heroes: [] };
@@ -20,7 +20,7 @@ describe("tutorialStage", () => {
     w = recruit(w, "Ana");
     expect(tutorialStage(w)).toMatchObject({ step: "assign", hero: { id: "ana" }, monster: { id: "flaky-ci" } });
 
-    w = assign(w, "ana", "flaky-ci");
+    w = addTarget(w, "ana", "flaky-ci");
     expect(tutorialStage(w)).toMatchObject({ step: "slay", hero: { id: "ana" }, monster: { id: "flaky-ci" } });
 
     w = slay(w, "flaky-ci", "2026-10-06");
@@ -45,13 +45,13 @@ describe("tutorialStage", () => {
 
   it("talks about an unfought monster while there is one, and the engaged one when slaying", () => {
     let w = recruit(summon(summon(EMPTY, "Old"), "New"), "Ana");
-    w = assign(w, "ana", "old");
+    w = addTarget(w, "ana", "old");
     expect(tutorialStage(w)).toMatchObject({ step: "slay", monster: { id: "old" } });
     expect(tutorialStage(recruit(summon(EMPTY, "Old"), "Ana"))).toMatchObject({ step: "assign", monster: { id: "old" } });
   });
 
   it("goes back to slaying when the trophy is revived", () => {
-    let w = assign(recruit(summon(EMPTY, "Flaky CI"), "Ana"), "ana", "flaky-ci");
+    let w = addTarget(recruit(summon(EMPTY, "Flaky CI"), "Ana"), "ana", "flaky-ci");
     const before = w;
     w = slay(w, "flaky-ci", "2026-10-06");
     w = revive(w, "flaky-ci", [{ id: "ana", targets: before.heroes[0].targets }]);

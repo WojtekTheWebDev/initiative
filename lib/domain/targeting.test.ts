@@ -1,64 +1,40 @@
 import { describe, expect, it } from "vitest";
-import { addSecondary, assign, makeMain, removeTarget, setIdle } from "./targeting";
+import { addTarget, makeMain, removeTarget, setIdle } from "./targeting";
 import { expectValid, makeWorld } from "./test-fixtures";
 import type { World } from "@/lib/types";
 
 const hero = (w: World, id: string) => w.heroes.find((h) => h.id === id)!;
 
-describe("assign", () => {
-  it("replaces all targets with the monster", () => {
-    const before = makeWorld();
-    const w = assign(before, "ana", "m3");
-    expect(hero(w, "ana").targets).toEqual(["m3"]);
-    expect(hero(before, "ana").targets).toEqual(["m1", "m2"]); // pure
-    expect(hero(w, "bob")).toBe(hero(before, "bob")); // others untouched
-    expectValid(w);
-  });
-
-  it("engages an idle hero and drops pos", () => {
-    const w = assign(makeWorld(), "cid", "m3");
-    expect(hero(w, "cid")).toEqual({ id: "cid", name: "Cid", class: "rogue", targets: ["m3"] });
-    expect("pos" in hero(w, "cid")).toBe(false);
-    expectValid(w);
-  });
-
-  it("throws on unknown ids and slain monsters", () => {
-    expect(() => assign(makeWorld(), "nope", "m1")).toThrow(/Unknown hero: "nope"/);
-    expect(() => assign(makeWorld(), "ana", "nope")).toThrow(/Unknown monster: "nope"/);
-    expect(() => assign(makeWorld(), "ana", "m4")).toThrow(/slain/);
-  });
-});
-
-describe("addSecondary (Shift+drop)", () => {
+describe("addTarget", () => {
   it("appends the monster as a secondary target", () => {
-    const w = addSecondary(makeWorld(), "ana", "m3");
+    const w = addTarget(makeWorld(), "ana", "m3");
     expect(hero(w, "ana").targets).toEqual(["m1", "m2", "m3"]);
     expectValid(w);
   });
 
   it("is a no-op when already a target (main or secondary)", () => {
     const before = makeWorld();
-    expect(addSecondary(before, "ana", "m2")).toBe(before);
-    expect(addSecondary(before, "ana", "m1")).toBe(before);
+    expect(addTarget(before, "ana", "m2")).toBe(before);
+    expect(addTarget(before, "ana", "m1")).toBe(before);
   });
 
   it("makes it the main target of an idle hero and drops pos", () => {
-    const w = addSecondary(makeWorld(), "cid", "m3");
+    const w = addTarget(makeWorld(), "cid", "m3");
     expect(hero(w, "cid").targets).toEqual(["m3"]);
     expect(hero(w, "cid").pos).toBeUndefined();
     expectValid(w);
   });
 
   it("throws on unknown ids and slain monsters", () => {
-    expect(() => addSecondary(makeWorld(), "nope", "m1")).toThrow(/Unknown hero/);
-    expect(() => addSecondary(makeWorld(), "ana", "nope")).toThrow(/Unknown monster/);
-    expect(() => addSecondary(makeWorld(), "ana", "m4")).toThrow(/slain/);
+    expect(() => addTarget(makeWorld(), "nope", "m1")).toThrow(/Unknown hero/);
+    expect(() => addTarget(makeWorld(), "ana", "nope")).toThrow(/Unknown monster/);
+    expect(() => addTarget(makeWorld(), "ana", "m4")).toThrow(/slain/);
   });
 });
 
 describe("makeMain", () => {
   it("moves a secondary target to index 0 and keeps the rest in order", () => {
-    let w = addSecondary(makeWorld(), "ana", "m3"); // [m1, m2, m3]
+    let w = addTarget(makeWorld(), "ana", "m3"); // [m1, m2, m3]
     w = makeMain(w, "ana", "m3");
     expect(hero(w, "ana").targets).toEqual(["m3", "m1", "m2"]);
     expectValid(w);
@@ -112,7 +88,7 @@ describe("removeTarget", () => {
   });
 });
 
-describe("setIdle (drop on empty ground)", () => {
+describe("setIdle", () => {
   it("clears targets and saves pos", () => {
     const w = setIdle(makeWorld(), "ana", { x: 7, y: 8 });
     expect(hero(w, "ana").targets).toEqual([]);

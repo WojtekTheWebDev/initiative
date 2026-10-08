@@ -1,7 +1,7 @@
 import type { Pos, World } from "@/lib/types";
 import * as domain from "@/lib/domain";
 import type { HeroBefore } from "@/lib/domain";
-import { idleHome, layoutWorld, type PlacedHero, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
+import { layoutWorld, type PlacedMonster, type WorldLayout } from "@/lib/map/layout";
 import { hitsMini, monsterMini } from "@/lib/map/minis";
 
 /*
@@ -15,8 +15,8 @@ export function pastThreshold(start: Pos, now: Pos, threshold = DRAG_THRESHOLD):
   return Math.hypot(now.x - start.x, now.y - start.y) >= threshold;
 }
 
-/** What a hero drop does: a monster to target (added as secondary with Shift), or ground to stand idle on. */
-export type HeroDrop = { monsterId: string; shift: boolean } | { pos: Pos };
+/** What a hero drop does: a monster to add to its targets, or ground for an idle hero to stand on. */
+export type HeroDrop = { monsterId: string } | { pos: Pos };
 
 /** One change to the world made on the table: a drop, an arrow button, a slay or a revive. */
 export type WorldOp =
@@ -28,9 +28,8 @@ export type WorldOp =
   | { kind: "revive"; id: string; before: HeroBefore[] };
 
 /**
- * Applies an op with its lib/domain rule. A plain drop back on the current
- * main target changes nothing, so the secondary targets stay. Throws what the
- * rule throws for an op that doesn't fit the world (e.g. an id that is gone).
+ * Applies an op with its lib/domain rule. Throws what the rule throws for an
+ * op that doesn't fit the world (e.g. an id that is gone).
  */
 export function applyOp(world: World, op: WorldOp): World {
   switch (op.kind) {
@@ -47,10 +46,7 @@ export function applyOp(world: World, op: WorldOp): World {
     case "dropHero": {
       const { heroId, drop } = op;
       if ("pos" in drop) return domain.setIdle(world, heroId, drop.pos);
-      if (drop.shift) return domain.addSecondary(world, heroId, drop.monsterId);
-      const hero = world.heroes.find((h) => h.id === heroId);
-      if (hero && hero.targets[0] === drop.monsterId) return world;
-      return domain.assign(world, heroId, drop.monsterId);
+      return domain.addTarget(world, heroId, drop.monsterId);
     }
   }
 }
@@ -101,9 +97,13 @@ export function hitTestMonster(monsters: PlacedMonster[], point: Pos): PlacedMon
 
 /**
  * Works out what dropping `heroId` with the cursor at `cursor` does.
- * `standAt` is where the hero would stand if dropped on empty ground.
- * Returns null for a no-op: a plain drop on the current main target, or a
- * Shift+drop on a monster that is already a target.
+ * - On a monster, the monster is added to the hero's targets: it becomes the
+ *   main target of an idle hero and a secondary one of an engaged hero.
+ * - On empty ground, an idle hero stands at `standAt`. An engaged hero keeps
+ *   its targets; it only settles on the side of its monsters where it was let
+ *   go (see the drop in useFigureDrag).
+ * Returns null for a drop that changes no data: on a monster that is already
+ * a target, or an engaged hero on empty ground.
  */
 export function resolveHeroDrop(
   world: World,
@@ -111,15 +111,13 @@ export function resolveHeroDrop(
   heroId: string,
   cursor: Pos,
   standAt: Pos,
-  shift: boolean,
 ): HeroDrop | null {
   const hero = world.heroes.find((h) => h.id === heroId);
   if (!hero) return null;
   const hit = hitTestMonster(monsters, cursor);
-  if (!hit) return { pos: { x: standAt.x, y: standAt.y } };
+  if (!hit) return hero.targets.length ? null : { pos: { x: standAt.x, y: standAt.y } };
   const monsterId = hit.monster.id;
-  if (shift ? hero.targets.includes(monsterId) : hero.targets[0] === monsterId) return null;
-  return { monsterId, shift };
+  return hero.targets.includes(monsterId) ? null : { monsterId };
 }
 
 /** Solver steps for each frame of a monster drag, which starts from the frame before (see layoutWithDrag). */
@@ -132,10 +130,11 @@ export type LiveDrag = { kind: "monster" | "hero"; id: string; pos: Pos };
 /**
  * The layout to draw during a drag. `layout` is `world` laid out without the drag.
  * - A dragged monster is pinned at `pos` and the map is laid out again around
- *   it, so its cluster comes along and anything in the way is nudged aside.
+ *   it, so its fighters come along and anything in the way is nudged aside.
  *   It starts from `previous` (the last frame of the drag, or `layout` on the
  *   first), so DRAG_ITERATIONS and DRAG_SETTLE steps are enough on every
- *   pointer move. The drop lays the map out in full again from the homes.
+ *   pointer move. The drop lays the map out in full again, starting from the
+ *   last frame (see useFigureDrag).
  * - A dragged hero only moves itself (its arrows follow). Nothing else moves
  *   until the drop, so monsters never slide out from under the cursor. Its
  *   targets, and so the monsters' unfought state, stay as they are too.
@@ -165,21 +164,9 @@ export function layoutWithDrag(
  * Where a dragged figure's home goes: it moves by as much as the figure was
  * dragged (`drop - press`, both drawn positions). The drawn position can differ
  * from the home when the figure is pulled or nudged, so saving the drop point
- * itself would make it jump. The layout moves with the homes, so a monster
- * whose heroes fight nothing else settles exactly where it was let go. One
- * that shares heroes with other monsters is pulled back toward them a little,
- * since their homes stay where they are.
+ * itself would make it jump. Heroes never pull a monster, so it settles
+ * exactly where it was let go unless another figure is in the way.
  */
 export function homeAfterDrag(home: Pos, press: Pos, drop: Pos): Pos {
   return { x: home.x + drop.x - press.x, y: home.y + drop.y - press.y };
-}
-
-/**
- * Where a hero dropped on empty ground stands idle: an idle hero's home moves
- * by the drag offset, and an engaged hero (which has no home) stays where it
- * was let go.
- */
-export function heroHomeAfterDrag(placed: PlacedHero, press: Pos, drop: Pos): Pos {
-  if (placed.targets.length > 0) return { x: drop.x, y: drop.y };
-  return homeAfterDrag(idleHome(placed.hero), press, drop);
 }

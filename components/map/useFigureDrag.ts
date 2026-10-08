@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -14,7 +13,7 @@ import {
 import type { Pos, World } from "@/lib/types";
 import * as domain from "@/lib/domain";
 import type { HeroBefore } from "@/lib/domain";
-import { layoutWorld, type WorldLayout } from "@/lib/map/layout";
+import { idleHome, layoutWorld, type WorldLayout } from "@/lib/map/layout";
 import { useToast } from "@/components/ui/Toast";
 import { useGame, useGameUpdate } from "@/components/game/GameProvider";
 import type { MapHandle } from "./MapCanvas";
@@ -22,7 +21,6 @@ import type { FigureHandlers } from "./MiniFigure";
 import {
   applyOp,
   dropAction,
-  heroHomeAfterDrag,
   homeAfterDrag,
   layoutWithDrag,
   pastThreshold,
@@ -32,7 +30,7 @@ import {
   type WorldOp,
 } from "./drag";
 
-/** How a monster is highlighted while a hero is dragged over it. */
+/** How a monster is highlighted while a hero is dragged over it: it would become the main target, or a secondary one. */
 export type DropHint = "assign" | "secondary";
 
 /** The trophy shelf during a monster drag: it glows, and brighter while the monster is over it. */
@@ -65,7 +63,6 @@ type Session = {
   world: World;
   layout: WorldLayout;
   moved: boolean;
-  shift: boolean;
   cursor: Pos;
   /** The pointer in client px. */
   client: Pos;
@@ -85,12 +82,16 @@ export type FigureDrag = ReturnType<typeof useFigureDrag>;
  * - Press a monster or hero and move more than DRAG_THRESHOLD px to drag it;
  *   a shorter press is a click (selection). Clicks after a drag are swallowed.
  * - While dragging, the figure follows the pointer: a monster is pinned under
- *   it and the map re-lays out around it on every move (its cluster follows),
+ *   it and the map re-lays out around it on every move (its fighters follow),
  *   while a hero moves alone. Arrows come from the layout, so they follow
  *   either way.
  * - Clicking an arrow opens its buttons (`link`, see TargetButtons).
  * - On drop, a dragged monster's home, or an idle hero's, moves by the drag
- *   offset (see homeAfterDrag). A monster dropped on the trophy shelf
+ *   offset (see homeAfterDrag), and the map is laid out again starting from
+ *   the last frame of the drag, so every figure goes on from where it is
+ *   drawn: neighbours keep their sides and only what is in the way moves. An
+ *   engaged hero dropped on empty ground keeps its targets and settles on the
+ *   side of them where it was let go. A monster dropped on the trophy shelf
  *   (`shelfRef`) is slain instead (see dropAction and `slay`). The change is
  *   applied to the game in this browser with a lib/domain rule (see
  *   applyOp); a change the rules refuse leaves the table as it was and an
@@ -108,9 +109,18 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
   const slainBefore = useRef(new Map<string, HeroBefore[]>());
   const suppressClick = useRef(false);
 
+  // The world as laid out. A change from anywhere (a drop, an edit, another
+  // tab) lays it out again from the picture before, so figures that have room
+  // stay where they are instead of the whole map being solved afresh.
+  const [laid, setLaid] = useState(() => ({ world, layout: layoutWorld(world) }));
+  let base = laid;
+  if (laid.world !== world) {
+    base = { world, layout: layoutWorld(world, { from: laid.layout }) };
+    setLaid(base);
+  }
+
   const drag = live?.drag ?? null;
-  const baseLayout = useMemo(() => layoutWorld(world), [world]);
-  const layout = live?.layout ?? baseLayout;
+  const layout = live?.layout ?? base.layout;
 
   // Stop listening if the Board unmounts mid-drag.
   useEffect(() => () => session.current?.end(), []);
@@ -160,9 +170,10 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
   function showLive(s: Session) {
     let hint: Live["hint"] = null;
     if (s.kind === "hero" && s.onMap) {
-      const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, s.pos, s.shift);
+      const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, s.pos);
       if (drop && "monsterId" in drop) {
-        hint = { monsterId: drop.monsterId, kind: drop.shift ? "secondary" : "assign" };
+        const engaged = s.layout.heroes.some((h) => h.hero.id === s.id && h.targets.length > 0);
+        hint = { monsterId: drop.monsterId, kind: engaged ? "secondary" : "assign" };
       }
     }
     const overShelf = dropAction(s.kind, s.client, s.onMap, shelfRect()) === "slay";
@@ -198,16 +209,19 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
       slay(s.id);
       return;
     }
+    let op: WorldOp | null = null;
     if (s.kind === "monster") {
       const home = s.world.monsters.find((m) => m.id === s.id)?.pos;
-      if (home) run({ kind: "moveMonster", id: s.id, pos: round(homeAfterDrag(home, s.origin, s.pos)) });
-      return;
+      if (home) op = { kind: "moveMonster", id: s.id, pos: round(homeAfterDrag(home, s.origin, s.pos)) };
+    } else {
+      const hero = s.world.heroes.find((h) => h.id === s.id);
+      if (!hero) return;
+      const standAt = round(homeAfterDrag(idleHome(hero), s.origin, s.pos));
+      const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, standAt);
+      if (drop) op = { kind: "dropHero", heroId: s.id, drop };
     }
-    const placed = s.layout.heroes.find((h) => h.hero.id === s.id);
-    if (!placed) return;
-    const standAt = round(heroHomeAfterDrag(placed, s.origin, s.pos));
-    const drop = resolveHeroDrop(s.world, s.layout.monsters, s.id, s.cursor, standAt, e.shiftKey);
-    if (drop) run({ kind: "dropHero", heroId: s.id, drop });
+    const next = (op && run(op)) ?? s.world;
+    setLaid({ world: next, layout: layoutWorld(next, { from: s.frame }) });
   }
 
   function start(kind: "monster" | "hero", id: string, e: PointerEvent<SVGGElement>) {
@@ -238,7 +252,6 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
         s.moved = true;
         setLink(null);
       }
-      s.shift = ev.shiftKey;
       track(s, ev.clientX, ev.clientY);
       showLive(s);
     };
@@ -249,15 +262,9 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
       if (ev.pointerId === pointerId) finish(s, null);
     };
     const onKey = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        ev.preventDefault(); // tells the card and dialogs this Esc is taken
-        finish(s, null);
-        return;
-      }
-      if (ev.key === "Shift" && s.moved && s.shift !== (ev.type === "keydown")) {
-        s.shift = ev.type === "keydown";
-        showLive(s);
-      }
+      if (ev.key !== "Escape") return;
+      ev.preventDefault(); // tells the card and dialogs this Esc is taken
+      finish(s, null);
     };
 
     const s: Session = {
@@ -270,7 +277,6 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
       world,
       layout,
       moved: false,
-      shift: e.shiftKey,
       cursor: startWorld,
       client: { x: e.clientX, y: e.clientY },
       pos: origin,
@@ -281,7 +287,6 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
         window.removeEventListener("pointerup", onUp);
         window.removeEventListener("pointercancel", onCancel);
         window.removeEventListener("keydown", onKey);
-        window.removeEventListener("keyup", onKey);
         if (el.hasPointerCapture?.(pointerId)) el.releasePointerCapture(pointerId);
         if (session.current === s) session.current = null;
       },
@@ -291,7 +296,6 @@ export function useFigureDrag(map: RefObject<MapHandle | null>) {
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
     window.addEventListener("keydown", onKey);
-    window.addEventListener("keyup", onKey);
   }
 
   /** Swallows the click that the browser fires after a drag. */
